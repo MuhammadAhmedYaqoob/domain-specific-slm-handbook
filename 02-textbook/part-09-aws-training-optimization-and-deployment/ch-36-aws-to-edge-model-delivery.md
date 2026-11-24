@@ -31,8 +31,10 @@ After completing this chapter, the reader should be able to:
 
 The release trust boundary is:
 
-\[ \boxed{ \text{trusted edge release}= \text{approved bytes}+ \text{authenticated manifest}+ \text{compatible runtime}+
-\text{enforced policy} } \tag{EQ-CH36-01} \]
+$$
+\boxed{ \text{trusted edge release}= \text{approved bytes}+ \text{authenticated manifest}+ \text{compatible runtime}+
+\text{enforced policy} } \tag{EQ-CH36-01}
+$$
 
 TLS protects one transfer. A SHA-256 digest detects byte changes only when the expected digest is authenticated. A
 CloudFront signed URL authorizes temporary retrieval but says nothing about whether the model passed evaluation. SSE-KMS
@@ -661,8 +663,8 @@ Resume algorithm:
 1. verify the signed manifest before allocating the large download;
 2. use a unique private staging directory and preallocate or enforce the signed byte ceiling;
 3. on fresh download, require `200`, the expected total length, and an acceptable content type;
-4. on resume at offset \(n\), request `Range: bytes=n-` and `If-Range: etag-illustrative-001`;
-5. append only on `206` with `Content-Range` starting exactly at \(n\) and total equal to the signed size;
+4. on resume at offset $n$, request `Range: bytes=n-` and `If-Range: etag-illustrative-001`;
+5. append only on `206` with `Content-Range` starting exactly at $n$ and total equal to the signed size;
 6. if the server returns `200`, truncate and restart—never append;
 7. on `416`, verify the existing file only if its length equals the signed size; otherwise restart;
 8. if URL authorization expires, acquire a new URL for the **same signed artifact identity** and retain partial bytes;
@@ -733,8 +735,10 @@ Downloads.
 
 The updater must budget peak bytes, not only final model size:
 
-\[ S_\text{peak}= S_\text{active}+S_\text{previous}+S_\text{partial}+
-S_\text{staged}+S_\text{unpacked}+S_\text{temporary}+S_\text{margin}. \tag{EQ-CH36-02} \]
+$$
+S_\text{peak}= S_\text{active}+S_\text{previous}+S_\text{partial}+
+S_\text{staged}+S_\text{unpacked}+S_\text{temporary}+S_\text{margin}. \tag{EQ-CH36-02}
+$$
 
 If a 1.2 GiB active model, 1.1 GiB rollback model, 0.8 GiB partial download, and 1.0 GiB new artifact coexist, the
 device already needs 4.1 GiB before unpacking, filesystem overhead, runtime cache, or safety margin (`ILLUSTRATIVE`).
@@ -774,8 +778,10 @@ purge.
 
 Compatibility is a conjunction, not a model-family label:
 
-\[ C= C_\text{app}\land C_\text{OS}\land C_\text{ABI}\land C_\text{runtime}\land C_\text{format}\land
-C_\text{backend}\land C_\text{memory}\land C_\text{storage}\land C_\text{cohort}. \tag{EQ-CH36-03} \]
+$$
+C= C_\text{app}\land C_\text{OS}\land C_\text{ABI}\land C_\text{runtime}\land C_\text{format}\land
+C_\text{backend}\land C_\text{memory}\land C_\text{storage}\land C_\text{cohort}. \tag{EQ-CH36-03}
+$$
 
 Admission order should reject cheaply before hashing/loading:
 

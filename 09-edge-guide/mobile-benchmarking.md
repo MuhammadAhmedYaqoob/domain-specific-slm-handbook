@@ -11,26 +11,34 @@ safety pass before timing.
 Record monotonic timestamps for request submission, prefill start/end, first model token, first rendered fragment,
 every generated token, and completion.
 
-\[
+$$
+
 TTFT_{visible}=t_{first\ rendered}-t_{submit}
-\]
 
-\[
+$$
+
+$$
+
 r_{prefill}=N_{input}/(t_{prefill\ end}-t_{prefill\ start})
-\]
 
-\[
+$$
+
+$$
+
 r_{decode}=(N_{generated}-1)/(t_{last}-t_{first})
-\]
+
+$$
 
 Decode rate requires at least two generated tokens. Report median and p95 inter-token latency. Memory records include
 before load, load peak, post-load, prefill peak, early/late decode, maximum context, reset, and unload.
 
 For a declared energy boundary:
 
-\[
+$$
+
 E_{token}=(E_{active}-E_{matched\ idle})/N_{generated}.
-\]
+
+$$
 
 Whole-device, wall, battery-rail, SoC-rail, and process estimates are not interchangeable. Battery percentage is too
 coarse for short trials. If no calibrated measurement exists, omit J/token and report only the available relative
@@ -40,7 +48,7 @@ diagnostic.
 
 Suppose a calibrated whole-device meter records 1,800 J during a 15-minute active run and 720 J during a matched idle
 run. If the model generated 900 tokens, incremental energy is 1,080 J and the illustrative value is 1.2 J/token.
-If early decode is 8.0 tokens/s and late decode is 6.4, sustained ratio is \(6.4/8.0=0.80\). This does not prove thermal
+If early decode is 8.0 tokens/s and late decode is 6.4, sustained ratio is $6.4/8.0=0.80$. This does not prove thermal
 throttling: correlate context length, clocks, thermal state, and background activity.
 
 ## 4. Controlled workload

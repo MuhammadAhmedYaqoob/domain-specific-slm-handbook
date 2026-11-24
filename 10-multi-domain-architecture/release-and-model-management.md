@@ -22,7 +22,7 @@ stateDiagram-v2
 
 Suppose a 1.12 GB Android model is active and its predecessor is 1.08 GB. A safe update also needs a 1.12 GB partial
 download, a 1.12 GB staged copy, and 0.20 GB reserve. Peak free storage is therefore about
-\(1.12 + 1.08 + 1.12 + 1.12 + 0.20 = 4.64\) GB, not 1.12 GB. Measure packaging and filesystem behavior rather than
+$1.12 + 1.08 + 1.12 + 1.12 + 0.20 = 4.64$ GB, not 1.12 GB. Measure packaging and filesystem behavior rather than
 using this planning estimate as a release value.
 
 The complete manifest below is syntactically populated with synthetic teaching identities. Its performance values are

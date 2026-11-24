@@ -190,21 +190,29 @@ The following rates are **hypothetical teaching values, not AWS prices**:
 
 Using a 30-day month:
 
-\[
+$$
+
 C_{compute}=10.5 \times 6.00=63.00
-\]
 
-\[
+$$
+
+$$
+
 C_{EBS}=200 \times 0.10 \times \frac{2}{30}=1.33
-\]
 
-\[
+$$
+
+$$
+
 C_{S3}=150 \times 0.025=3.75
-\]
 
-\[
+$$
+
+$$
+
 C_{total}=63.00+1.33+3.75+4.00+3.50=75.58
-\]
+
+$$
 
 If the run processed 8.4 million accepted training tokens, the illustrative cost per million tokens is
 `75.58 / 8.4 = 9.00` currency units, rounded. Replace every hypothetical rate with a dated official rate and every
@@ -212,10 +220,12 @@ quantity with measured usage. Match each service's real billing unit and roundin
 
 For serving:
 
-\[
+$$
+
 C_{successful\ request}=
 \frac{C_{fixed\ period}+C_{variable\ period}}{N_{successful\ requests}}
-\]
+
+$$
 
 Report the request/token distribution and latency objective; otherwise two services are not comparable.
 

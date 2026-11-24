@@ -40,20 +40,22 @@ After completing this chapter, the reader should be able to:
 Training asks whether a model can learn. Deployment asks whether an exact artifact can deliver acceptable behavior
 inside a product envelope:
 
-\[ \boxed{ D=(A,W,Q,R,K,H,X,P) } \tag{EQ-CH16-01} \]
+$$
+\boxed{ D=(A,W,Q,R,K,H,X,P) } \tag{EQ-CH16-01}
+$$
 
 where:
 
-- \(A\): model architecture and tokenizer;
-- \(W\): trained weights or merged adapters;
-- \(Q\): weight, activation, accumulator, and key–value (KV) cache precision;
-- \(R\): inference runtime and converter;
-- \(K\): actual kernels and operator placement;
-- \(H\): hardware, operating system, drivers, and firmware;
-- \(X\): workload—prompt, output, context, batch, concurrency, and decoding; and
-- \(P\): power, thermal, lifecycle, and product policy.
+- $A$: model architecture and tokenizer;
+- $W$: trained weights or merged adapters;
+- $Q$: weight, activation, accumulator, and key–value (KV) cache precision;
+- $R$: inference runtime and converter;
+- $K$: actual kernels and operator placement;
+- $H$: hardware, operating system, drivers, and firmware;
+- $X$: workload—prompt, output, context, batch, concurrency, and decoding; and
+- $P$: power, thermal, lifecycle, and product policy.
 
-Performance belongs to tuple \(D\), not to a model name or parameter count. A 4-bit file can fail because the runtime
+Performance belongs to tuple $D$, not to a model name or parameter count. A 4-bit file can fail because the runtime
 expands it, an NPU can remain idle because one attention operator is unsupported, and a model that generates quickly for
 20 seconds can slow after several minutes as the device reaches a thermal limit.
 
@@ -186,16 +188,20 @@ weights and a growing cache to produce one token. A backend that is excellent at
 be inefficient at small sequential decode. Startup, time to first token (TTFT), inter-token latency (ITL), and sustained
 throughput must therefore be measured separately.
 
-For arrival \(t_0\), first visible token \(t_1\), finish \(t_f\), and \(N_g>1\) generated tokens:
+For arrival $t_0$, first visible token $t_1$, finish $t_f$, and $N_g>1$ generated tokens:
 
-\[ \mathrm{TTFT}=t_1-t_0,\qquad \mathrm{ITL}_{mean}=\frac{t_f-t_1}{N_g-1}. \tag{EQ-CH16-02} \]
+$$
+\mathrm{TTFT}=t_1-t_0,\qquad \mathrm{ITL}_{mean}=\frac{t_f-t_1}{N_g-1}. \tag{EQ-CH16-02}
+$$
 
 End-to-end response time is:
 
-\[ \boxed{ T_{\mathrm{E2E}}= T_{\mathrm{load}}+T_{\mathrm{tokenize}}+T_{\mathrm{queue}}+
-T_{\mathrm{prefill}}+T_{\mathrm{decode}}+T_{\mathrm{render}} } \tag{EQ-CH16-03} \]
+$$
+\boxed{ T_{\mathrm{E2E}}= T_{\mathrm{load}}+T_{\mathrm{tokenize}}+T_{\mathrm{queue}}+
+T_{\mathrm{prefill}}+T_{\mathrm{decode}}+T_{\mathrm{render}} } \tag{EQ-CH16-03}
+$$
 
-For a warm, already-loaded session, \(T_{\mathrm{load}}\) may be zero for that request; it still exists at app or model
+For a warm, already-loaded session, $T_{\mathrm{load}}$ may be zero for that request; it still exists at app or model
 startup and must not disappear from product analysis.
 
 <a id="ch16-fit-gates"></a>
@@ -209,8 +215,10 @@ These are four different claims.
 The complete distributable package fits the device's permitted and available persistent storage, including
 installation/update overhead:
 
-\[ \boxed{ S_{\mathrm{required}}= S_{\mathrm{artifact}}+S_{\mathrm{tokenizer}}+S_{\mathrm{runtime}}+
-S_{\mathrm{metadata}}+S_{\mathrm{update\ staging}}+S_{\mathrm{reserve}} } \tag{EQ-CH16-04} \]
+$$
+\boxed{ S_{\mathrm{required}}= S_{\mathrm{artifact}}+S_{\mathrm{tokenizer}}+S_{\mathrm{runtime}}+
+S_{\mathrm{metadata}}+S_{\mathrm{update\ staging}}+S_{\mathrm{reserve}} } \tag{EQ-CH16-04}
+$$
 
 Atomic updates may temporarily require old and new artifacts plus download/staging space. Filesystems, app stores,
 backup policy, encryption, decompression, and user free-space variability matter. “The GGUF is 900 MB” is not a complete
@@ -221,18 +229,22 @@ storage budget.
 The process completes loading, prefill, and maximum supported generation without operating-system termination,
 allocation failure, destructive paging, or unplanned fallback:
 
-\[ \boxed{ M_{\mathrm{peak}}= M_W+M_{\mathrm{KV}}+M_A+M_{\mathrm{workspace}}+M_{\mathrm{temporary}}+
-M_{\mathrm{runtime}}+M_{\mathrm{application}}+M_{\mathrm{margin}} \le M_{\mathrm{allowed}} } \tag{EQ-CH16-05} \]
+$$
+\boxed{ M_{\mathrm{peak}}= M_W+M_{\mathrm{KV}}+M_A+M_{\mathrm{workspace}}+M_{\mathrm{temporary}}+
+M_{\mathrm{runtime}}+M_{\mathrm{application}}+M_{\mathrm{margin}} \le M_{\mathrm{allowed}} } \tag{EQ-CH16-05}
+$$
 
-\(M_W\) is loaded weights; \(M_{\mathrm{KV}}\) cache; \(M_A\) live activations; and the other terms cover workspaces,
+$M_W$ is loaded weights; $M_{\mathrm{KV}}$ cache; $M_A$ live activations; and the other terms cover workspaces,
 conversion buffers, allocator reserve, tokenizer/UI state, and a safety margin. Installed physical RAM is not
-\(M_{\mathrm{allowed}}\): the operating system and other processes share it, and mobile process limits are
+$M_{\mathrm{allowed}}$: the operating system and other processes share it, and mobile process limits are
 platform/state dependent.
 
-For \(L\) layers, batch \(B\), cached tokens \(T\), \(H_{kv}\) KV heads, head width \(d_h\), and \(b_{kv}\) bytes per
+For $L$ layers, batch $B$, cached tokens $T$, $H_{kv}$ KV heads, head width $d_h$, and $b_{kv}$ bytes per
 value:
 
-\[ \boxed{ M_{\mathrm{KV,payload}}\approx 2LBTH_{kv}d_hb_{kv} } \tag{EQ-CH16-06} \]
+$$
+\boxed{ M_{\mathrm{KV,payload}}\approx 2LBTH_{kv}d_hb_{kv} } \tag{EQ-CH16-06}
+$$
 
 The factor 2 is keys plus values. Runtime layouts, reserved capacity, quantization metadata, and alignment add overhead.
 
@@ -240,10 +252,12 @@ The factor 2 is keys plus values. Runtime layouts, reserved capacity, quantizati
 
 The loaded model meets product-specific responsiveness and quality requirements:
 
-\[ \mathrm{TTFT}_{p95}\le \tau_{\mathrm{first}},\qquad \mathrm{ITL}_{p95}\le \tau_{\mathrm{token}},\qquad Q\ge <!-- markdownlint-disable-line MD013 MD049 -->
-Q_{\min},\qquad F\le F_{\max}, \tag{EQ-CH16-07} \]
+$$
+\mathrm{TTFT}_{p95}\le \tau_{\mathrm{first}},\qquad \mathrm{ITL}_{p95}\le \tau_{\mathrm{token}},\qquad Q\ge <!-- markdownlint-disable-line MD013 MD049 -->
+Q_{\min},\qquad F\le F_{\max}, \tag{EQ-CH16-07}
+$$
 
-where \(\tau\) values are pre-registered product thresholds, \(Q\) is a quality vector, and \(F\) is failure rate.
+where $\tau$ values are pre-registered product thresholds, $Q$ is a quality vector, and $F$ is failure rate.
 Thresholds are requirements, not universal human-perception constants. A model can fit RAM yet have unusable startup,
 prompt ingestion, or generation.
 
@@ -251,8 +265,10 @@ prompt ingestion, or generation.
 
 The product continues meeting memory, latency, energy, temperature, crash, and quality gates over realistic sessions:
 
-\[ \boxed{ r_{\mathrm{sustained}}= \frac{N_{\mathrm{generated\ after\ warmup}}} {t_{\mathrm{end}}-t_{\mathrm{warmup}}} }
-\tag{EQ-CH16-08} \]
+$$
+\boxed{ r_{\mathrm{sustained}}= \frac{N_{\mathrm{generated\ after\ warmup}}} {t_{\mathrm{end}}-t_{\mathrm{warmup}}} }
+\tag{EQ-CH16-08}
+$$
 
 Report the token timeline, not only one average. A burst rate measured before the device heats is not sustained
 performance.
@@ -284,12 +300,16 @@ flowchart LR
 
 ### 16.6.1 Weight payload and metadata
 
-Consider an `ILLUSTRATIVE` dense model with \(N=1.5\times10^9\) parameters stored with 4-bit codes, one 16-bit scale per
+Consider an `ILLUSTRATIVE` dense model with $N=1.5\times10^9$ parameters stored with 4-bit codes, one 16-bit scale per
 group of 32 weights, and no zero point:
 
-\[ b_{\mathrm{eff}}=4+\frac{16}{32}=4.5\ \text{bits/weight}. \]
+$$
+b_{\mathrm{eff}}=4+\frac{16}{32}=4.5\ \text{bits/weight}.
+$$
 
-\[ M_W^{payload}=\frac{1.5\times10^9\times4.5}{8} =843.75\ \text{MB}\approx804.7\ \text{MiB}. \]
+$$
+M_W^{payload}=\frac{1.5\times10^9\times4.5}{8} =843.75\ \text{MB}\approx804.7\ \text{MiB}.
+$$
 
 This is not a claim about a named file or runtime. Tensor metadata, alignment, higher-precision tensors,
 tokenizer/configuration, and container overhead remain. A runtime that expands weights to 8 or 16 bits has a different
@@ -297,9 +317,11 @@ loaded-memory value.
 
 ### 16.6.2 KV cache and active-memory budget
 
-Assume \(L=24\), \(B=1\), \(T=4096\), \(H_{kv}=8\), \(d_h=64\), and FP16 cache values (\(b_{kv}=2\)):
+Assume $L=24$, $B=1$, $T=4096$, $H_{kv}=8$, $d_h=64$, and FP16 cache values ($b_{kv}=2$):
 
-\[ M_{\mathrm{KV}}=2(24)(1)(4096)(8)(64)(2) =201{,}326{,}592\ \text{bytes}=192\ \text{MiB}. \]
+$$
+M_{\mathrm{KV}}=2(24)(1)(4096)(8)(64)(2) =201{,}326{,}592\ \text{bytes}=192\ \text{MiB}.
+$$
 
 An `ESTIMATE` ledger could be:
 
@@ -325,15 +347,17 @@ Suppose a model package is 1.0 GiB, runtime/tokenizer assets are 0.15 GiB, the a
 signature and smoke test pass, and download staging needs the complete new package. An `ESTIMATE` of peak update-related
 space is:
 
-\[ 1.0_{\mathrm{old}}+1.0_{\mathrm{new}}+1.0_{\mathrm{staging}}+ 0.15_{\mathrm{assets}}+0.25_{\mathrm{reserve}}=3.40\
-\mathrm{GiB}. \]
+$$
+1.0_{\mathrm{old}}+1.0_{\mathrm{new}}+1.0_{\mathrm{staging}}+ 0.15_{\mathrm{assets}}+0.25_{\mathrm{reserve}}=3.40\
+\mathrm{GiB}.
+$$
 
 Streaming directly into the final verified container can reduce duplication, while decompression or encryption workflows
 can increase it. Measure the actual updater and preserve rollback.
 
 ### 16.6.4 Interaction budget
 
-For a hypothetical product requirement of \(\tau_{\mathrm{first}}=2.0\) s and \(\tau_{\mathrm{token}}=150\) ms
+For a hypothetical product requirement of $\tau_{\mathrm{first}}=2.0$ s and $\tau_{\mathrm{token}}=150$ ms
 (`ILLUSTRATIVE` requirements, not measured human thresholds), an observed candidate with 1.4 s p95 TTFT and 120 ms p95
 ITL passes the timing gates only if:
 
@@ -356,10 +380,12 @@ system, and applications. Shared memory can avoid some discrete host-to-device c
 capacity or bandwidth. Concurrent UI rendering, camera use, background services, and model inference contend for the
 same system.
 
-Decode is frequently sensitive to weight and cache traffic. A rough lower bound for moving \(Q\) bytes through a path
-sustaining \(B\) bytes/s is:
+Decode is frequently sensitive to weight and cache traffic. A rough lower bound for moving $Q$ bytes through a path
+sustaining $B$ bytes/s is:
 
-\[ t\ge Q/B. \tag{EQ-CH16-09} \]
+$$
+t\ge Q/B. \tag{EQ-CH16-09}
+$$
 
 This is a bound, not a token-latency predictor. Cache effects, kernel fusion, arithmetic, launch overhead,
 synchronization, and thermal state lower realized performance.
@@ -464,22 +490,28 @@ The table contains no performance ranking.
 
 Power is an instantaneous rate in watts (joules per second). Energy is accumulated work:
 
-\[ \boxed{E=\int_{t_0}^{t_1}P(t)\,dt} \tag{EQ-CH16-10} \]
+$$
+\boxed{E=\int_{t_0}^{t_1}P(t)\,dt} \tag{EQ-CH16-10}
+$$
 
-For \(N_g\) generated tokens:
+For $N_g$ generated tokens:
 
-\[ E_{\mathrm{token}}=\frac{E_{\mathrm{interval}}-E_{\mathrm{idle\ baseline}}}{N_g}. \tag{EQ-CH16-11} \]
+$$
+E_{\mathrm{token}}=\frac{E_{\mathrm{interval}}-E_{\mathrm{idle\ baseline}}}{N_g}. \tag{EQ-CH16-11}
+$$
 
 State whether measurement covers the whole device, battery rail, package, CPU/GPU/NPU, or a software estimate. Battery
 percentage is usually too coarse for a short run. If instrumentation is unavailable, report energy as unavailable; do
 not infer it from latency.
 
-For battery energy \(E_b\) in watt-hours and average incremental inference power \(P_i\) in watts, a planning-only
+For battery energy $E_b$ in watt-hours and average incremental inference power $P_i$ in watts, a planning-only
 continuous-runtime estimate is:
 
-\[ t_{\mathrm{battery}}\approx \frac{\eta E_b}{P_{\mathrm{base}}+P_i}, \tag{EQ-CH16-12} \]
+$$
+t_{\mathrm{battery}}\approx \frac{\eta E_b}{P_{\mathrm{base}}+P_i}, \tag{EQ-CH16-12}
+$$
 
-where \(\eta\) represents usable-energy and conversion assumptions. This is not a battery-life prediction: display,
+where $\eta$ represents usable-energy and conversion assumptions. This is not a battery-life prediction: display,
 radios, temperature, battery health, operating-system policy, workload duty cycle, and voltage-dependent behavior all
 matter.
 
@@ -487,14 +519,18 @@ matter.
 
 Electrical power becomes heat. A simple first-order thermal model is:
 
-\[ C_\theta\frac{dT}{dt} =P(t)-\frac{T(t)-T_a}{R_\theta}, \tag{EQ-CH16-13} \]
+$$
+C_\theta\frac{dT}{dt} =P(t)-\frac{T(t)-T_a}{R_\theta}, \tag{EQ-CH16-13}
+$$
 
-where \(T\) is device/component temperature, \(T_a\) ambient temperature, \(C_\theta\) effective thermal capacitance,
-and \(R_\theta\) thermal resistance. It is an educational lumped model, not a phone calibration.
+where $T$ is device/component temperature, $T_a$ ambient temperature, $C_\theta$ effective thermal capacitance,
+and $R_\theta$ thermal resistance. It is an educational lumped model, not a phone calibration.
 
 At sustained constant power, the model approaches:
 
-\[ T_{\infty}=T_a+P R_\theta. \tag{EQ-CH16-14} \]
+$$
+T_{\infty}=T_a+P R_\theta. \tag{EQ-CH16-14}
+$$
 
 Firmware and the operating system reduce frequency, voltage, active cores, or workload allocation before unsafe
 temperatures. **Thermal throttling** is this reduction of available performance under thermal/power control. A phone has
@@ -505,7 +541,9 @@ engineered active cooling and a larger sustained power envelope.
 
 Define the retention ratio:
 
-\[ \rho_{\mathrm{sustain}}= \frac{r_{\mathrm{late\ window}}}{r_{\mathrm{early\ window}}}. \tag{EQ-CH16-15} \]
+$$
+\rho_{\mathrm{sustain}}= \frac{r_{\mathrm{late\ window}}}{r_{\mathrm{early\ window}}}. \tag{EQ-CH16-15}
+$$
 
 This ratio is meaningful only with declared windows and equivalent context/work. A value below one may reflect thermal
 throttling, growing KV traffic, background activity, battery policy, or a combination. Record clocks, temperatures,
@@ -520,8 +558,10 @@ temperature, case, battery level/health, and prior workload must be controlled o
 
 A model is portable only if its complete semantic and execution contract survives conversion:
 
-\[ \boxed{ \text{portable}= \text{graph support}\land \text{numeric support}\land \text{state support}\land
-\text{tokenizer/template parity}\land \text{target execution} } \tag{EQ-CH16-16} \]
+$$
+\boxed{ \text{portable}= \text{graph support}\land \text{numeric support}\land \text{state support}\land
+\text{tokenizer/template parity}\land \text{target execution} } \tag{EQ-CH16-16}
+$$
 
 Successful serialization or loading proves only part of this conjunction.
 
@@ -611,13 +651,17 @@ The difference is not “the same GPU, but smaller.” The systems optimize diff
 
 ### Cloud latency model
 
-\[ T_{\mathrm{cloud}}= T_{\mathrm{uplink}}+T_{\mathrm{auth}}+T_{\mathrm{queue}}+
-T_{\mathrm{prefill}}+T_{\mathrm{decode}}+T_{\mathrm{stream}}. \tag{EQ-CH16-17} \]
+$$
+T_{\mathrm{cloud}}= T_{\mathrm{uplink}}+T_{\mathrm{auth}}+T_{\mathrm{queue}}+
+T_{\mathrm{prefill}}+T_{\mathrm{decode}}+T_{\mathrm{stream}}. \tag{EQ-CH16-17}
+$$
 
 ### Local latency model
 
-\[ T_{\mathrm{local}}= T_{\mathrm{local\ queue}}+T_{\mathrm{tokenize}}+
-T_{\mathrm{prefill}}+T_{\mathrm{decode}}+T_{\mathrm{render}}, \tag{EQ-CH16-18} \]
+$$
+T_{\mathrm{local}}= T_{\mathrm{local\ queue}}+T_{\mathrm{tokenize}}+
+T_{\mathrm{prefill}}+T_{\mathrm{decode}}+T_{\mathrm{render}}, \tag{EQ-CH16-18}
+$$
 
 with occasional startup/load cost. Local removes WAN and service queueing but can have much slower compute. Cloud may
 produce the first token sooner or later depending on network, load, model, and prompt; there is no universal ordering.
@@ -632,17 +676,21 @@ high-precision parent are normal.
 
 ## 16.12 Hybrid placement as an explicit policy
 
-Let actions \(a\in\{\mathrm{local},\mathrm{edge},\mathrm{cloud},\mathrm{refuse}\}\). A policy may minimize expected
+Let actions $a\in\{\mathrm{local},\mathrm{edge},\mathrm{cloud},\mathrm{refuse}\}$. A policy may minimize expected
 cost:
 
-\[ \min_a \left[ \lambda_L L(a)+ \lambda_E E(a)+ \lambda_C C(a)+ \lambda_R R(a) \right] \tag{EQ-CH16-19} \]
+$$
+\min_a \left[ \lambda_L L(a)+ \lambda_E E(a)+ \lambda_C C(a)+ \lambda_R R(a) \right] \tag{EQ-CH16-19}
+$$
 
 subject to:
 
-\[ \mathrm{privacy}(a,x)=\mathrm{allowed},\quad \mathrm{network}(a)=\mathrm{available},\quad Q(a,x)\ge
-Q_{\min}(x),\quad \mathrm{safety}(a,x)=\mathrm{pass}. \tag{EQ-CH16-20} \]
+$$
+\mathrm{privacy}(a,x)=\mathrm{allowed},\quad \mathrm{network}(a)=\mathrm{available},\quad Q(a,x)\ge
+Q_{\min}(x),\quad \mathrm{safety}(a,x)=\mathrm{pass}. \tag{EQ-CH16-20}
+$$
 
-\(L\) is latency, \(E\) energy, \(C\) monetary/operational cost, and \(R\) reliability risk. The weights are stakeholder
+$L$ is latency, $E$ energy, $C$ monetary/operational cost, and $R$ reliability risk. The weights are stakeholder
 choices; privacy and safety are hard constraints.
 
 A safe routing design must specify:
@@ -685,9 +733,11 @@ artifact, insufficient RAM/storage, thermal shutdown, unsupported backend, app l
 depletion. Cloud inference centralizes repair and rollback but adds WAN, identity, quota, regional, and provider
 dependencies.
 
-For independent components with availability \(A_i\), a strictly serial path has:
+For independent components with availability $A_i$, a strictly serial path has:
 
-\[ A_{\mathrm{serial}}=\prod_i A_i. \tag{EQ-CH16-21} \]
+$$
+A_{\mathrm{serial}}=\prod_i A_i. \tag{EQ-CH16-21}
+$$
 
 This is an `ILLUSTRATIVE` reliability model; real failures are correlated. A hybrid fallback improves availability only
 if its failures are sufficiently independent and policy permits the fallback.
@@ -1015,17 +1065,17 @@ eight KV heads of width 64, FP16 KV, a 4,096-token context cap, and one active c
 assumptions, not a named-model or phone result.
 
 1. **Weights:** §16.6 gives an ideal packed payload of about 805 MiB. Add the illustrative 8% container allowance:
-   \(805+64=869\) MiB.
+   $805+64=869$ MiB.
 2. **KV cache:** EQ-CH16-06 gives 192 MiB at the context cap.
 3. **Other live memory:** use the stated 300 MiB runtime/workspace allowance, 150 MiB application allowance, and
-   512 MiB safety margin. The planning total is \(869+192+300+150+512=2{,}023\) MiB.
+   512 MiB safety margin. The planning total is $869+192+300+150+512=2{,}023$ MiB.
 4. **Storage during update:** a roughly 1 GiB artifact can temporarily require about 3.4 GiB when old, staged, and new
    copies coexist (§16.6.3). Storage-fit therefore cannot be inferred from the final file alone.
 5. **Latency:** suppose an unmeasured design budget allocates 0.25 s to tokenization, 1.35 s to prefill, and 0.15 s to
    first decode. Warm TTFT is 1.75 s. A 0.90 s cold load makes cold TTFT 2.65 s. The product must state which one its
    requirement covers.
 6. **Sustained operation:** if a future test begins at 10 token/s and later records 7 token/s, then
-   \(\rho_{\mathrm{sustain}}=0.70\). That observation alone does not prove thermal throttling: the growing context,
+   $\rho_{\mathrm{sustain}}=0.70$. That observation alone does not prove thermal throttling: the growing context,
    background work, and clocks/thermal state must be inspected together.
 
 The first engineering decision is **not** “this fits a 4 GiB phone.” The correct conclusion is: the tuple deserves a

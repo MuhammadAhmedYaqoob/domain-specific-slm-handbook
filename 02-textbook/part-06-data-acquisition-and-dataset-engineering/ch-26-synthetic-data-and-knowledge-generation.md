@@ -50,8 +50,10 @@ agreement is corroboration at most; shared training data and shared failure mode
 Synthetic generation should therefore be treated as **candidate construction under governance**, not autonomous
 knowledge creation:
 
-\[ \text{trusted evidence} \rightarrow \text{bounded transformation} \rightarrow \text{candidate} \rightarrow
-\text{independent gates} \rightarrow \text{training record}. \]
+$$
+\text{trusted evidence} \rightarrow \text{bounded transformation} \rightarrow \text{candidate} \rightarrow
+\text{independent gates} \rightarrow \text{training record}.
+$$
 
 This chapter concerns offline dataset engineering. The released specialist SLM still answers from trained parameters or
 adapters. It does not retrieve source documents or call a teacher at runtime, consistent with the
@@ -228,10 +230,12 @@ flowchart LR
 Single-turn Q&A does not train clarification, state tracking, correction, or safe escalation. Generate a multi-turn
 record from an explicit latent state, not by asking two agents to chat freely:
 
-\[ z=(g,f,u,h), \qquad d_1,\ldots,d_T, \]
+$$
+z=(g,f,u,h), \qquad d_1,\ldots,d_T,
+$$
 
-where \(g\) is the user goal, \(f\) verified facts, \(u\) unknown facts, \(h\) hazards, and \(d_t\) the allowed action
-at turn \(t\): ask, answer, summarize, correct, refuse, or escalate. A validator checks that later turns do not
+where $g$ is the user goal, $f$ verified facts, $u$ unknown facts, $h$ hazards, and $d_t$ the allowed action
+at turn $t$: ask, answer, summarize, correct, refuse, or escalate. A validator checks that later turns do not
 contradict facts, reveal unknown state without user input, or skip safety.
 
 Useful patterns are clarification, incremental disclosure, correction after a changed premise, missing-tool or
@@ -344,7 +348,7 @@ A counterfactual changes one causally meaningful variable while holding others f
 Counterfactually augmented data and contrast sets expose decision boundaries in studied settings [R7, R8]
 (`PAPER-REPORTED`).
 
-For \((x,y)\) and intervention \(do(v\leftarrow v')\), create \((x',y')\) only if domain rules justify the change.
+For $(x,y)$ and intervention $do(v\leftarrow v')$, create $(x',y')$ only if domain rules justify the change.
 Record changed and invariant fields. Changing model year, voltage, life stage, contraindication status, or guard state
 may be valid; a random premise swap may create an impossible world.
 
@@ -357,7 +361,7 @@ critique-and-correction, or masked fields suited to the training objective.
 
 ### 26.8.4 Preference pairs
 
-A preference record contains prompt \(x\), chosen \(y^+\), rejected \(y^-\), and the reason. DPO learns from such pairs
+A preference record contains prompt $x$, chosen $y^+$, rejected $y^-$, and the reason. DPO learns from such pairs
 [R9]; UltraFeedback demonstrates model-generated feedback at scale [R10] (`PAPER-REPORTED`). Neither validates synthetic
 preferences for a new specialist domain.
 
@@ -493,14 +497,18 @@ violation found,” not “correct.”
 
 Decompose answers into atomic claims. For each claim:
 
-\[ g_i \in \{\text{supported},\text{unsupported}, \text{conflicting},\text{unclear}\}. \]
+$$
+g_i \in \{\text{supported},\text{unsupported}, \text{conflicting},\text{unclear}\}.
+$$
 
 An entailment model can prioritize claims, but source inspection or a trusted oracle decides admission. Citations are
 not grounding if fabricated, wrong version, or merely topically related. A descriptive score is:
 
-\[ G_{\mathrm{claim}}= \frac{\sum_i w_i\mathbf 1[g_i=\text{supported}]}{\sum_i w_i}, \]
+$$
+G_{\mathrm{claim}}= \frac{\sum_i w_i\mathbf 1[g_i=\text{supported}]}{\sum_i w_i},
+$$
 
-where \(w_i\) reflects risk. A safety-critical unsupported claim causes rejection even if the average is high; the score
+where $w_i$ reflects risk. A safety-critical unsupported claim causes rejection even if the average is high; the score
 is not compensatory.
 
 ### 26.10.3 Model filtering
@@ -555,16 +563,18 @@ No metric proves usefulness. Inspect distributions by domain, task, risk, langua
 
 ### 26.11.1 Coverage
 
-For target cells \(c\in C\), importance \(a_c\), accepted count \(n_c\), and minimum \(m_c\):
+For target cells $c\in C$, importance $a_c$, accepted count $n_c$, and minimum $m_c$:
 
-\[ \text{weighted coverage}= \frac{\sum_{c\in C}a_c\mathbf 1[n_c\ge m_c]}{\sum_{c\in C}a_c}. \]
+$$
+\text{weighted coverage}= \frac{\sum_{c\in C}a_c\mathbf 1[n_c\ge m_c]}{\sum_{c\in C}a_c}.
+$$
 
 Counts do not measure correctness or depth. Track uncovered safety cells separately; common questions cannot compensate
 for missing hazards.
 
 ### 26.11.2 Diversity
 
-- **Distinct-\(n\):** unique \(n\)-grams divided by all \(n\)-grams [R12]. It grows with length and noise.
+- **Distinct-$n$:** unique $n$-grams divided by all $n$-grams [R12]. It grows with length and noise.
 - **Self-BLEU:** each sample is compared with others [R13]. Lower can indicate diversity, but required domain
   terminology creates legitimate overlap.
 - **Embedding dispersion/cluster entropy:** semantic spread under a declared encoder. It inherits encoder blind spots
@@ -576,11 +586,13 @@ Report preprocessing, encoder/revision, sampling, and uncertainty. Compare match
 
 ### 26.11.3 Novelty and duplication
 
-For candidate \(x\) and corpus \(D\):
+For candidate $x$ and corpus $D$:
 
-\[ N_k(x)=1-\max_{d\in D}\operatorname{sim}_k(x,d), \]
+$$
+N_k(x)=1-\max_{d\in D}\operatorname{sim}_k(x,d),
+$$
 
-where \(\operatorname{sim}_k\) is a declared lexical or embedding similarity. High novelty can mean a valuable case,
+where $\operatorname{sim}_k$ is a declared lexical or embedding similarity. High novelty can mean a valuable case,
 nonsense, or an unsupported claim. Low novelty may be a necessary safety paraphrase. Use exact hashes, normalized
 hashes, MinHash/LSH, token overlap, semantic search, and manual boundary review.
 
@@ -630,12 +642,14 @@ measure every generation against it, limit recursive depth, preserve rare strata
 generators/settings, sample coverage gaps, and refresh from independent real data. Generator diversity is not evidence
 diversity.
 
-Track generation depth \(r\) and synthetic-only ancestry:
+Track generation depth $r$ and synthetic-only ancestry:
 
-\[ \rho_r=\frac{\text{accepted tokens with only synthetic ancestors at round }r} {\text{all accepted tokens at round
-}r}. \]
+$$
+\rho_r=\frac{\text{accepted tokens with only synthetic ancestors at round }r} {\text{all accepted tokens at round
+}r}.
+$$
 
-\(\rho_r\) is a lineage statistic, not a collapse threshold. Plot it against rare-stratum recall, duplication, factual
+$\rho_r$ is a lineage statistic, not a collapse threshold. Plot it against rare-stratum recall, duplication, factual
 error, calibration, and style concentration. Stop at preregistered regression limits.
 
 ## 26.14 Low-resource bootstrapping without unsupported facts
@@ -956,8 +970,10 @@ routed, and distilled model strategies.
 
 ## 26.17 Cost, resource, and risk trade-offs
 
-\[ C_{\mathrm{total}}= C_{\mathrm{sources}}+C_{\mathrm{generation}}+C_{\mathrm{engineering}}
-+C_{\mathrm{filtering}}+C_{\mathrm{expert}}+C_{\mathrm{training}} +C_{\mathrm{evaluation}}+C_{\mathrm{maintenance}}. \]
+$$
+C_{\mathrm{total}}= C_{\mathrm{sources}}+C_{\mathrm{generation}}+C_{\mathrm{engineering}}
++C_{\mathrm{filtering}}+C_{\mathrm{expert}}+C_{\mathrm{training}} +C_{\mathrm{evaluation}}+C_{\mathrm{maintenance}}.
+$$
 
 For API teachers, use actual input/output tokens and contemporaneous prices. For local teachers, report
 accelerator-hours, utilization, measured energy, labor, and amortization. No dollar estimate is supplied here.
@@ -1073,13 +1089,13 @@ size by themselves.
 7. Design a three-turn diagnostic state machine with a safety action.
 8. Give one valid and invalid repair counterfactual and the causal rule.
 9. Build a preference pair where the shorter answer is safer.
-10. Explain one failure each for Distinct-\(n\), Self-BLEU, embeddings, MAUVE.
+10. Explain one failure each for Distinct-$n$, Self-BLEU, embeddings, MAUVE.
 11. Design an expert-calibration set for a model filter by risk.
 12. Audit 100 candidates and report funnel and reviewer agreement.
 13. Unit-test CH26-L03 for missing evidence, conflicts, duplicates, and one high-risk approval.
 14. Build connected split groups from source, parent, scenario, and duplicate edges.
 15. Preregister B0–S5 with token- and budget-matched comparisons.
-16. Track \(\rho_r\), tail recall, duplicates, and factual error for 3 rounds.
+16. Track $\rho_r$, tail recall, duplicates, and factual error for 3 rounds.
 17. Specify pharmacy records rejected regardless of average quality.
 18. Design animal-care schema controls against cross-species transfer.
 19. Estimate observed generation/review cost with current prices and explicit assumptions.

@@ -23,10 +23,12 @@ use an artifact.
 
 A benchmark row is a versioned tuple
 
-\[ x=(m,a,q,p,d,c,r,h,w,s), \]
+$$
+x=(m,a,q,p,d,c,r,h,w,s),
+$$
 
-where \(m\)=model, \(a\)=adaptation, \(q\)=quantization, \(p\)=pruning, \(d\)=distillation, \(c\)=ordered combined
-pipeline, \(r\)=runtime, \(h\)=hardware, \(w\)=workload, and \(s\)=seed/trial. It also has an immutable parent,
+where $m$=model, $a$=adaptation, $q$=quantization, $p$=pruning, $d$=distillation, $c$=ordered combined
+pipeline, $r$=runtime, $h$=hardware, $w$=workload, and $s$=seed/trial. It also has an immutable parent,
 data/evaluator hashes, controls, budget, gates, and outcome. “4-bit model on a phone” is not a reproducible row.
 
 Cheap identity and quality screens reject weak or invalid candidates before expensive training, conversion,
@@ -254,11 +256,13 @@ Only qualified isolated parents enter these exact core rows:
 | `R4-C4-DPREC-Q4` | distil → prune → recover → Q4          | every immediate parent and C2/C3   |
 
 Research may add pre-registered `R4-QAT` after PTQ failure and `R4-JOINT-PD`. Reversed order is a new row. For outcome
-\(Y\),
+$Y$,
 
-\[ I_{AB}=(Y_{AB}-Y_A)-(Y_B-Y_0). \]
+$$
+I_{AB}=(Y_{AB}-Y_A)-(Y_B-Y_0).
+$$
 
-`ILLUSTRATIVE`: values 80, 79, 78, 75 give \(I_{AB}=-2\); these are teaching numbers, not results. Advance at most six
+`ILLUSTRATIVE`: values 80, 79, 78, 75 give $I_{AB}=-2$; these are teaching numbers, not results. Advance at most six
 artifacts `F1..F6`, at most two per target. A combination must improve a target Pareto frontier over every direct
 parent.
 
@@ -328,13 +332,17 @@ Evaluation items, independent training seeds, and system/device blocks are disti
 - OOM/crash/timeout/fallback/malformed output are outcomes. `UNSUPPORTED`, `NOT-RUN-AFTER-GATE`, and `NOT-RUN-BUDGET`
   are distinct.
 
-For higher-is-better quality and margin \(\delta>0\),
+For higher-is-better quality and margin $\delta>0$,
 
-\[ \Delta=Q_C-Q_B,\qquad C\text{ is non-inferior if }\operatorname{LCB}_{1-\alpha}(\Delta)>-\delta. \]
+$$
+\Delta=Q_C-Q_B,\qquad C\text{ is non-inferior if }\operatorname{LCB}_{1-\alpha}(\Delta)>-\delta.
+$$
 
 A pilot approximation is
 
-\[ n\approx\left(\frac{(z_{1-\alpha}+z_{1-\beta})\sigma_d}{\Delta_{\min}}\right)^2. \]
+$$
+n\approx\left(\frac{(z_{1-\alpha}+z_{1-\beta})\sigma_d}{\Delta_{\min}}\right)^2.
+$$
 
 Use simulation/hierarchical methods for clustered, bounded, or rare safety outcomes. Report item-, seed-, and
 device-block uncertainty separately. Zero observed critical events does not prove zero risk; report counts and a
@@ -517,7 +525,7 @@ R6 publishes:
 6. machine-readable Pareto sets and uncertainty plots;
 7. target decisions, sensitivity, and unresolved risks.
 
-After hard gates, \(a\) dominates \(b\) if no worse on every objective and better on one. Use conservative uncertain
+After hard gates, $a$ dominates $b$ if no worse on every objective and better on one. Use conservative uncertain
 dominance: bounds must establish no-worse behaviour and meaningful improvement. Build separate fronts by hardware,
 runtime semantics, workload/context/concurrency, and thermal mode. Required planned panels are domain-score lower bound
 versus peak bytes, p95 TTFT, sustained decode, J/token where measured, and AWS measured cost at declared load. Draw no

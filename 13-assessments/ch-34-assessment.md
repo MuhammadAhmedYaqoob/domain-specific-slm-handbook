@@ -55,7 +55,7 @@ fluency, runtime support from format availability, or deployment readiness from 
 
 **Problem:** Compute effective throughput, utilization, checkpoint interval trade-off, and expected lost work under an interruption model; keep estimates labeled.
 
-**Worked example:** At 200k token/s for 10 hours, processed tokens are 7.2B. If useful compute is 8 hours, utilization is 80%. With a 20-minute checkpoint interval and uniformly timed interruption, expected lost work is 10 minutes; at $r/hour, expected compute loss per interruption is r/6, excluding restart time.
+**Worked example:** At 200k token/s for 10 hours, processed tokens are 7.2B. If useful compute is 8 hours, utilization is 80%. With a 20-minute checkpoint interval and uniformly timed interruption, expected lost work is 10 minutes; at \$r/hour, expected compute loss per interruption is r/6, excluding restart time.
 
 **Check your work (5 points):**
 

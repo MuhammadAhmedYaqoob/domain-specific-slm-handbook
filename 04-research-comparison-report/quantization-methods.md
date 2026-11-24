@@ -44,8 +44,8 @@ size, resident memory, prefill, decode, quality, energy, and thermal behavior on
 ## Fundamentals and formats
 
 - **Uniform quantization:** maps values to evenly spaced levels. A common affine form is
-  \(q=\operatorname{clamp}(\operatorname{round}(x/s)+z)\), with scale \(s\) and zero point \(z\); dequantization is
-  \(\hat{x}=s(q-z)\).
+  $q=\operatorname{clamp}(\operatorname{round}(x/s)+z)$, with scale $s$ and zero point $z$; dequantization is
+  $\hat{x}=s(q-z)$.
 - **Symmetric/asymmetric:** symmetric schemes normally center levels around zero and can omit a nonzero zero point;
   asymmetric schemes fit offset ranges but add metadata/handling.
 - **Granularity:** per-tensor uses one scale; per-channel and per-group use more scales, usually improving fidelity at

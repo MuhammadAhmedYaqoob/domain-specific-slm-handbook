@@ -23,12 +23,14 @@ The problem is not merely scheduling training. It is preserving identity and evi
 tools, runtimes, applications, and policies change at different rates. A fluent checkpoint is only a candidate. A
 release is a closed, immutable, target-specific bundle.
 
-\[ R_t=F(D,E,C,B,H,K,I,P,Q_t,A_t) \tag{EQ-CH47-01} \]
+$$
+R_t=F(D,E,C,B,H,K,I,P,Q_t,A_t) \tag{EQ-CH47-01}
+$$
 
-Here \(R_t\) is a release for target \(t\); \(D\) is the training-data snapshot; \(E\) the protected evaluation
-snapshot; \(C\) the domain contract; \(B\) the base model and tokenizer; \(H\) resolved hyperparameters; \(K\) source
-revision; \(I\) build/training environment; \(P\) product and safety policy; \(Q_t\) target-specific qualification; and
-\(A_t\) approval evidence. Every term is immutable or digest-bound. A mutable alias such as `production` is only a
+Here $R_t$ is a release for target $t$; $D$ is the training-data snapshot; $E$ the protected evaluation
+snapshot; $C$ the domain contract; $B$ the base model and tokenizer; $H$ resolved hyperparameters; $K$ source
+revision; $I$ build/training environment; $P$ product and safety policy; $Q_t$ target-specific qualification; and
+$A_t$ approval evidence. Every term is immutable or digest-bound. A mutable alias such as `production` is only a
 pointer resolved to one release.
 
 Non-negotiable invariants:
@@ -799,19 +801,25 @@ release remains available for comparison and rollback unless rights or security 
 
 The architecture deliberately avoids hard-coded prices and unmeasured device claims. Total lifecycle cost is:
 
-\[ C_{\text{life}}= C_{\text{data}}+C_{\text{expert}}+C_{\text{train}}+C_{\text{eval}}+
+$$
+C_{\text{life}}= C_{\text{data}}+C_{\text{expert}}+C_{\text{train}}+C_{\text{eval}}+
 C_{\text{convert}}+C_{\text{device-lab}}+C_{\text{serve}}+ C_{\text{delivery}}+C_{\text{observe}}+C_{\text{maintain}}.
-\tag{EQ-CH47-02} \]
+\tag{EQ-CH47-02}
+$$
 
 Cloud request cost is not only accelerator price:
 
-\[ C_{\text{request}}= \frac{C_{\text{fixed period}}+C_{\text{variable period}}} {N_{\text{successful requests}}}.
-\tag{EQ-CH47-03} \]
+$$
+C_{\text{request}}= \frac{C_{\text{fixed period}}+C_{\text{variable period}}} {N_{\text{successful requests}}}.
+\tag{EQ-CH47-03}
+$$
 
 Edge update storage must include coexistence:
 
-\[ S_{\text{peak}}=S_{\text{active}}+S_{\text{previous}}+ S_{\text{partial}}+S_{\text{staged}}+S_{\text{unpacked}}+
-S_{\text{temporary}}+S_{\text{margin}}. \tag{EQ-CH47-04} \]
+$$
+S_{\text{peak}}=S_{\text{active}}+S_{\text{previous}}+ S_{\text{partial}}+S_{\text{staged}}+S_{\text{unpacked}}+
+S_{\text{temporary}}+S_{\text{margin}}. \tag{EQ-CH47-04}
+$$
 
 <a id="tbl-25"></a> **TBL-25 — Production architecture choices (`STATICALLY REVIEWED`; benefits and risks are
 engineering hypotheses until the stated evidence is produced).**

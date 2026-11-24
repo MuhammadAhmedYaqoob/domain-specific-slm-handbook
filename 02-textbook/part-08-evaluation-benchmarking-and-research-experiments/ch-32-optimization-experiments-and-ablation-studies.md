@@ -126,11 +126,13 @@ compatibility and budget gates. Every row uses the identical sealed evaluation s
 | scale         | untouched/adapted sizes                           | treating cross-family differences as parameter causality |
 <!-- markdownlint-restore -->
 
-For outcome \(Y\), the two-factor interaction is
+For outcome $Y$, the two-factor interaction is
 
-\[ I_{AB}=(Y_{AB}-Y_A)-(Y_B-Y_0). \]
+$$
+I_{AB}=(Y_{AB}-Y_A)-(Y_B-Y_0).
+$$
 
-`ILLUSTRATIVE`: with quality \(80,78,79,74\) for neither, A, B, and both, \(I_{AB}=-3\) points. This explains the
+`ILLUSTRATIVE`: with quality $80,78,79,74$ for neither, A, B, and both, $I_{AB}=-3$ points. This explains the
 calculation; it is not a project result.
 
 ## 32.5 Staged elimination and budget tiers
@@ -218,9 +220,11 @@ Separate evaluation-sample, training-seed, and systems-trial uncertainty. Thirty
 - Correct pre-registered confirmatory families (for example Holm) or label analyses exploratory.
 - If full FT has one seed, call it exploratory—not equivalent.
 
-For higher-is-better quality \(Q\), candidate \(C\), baseline \(B\), and non-inferiority margin \(\delta>0\):
+For higher-is-better quality $Q$, candidate $C$, baseline $B$, and non-inferiority margin $\delta>0$:
 
-\[ \Delta=Q_C-Q_B,\qquad C\text{ is non-inferior only if } \operatorname{LCB}_{1-\alpha}(\Delta)>-\delta. \]
+$$
+\Delta=Q_C-Q_B,\qquad C\text{ is non-inferior only if } \operatorname{LCB}_{1-\alpha}(\Delta)>-\delta.
+$$
 
 Safety uses stricter risk-approved rules and may require no observed critical failures plus a confidence bound.
 
@@ -230,7 +234,9 @@ Power logic:
 2. estimate paired variance from a pilot, not sealed test;
 3. for a continuous paired approximation,
 
-\[ n\approx\left(\frac{(z_{1-\alpha}+z_{1-\beta})\sigma_d}{\Delta_{\min}}\right)^2; \]
+$$
+n\approx\left(\frac{(z_{1-\alpha}+z_{1-\beta})\sigma_d}{\Delta_{\min}}\right)^2;
+$$
 
 1. use simulation/hierarchical methods for clustered items, bounded scores, rare hazards, and seed variation;
 2. increase repetitions only at pre-specified interim points with valid sequential control;
@@ -415,7 +421,7 @@ The following numbers are `ILLUSTRATIVE`; they are internally consistent teachin
 | LARGE   | larger SFT     |         0.83 |      5.9 |          910 |    2.75 |                 0 |
 
 Read the table in lineage order. SFT adds 0.17 domain-score points at nearly unchanged systems cost. SFT-Q8 loses 0.01
-while reducing peak memory by \(1.0/3.2=31.25\%\) and p95 TTFT by 105 ms. SFT-Q4 is excluded before optimization
+while reducing peak memory by $1.0/3.2=31.25\%$ and p95 TTFT by 105 ms. SFT-Q4 is excluded before optimization
 because one critical failure is non-compensatory. KD-Q4 is not a quantization-only ablation of SFT because distillation
 also changed the model; it is a deployable-tuple comparison against both its direct student parent and native-small
 controls. LARGE has the highest quality, but it pays the largest cost on every displayed deployment objective.
@@ -432,7 +438,7 @@ Q8 is no worse within the illustrative 0.02 quality margin and is faster; SFT-Q4
 LARGE owns the quality corner, and SFT-Q8 is the middle option. A two-dimensional memory plot must still carry TTFT,
 energy, and hard-gate annotations or it can conceal domination.
 
-After hard gates, \(a\) dominates \(b\) when no worse on every objective and better on at least one. Mobile objectives
+After hard gates, $a$ dominates $b$ when no worse on every objective and better on at least one. Mobile objectives
 may maximize domain-score lower bound and sustained decode while minimizing upper bounds for peak RAM, p95 TTFT, and
 joules/token. AWS may add throughput and cost/output token.
 
@@ -458,7 +464,7 @@ machine-readable multi-objective analysis is authoritative.
 For the illustrative table, first remove SFT-Q4. Under strict point dominance, B0 and SFT are dominated by SFT-Q8;
 SFT-Q8, KD-Q4, and LARGE remain non-dominated because each preserves a different advantage. Under a 0.02
 non-inferiority margin, KD-Q4 cannot be called equivalent to SFT-Q8 without uncertainty bounds: its point difference is
-exactly \(-0.02\), and a lower confidence bound would be smaller. The correct decision is “unresolved until
+exactly $-0.02$, and a lower confidence bound would be smaller. The correct decision is “unresolved until
 intervals,” not “KD-Q4 wins.”
 
 Selection order:

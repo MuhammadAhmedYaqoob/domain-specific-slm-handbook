@@ -41,18 +41,22 @@ has poor TTFT.
 
 Performance belongs to the complete test unit:
 
-\[ \boxed{\mathcal{U}=(M,T,A,Q,R,B,H,O,W,S,P)} \tag{EQ-CH31-01} \]
+$$
+\boxed{\mathcal{U}=(M,T,A,Q,R,B,H,O,W,S,P)} \tag{EQ-CH31-01}
+$$
 
-where \(M\)=model and adapter lineage, \(T\)=tokenizer/chat/stop contract, \(A\)=artifact, \(Q\)=weight/activation/KV
-precision, \(R\)=runtime and build, \(B\)=backend and actual placement, \(H\)=hardware, \(O\)=OS/driver/firmware,
-\(W\)=workload, \(S\)=device/service state, and \(P\)=protocol. Change a member and the result belongs to another test
+where $M$=model and adapter lineage, $T$=tokenizer/chat/stop contract, $A$=artifact, $Q$=weight/activation/KV
+precision, $R$=runtime and build, $B$=backend and actual placement, $H$=hardware, $O$=OS/driver/firmware,
+$W$=workload, $S$=device/service state, and $P$=protocol. Change a member and the result belongs to another test
 unit.
 
 The objective is not merely “maximize tokens/s.” It is to identify non-dominated candidates subject to quality, safety,
 memory, reliability, and compatibility gates:
 
-\[ \min(S_\text{disk},M_\text{peak},T_\text{startup},T_\text{TTFT}, T_\text{E2E},E_\text{token},C_\text{request})
-\quad\text{and}\quad \max(r_\text{prefill},r_\text{decode},Q_\text{domain}). \tag{EQ-CH31-02} \]
+$$
+\min(S_\text{disk},M_\text{peak},T_\text{startup},T_\text{TTFT}, T_\text{E2E},E_\text{token},C_\text{request})
+\quad\text{and}\quad \max(r_\text{prefill},r_\text{decode},Q_\text{domain}). \tag{EQ-CH31-02}
+$$
 
 A critical safety failure is not compensated by lower latency.
 
@@ -81,41 +85,49 @@ flowchart LR
 
 Instrument the runtime with a monotonic clock at:
 
-- \(t_0\): launch or request submitted, according to the metric;
-- \(t_\text{ready}\): model and session ready;
-- \(t_\text{ps}\), \(t_\text{pe}\): prefill start/end;
-- \(t_1\): first model token selected;
-- \(t_v\): first valid text fragment rendered;
-- \(t_i\): every emitted token;
-- \(t_f\): response complete, cancelled, or failed.
+- $t_0$: launch or request submitted, according to the metric;
+- $t_\text{ready}$: model and session ready;
+- $t_\text{ps}$, $t_\text{pe}$: prefill start/end;
+- $t_1$: first model token selected;
+- $t_v$: first valid text fragment rendered;
+- $t_i$: every emitted token;
+- $t_f$: response complete, cancelled, or failed.
 
 **Startup time**
 
-\[ T_\text{startup}=t_\text{ready}-t_\text{launch} \tag{EQ-CH31-03} \]
+$$
+T_\text{startup}=t_\text{ready}-t_\text{launch} \tag{EQ-CH31-03}
+$$
 
 must state whether it includes verification, mapping, repacking, graph compilation, tokenizer setup, KV allocation, and
 warm-up. Report process-cold, page-cache-cold where reproducibly achievable, and warm/cached startup separately.
 
-**First-token latency** is request submission to \(t_1\). **User-visible TTFT** is request submission to \(t_v\):
+**First-token latency** is request submission to $t_1$. **User-visible TTFT** is request submission to $t_v$:
 
-\[ T_\text{TTFT}=t_v-t_0. \tag{EQ-CH31-04} \]
+$$
+T_\text{TTFT}=t_v-t_0. \tag{EQ-CH31-04}
+$$
 
 They differ because sampling, detokenization, transport, and rendering intervene. Do not use them as synonyms unless
 boundaries are identical.
 
-For \(N_p\) input tokens and \(N_g\) generated tokens:
+For $N_p$ input tokens and $N_g$ generated tokens:
 
-\[ r_\text{prefill}=\frac{N_p}{t_\text{pe}-t_\text{ps}}, \qquad r_\text{decode}=\frac{N_g-1}{t_{N_g}-t_1}.
-\tag{EQ-CH31-05} \]
+$$
+r_\text{prefill}=\frac{N_p}{t_\text{pe}-t_\text{ps}}, \qquad r_\text{decode}=\frac{N_g-1}{t_{N_g}-t_1}.
+\tag{EQ-CH31-05}
+$$
 
-Here \(t_{N_g}\) is the final generated-token timestamp; \(t_f\) can include later rendering and teardown. Decode rate
+Here $t_{N_g}$ is the final generated-token timestamp; $t_f$ can include later rendering and teardown. Decode rate
 is undefined for fewer than two generated tokens. If a runtime counts the first sampled token differently, record the
 convention. Never divide all input and output tokens by total wall time and call it decode throughput.
 
-\[ T_\text{E2E}=t_f-t_0. \tag{EQ-CH31-06} \]
+$$
+T_\text{E2E}=t_f-t_0. \tag{EQ-CH31-06}
+$$
 
 Product E2E includes queueing and rendering. Also retain component times. For streaming, report the inter-token latency
-distribution \(t_i-t_{i-1}\).
+distribution $t_i-t_{i-1}$.
 
 Input context length is the **actual token count presented to prefill**, including template, system, specials, and
 history. Output length is generated token IDs before display filtering. Record requested and actual output; early
@@ -159,9 +171,11 @@ end-of-sequence otherwise biases latency.
 
 ### 31.4.1 Parameters, size, and download
 
-For tensors \(j\) with \(n_j\) logical elements:
+For tensors $j$ with $n_j$ logical elements:
 
-\[ N_\text{unique}=\sum_j n_j-\text{aliased/tied duplicates}. \tag{EQ-CH31-07} \]
+$$
+N_\text{unique}=\sum_j n_j-\text{aliased/tied duplicates}. \tag{EQ-CH31-07}
+$$
 
 For adapters, report base, adapter, merged unique, and trainable counts. For structured pruning, report logical and
 stored counts. For unstructured sparsity, report nonzero fraction and encoded bytes; zeros in dense tensors do not
@@ -169,9 +183,11 @@ guarantee speed.
 
 Always report raw bytes and units:
 
-\[ 1\ \text{MiB}=2^{20}\text{ bytes},\qquad1\ \text{MB}=10^6\text{ bytes}. \]
+$$
+1\ \text{MiB}=2^{20}\text{ bytes},\qquad1\ \text{MB}=10^6\text{ bytes}.
+$$
 
-Hash every artifact. Scales, zero points, high-precision exceptions, alignment, and metadata make \(Nb/8\) only an
+Hash every artifact. Scales, zero points, high-precision exceptions, alignment, and metadata make $Nb/8$ only an
 estimate.
 
 Download size includes required weights, tokenizer, configuration, manifests, signatures, and runtime delta. Report
@@ -180,8 +196,10 @@ retransmitted bytes.
 
 ### 31.4.2 Memory
 
-\[ M_\text{peak}=M_W+M_\text{KV}+M_A+M_\text{workspace}
-+M_\text{temporary}+M_\text{runtime}+M_\text{app}+M_\text{driver}. \tag{EQ-CH31-08} \]
+$$
+M_\text{peak}=M_W+M_\text{KV}+M_A+M_\text{workspace}
++M_\text{temporary}+M_\text{runtime}+M_\text{app}+M_\text{driver}. \tag{EQ-CH31-08}
+$$
 
 Capture pre-load, load peak, post-load, prefill peak, early decode, late/max-context decode, reset, and unload.
 Distinguish virtual memory, Resident Set Size (RSS), Proportional Set Size (PSS), Apple memory footprint, and
@@ -201,8 +219,10 @@ Operator placement can be more informative than one NPU percentage. If no public
 
 ### 31.4.4 Reliability
 
-\[ \hat p_\text{failure}= \frac{n_\text{crash}+n_\text{OOM}+n_\text{timeout}+n_\text{other
-terminal}}{n_\text{attempted}}. \tag{EQ-CH31-09} \]
+$$
+\hat p_\text{failure}= \frac{n_\text{crash}+n_\text{OOM}+n_\text{timeout}+n_\text{other
+terminal}}{n_\text{attempted}}. \tag{EQ-CH31-09}
+$$
 
 Report categories and denominator. An OS kill can be an OOM/resource failure without an in-process exception. A trial
 that emits fewer required tokens due to an error is not a successful fast trial.
@@ -211,7 +231,9 @@ that emits fewer required tokens due to an error is not a successful fast trial.
 
 For a higher-is-better quality metric:
 
-\[ \Delta q=q_\text{candidate}-q_\text{parent},\qquad R_q=q_\text{candidate}/q_\text{parent}. \tag{EQ-CH31-10} \]
+$$
+\Delta q=q_\text{candidate}-q_\text{parent},\qquad R_q=q_\text{candidate}/q_\text{parent}. \tag{EQ-CH31-10}
+$$
 
 For error rates, preserve direction. Evaluate paired example-level differences, domain strata, safety subsets, general
 retention, long context, refusal, and calibration. Report absolute and relative change; averages can hide critical
@@ -231,8 +253,10 @@ economics.
 
 ## 31.5 Energy, battery, thermal, and sustained performance
 
-\[ E=\int_{t_0}^{t_1}P(t)\,dt,\qquad E_\text{token}=\frac{E_\text{active}-E_\text{idle-matched}}{N_g}. \tag{EQ-CH31-11}
-\]
+$$
+E=\int_{t_0}^{t_1}P(t)\,dt,\qquad E_\text{token}=\frac{E_\text{active}-E_\text{idle-matched}}{N_g}. \tag{EQ-CH31-11}
+
+$$
 
 State the boundary:
 
@@ -255,7 +279,9 @@ as separate conditions.
 
 Pre-register early and late windows:
 
-\[ \rho_\text{sustain}=\frac{r_\text{late}}{r_\text{early}}. \tag{EQ-CH31-12} \]
+$$
+\rho_\text{sustain}=\frac{r_\text{late}}{r_\text{early}}. \tag{EQ-CH31-12}
+$$
 
 Also report absolute rates and the timeline. Decline can arise from thermal policy, context growth, background work, or
 battery policy; temperature alone does not prove causality. Record clocks, context position, thermal state, and
@@ -533,11 +559,15 @@ Separate **client-observed**, **service**, and **accelerator** time.
 8. Query dated prices or actual billing. Record currency, tax, discounts, Spot interruption, Savings Plan/Reserved
    allocation, storage, transfer, load balancer, observability, and idle time.
 
-\[ C_\text{request}^{attempted}=\frac{C_\text{allocated}}{N_\text{attempted}}, \qquad
-C_\text{request}^{successful}=\frac{C_\text{allocated}}{N_\text{successful}}. \tag{EQ-CH31-13} \]
+$$
+C_\text{request}^{attempted}=\frac{C_\text{allocated}}{N_\text{attempted}}, \qquad
+C_\text{request}^{successful}=\frac{C_\text{allocated}}{N_\text{successful}}. \tag{EQ-CH31-13}
+$$
 
-\[ C_\text{allocated}=C_\text{compute}+C_\text{storage}+C_\text{network}
-+C_\text{LB/API}+C_\text{observability}+C_\text{managed}. \tag{EQ-CH31-14} \]
+$$
+C_\text{allocated}=C_\text{compute}+C_\text{storage}+C_\text{network}
++C_\text{LB/API}+C_\text{observability}+C_\text{managed}. \tag{EQ-CH31-14}
+$$
 
 Include idle replicas and failures. Report cost/1,000 requests and cost/million generated tokens. Prices depend on
 Region, date, and purchase model; this chapter supplies no dollar price.
@@ -579,10 +609,12 @@ accounts/tags and billing reconciliation reduce ambiguity.
 Record allocated wall time, accelerator-hours, CPU-hours, orchestration, storage, checkpoints, transfer, tracking,
 failed/recovery runs, teacher generation, and human/expert review:
 
-\[ C_\text{training}=\sum_i h_i p_i+C_\text{storage}+C_\text{transfer} +C_\text{service}+C_\text{failed}+C_\text{human}.
-\tag{EQ-CH31-15} \]
+$$
+C_\text{training}=\sum_i h_i p_i+C_\text{storage}+C_\text{transfer} +C_\text{service}+C_\text{failed}+C_\text{human}.
+\tag{EQ-CH31-15}
+$$
 
-\(h_i\) is billed resource time and \(p_i\) the dated effective unit price. Disclose shared-cluster allocation. Spot
+$h_i$ is billed resource time and $p_i$ the dated effective unit price. Disclose shared-cluster allocation. Spot
 savings and interruption costs both appear. Report resource quantities when currency is confidential. Carbon/energy
 estimates are separate and require their own boundaries.
 
@@ -755,7 +787,7 @@ INT4 is not automatically the winner: its two OOMs remain in the denominator.
 
 INT8 is the balanced candidate in this invented dataset: it improves every displayed latency statistic without
 failures. INT4 has the best median decode rate but worse p95 TTFT, larger late-run degradation
-\((16.0/21.9)=0.73\), and a 10% OOM rate. Reporting only its 21.3 tok/s median would reverse the engineering decision.
+$(16.0/21.9)=0.73$, and a 10% OOM rate. Reporting only its 21.3 tok/s median would reverse the engineering decision.
 
 <a id="tbl-ch31-05"></a> <a id="tbl-22"></a> **TBL-22 — Worked quality/energy dataset (`ILLUSTRATIVE`; not measured)**
 
@@ -767,7 +799,7 @@ failures. INT4 has the best median decode rate but worse p95 TTFT, larger late-r
 | INT4-A  | whole device    |               1.88 / 1.20 | late slowdown       |         0.76 |    -0.06 |                 1 |
 <!-- markdownlint-restore -->
 
-If the predeclared quality margin is \(-0.02\), INT8 remains eligible and INT4 fails before Pareto analysis. The
+If the predeclared quality margin is $-0.02$, INT8 remains eligible and INT4 fails before Pareto analysis. The
 critical failure independently blocks INT4. Energy numbers share one boundary, so subtraction is meaningful; they
 still must not be compared with package-only or accelerator-rail measurements. Never place unlike conditions in one
 unqualified row.
@@ -799,13 +831,13 @@ Use the same prompt/example for each candidate and analyze paired differences. O
 AB/BA crossover within start-temperature bands. Device is a block; do not pool phones as repeated samples from one
 device.
 
-Use a paired \(t\)-interval only when assumptions are defensible; otherwise use paired bootstrap/permutation. Use
-McNemar-style analysis for paired binary outcomes. Report effect and interval, not only a \(p\)-value.
+Use a paired $t$-interval only when assumptions are defensible; otherwise use paired bootstrap/permutation. Use
+McNemar-style analysis for paired binary outcomes. Report effect and interval, not only a $p$-value.
 
 Distinguish **statistical significance** from **engineering significance**. A precisely estimated 1 ms improvement can
 be irrelevant to the product, while an uncertain but large OOM reduction may justify more trials. Pre-register minimum
 practically important differences and decide with effect sizes, confidence intervals, hard gates, and total
-trade-offs—not \(p<0.05\) alone.
+trade-offs—not $p<0.05$ alone.
 
 ### Multiple comparisons
 
@@ -920,7 +952,7 @@ is meaningful only within one target/requirement set.
 
 ### Review questions
 
-1. Why does performance belong to \(\mathcal{U}\)?
+1. Why does performance belong to $\mathcal{U}$?
 2. Distinguish first model token, visible TTFT, and E2E.
 3. Why separate prefill and decode?
 4. What counts should be reported for tied-weight MoE plus adapter?

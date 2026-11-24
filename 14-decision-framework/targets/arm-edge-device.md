@@ -36,13 +36,17 @@ quality, resource, and latency utilities of 0.333, 0.833, 0.250 and 0.833, 0.200
 
 With weights quality 0.45, resource 0.30, and latency 0.25:
 
-\[
-U(A)=0.45(0.333)+0.30(0.833)+0.25(0.250)=0.462,
-\]
+$$
 
-\[
+U(A)=0.45(0.333)+0.30(0.833)+0.25(0.250)=0.462,
+
+$$
+
+$$
+
 U(B)=0.45(0.833)+0.30(0.200)+0.25(0.750)=0.622.
-\]
+
+$$
 
 B leads the illustrative utility but A remains a lower-memory frontier option. C's unattended recovery failure is non-compensatory.
 
@@ -54,7 +58,7 @@ acceptable-use restrictions, and downstream terms. Separately estimate maintenan
 kernels, conversion steps, security response, device or instance coverage, observability, and rollback drills.
 
 For example, if A requires 2 engineer-days per quarterly update and B requires 5, annual maintenance is illustratively
-\(2\times4=8\) versus \(5\times4=20\) engineer-days. This may influence preference only after both options pass rights
+$2\times4=8$ versus $5\times4=20$ engineer-days. This may influence preference only after both options pass rights
 and ownership gates.
 
 ## Interpretation and next decision

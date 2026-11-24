@@ -36,13 +36,17 @@ quality, resource, and latency utilities of 0.333, 0.760, 0.467 and 0.750, 0.112
 
 With weights quality 0.55, resource 0.25, and latency 0.20:
 
-\[
-U(A)=0.55(0.333)+0.25(0.760)+0.20(0.467)=0.467,
-\]
+$$
 
-\[
+U(A)=0.55(0.333)+0.25(0.760)+0.20(0.467)=0.467,
+
+$$
+
+$$
+
 U(B)=0.55(0.750)+0.25(0.112)+0.20(0.150)=0.471.
-\]
+
+$$
 
 A leads under the balanced illustrative weights; B is quality-forward. C needs placement evidence and cannot borrow credibility from the package format.
 
@@ -54,7 +58,7 @@ acceptable-use restrictions, and downstream terms. Separately estimate maintenan
 kernels, conversion steps, security response, device or instance coverage, observability, and rollback drills.
 
 For example, if A requires 2 engineer-days per quarterly update and B requires 5, annual maintenance is illustratively
-\(2\times4=8\) versus \(5\times4=20\) engineer-days. This may influence preference only after both options pass rights
+$2\times4=8$ versus $5\times4=20$ engineer-days. This may influence preference only after both options pass rights
 and ownership gates.
 
 ## Interpretation and next decision

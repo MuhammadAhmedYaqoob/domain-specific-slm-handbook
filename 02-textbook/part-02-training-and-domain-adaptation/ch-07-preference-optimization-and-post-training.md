@@ -38,9 +38,9 @@ Pretraining predicts text. Supervised fine-tuning (SFT) imitates target response
 “response A is safer, more useful, or more professionally appropriate than response B.” Preference data supplies that
 contrast.
 
-For a prompt \(x\), a labeler may judge response \(y^+\) **chosen** and \(y^-\) **rejected**. The label means only that
-\(y^+\) won under a stated rubric and annotation process. It does **not** imply that every token in \(y^+\) is correct,
-that \(y^-\) is wholly bad, or that the ordering generalizes to every user. A terse but unsafe answer can beat a verbose
+For a prompt $x$, a labeler may judge response $y^+$ **chosen** and $y^-$ **rejected**. The label means only that
+$y^+$ won under a stated rubric and annotation process. It does **not** imply that every token in $y^+$ is correct,
+that $y^-$ is wholly bad, or that the ordering generalizes to every user. A terse but unsafe answer can beat a verbose
 hallucination; both may still fail the release rubric.
 
 Post-training primarily changes behavior—format, abstention, conversational cooperation, style, and which learned
@@ -78,7 +78,7 @@ flowchart LR
 | Form            | Minimum fields                   | Suitable methods            | Principal risk                       |
 | --------------- | -------------------------------- | --------------------------- | ------------------------------------ |
 | Pairwise        | prompt, chosen, rejected         | RM, DPO, IPO, ORPO, SimPO   | forced choice hides ties/both-bad    |
-| Ranked list     | prompt, \(K\) responses, ranking | RM or pair expansion        | correlated pairs and overcounting    |
+| Ranked list     | prompt, $K$ responses, ranking | RM or pair expansion        | correlated pairs and overcounting    |
 | Binary feedback | prompt, response, desirable      | KTO, BCO-style objectives   | class imbalance; no local comparator |
 | Scalar score    | prompt, response, rubric scores  | regression RM, filtering    | annotator-scale inconsistency        |
 | Prompt-only     | prompt                           | PPO, RLOO, GRPO, online DPO | reward/judge must operate online     |
@@ -87,7 +87,7 @@ flowchart LR
 
 **TBL-CH07-01 — Preference data forms (`STATICALLY REVIEWED`).**
 
-A ranked set of \(K\) responses yields \(K(K-1)/2\) pair relations, but they are not independent. InstructGPT grouped
+A ranked set of $K$ responses yields $K(K-1)/2$ pair relations, but they are not independent. InstructGPT grouped
 comparisons from one ranking to avoid repeatedly treating correlated completions as independent updates [R3].
 `PAPER-REPORTED`
 
@@ -154,20 +154,26 @@ systematically wrong rubric.
 
 A reward model (RM) maps a prompt-response pair to a scalar:
 
-\[ r_\phi(x,y)\in\mathbb{R}. \]
+$$
+r_\phi(x,y)\in\mathbb{R}.
+$$
 
 With the Bradley–Terry model,
 
-\[ P_\phi(y^+\succ y^-\mid x) =\sigma\!\left(r_\phi(x,y^+)-r_\phi(x,y^-)\right), \]
+$$
+P_\phi(y^+\succ y^-\mid x) =\sigma\!\left(r_\phi(x,y^+)-r_\phi(x,y^-)\right),
+$$
 
-\[ \mathcal L_\text{RM} =-\mathbb E_{(x,y^+,y^-)\sim D} \log\sigma\!\left(r_\phi(x,y^+)-r_\phi(x,y^-)\right). \]
+$$
+\mathcal L_\text{RM} =-\mathbb E_{(x,y^+,y^-)\sim D} \log\sigma\!\left(r_\phi(x,y^+)-r_\phi(x,y^-)\right).
+$$
 
-Here \(\phi\) are RM parameters, \(D\) is the comparison dataset, and \(\sigma(z)=1/(1+e^{-z})\). Only the reward
+Here $\phi$ are RM parameters, $D$ is the comparison dataset, and $\sigma(z)=1/(1+e^{-z})$. Only the reward
 **difference** is identified: adding a constant to every reward changes neither probability nor loss. Centering makes
 logs easier to interpret but does not create ground-truth units.
 
 **Worked example.** If chosen and rejected scores are 1.2 and 0.3, the implied preference probability is
-\(\sigma(0.9)\approx0.711\). If the scores are shifted to 101.2 and 100.3, it remains 0.711. This is `ILLUSTRATIVE`.
+$\sigma(0.9)\approx0.711$. If the scores are shifted to 101.2 and 100.3, it remains 0.711. This is `ILLUSTRATIVE`.
 
 Outcome RMs score a whole answer. Process reward models (PRMs) score intermediate steps, potentially improving credit
 assignment but requiring step-level labels and creating more surfaces to game. As of the research freeze, TRL documents
@@ -176,9 +182,11 @@ assignment but requiring step-level labels and creating more surfaces to game. A
 ### 7.5.1 Calibration
 
 Ranking accuracy asks whether the sign is right. Calibration asks whether predicted probabilities match observed
-frequencies. For bins \(B_m\), an empirical expected calibration error is
+frequencies. For bins $B_m$, an empirical expected calibration error is
 
-\[ \operatorname{ECE}=\sum_m\frac{|B_m|}{n} \left|\operatorname{acc}(B_m)-\operatorname{conf}(B_m)\right|. \]
+$$
+\operatorname{ECE}=\sum_m\frac{|B_m|}{n} \left|\operatorname{acc}(B_m)-\operatorname{conf}(B_m)\right|.
+$$
 
 Also report log loss, Brier score, reliability diagrams, accuracy by reward-gap bin, annotator group, domain stratum,
 response length, and risk tier. Calibrate on held-out data with temperature or isotonic scaling only after freezing the
@@ -214,29 +222,33 @@ verifiable rewards. None eliminates Goodhart's law.
 
 Reinforcement learning from human feedback (RLHF) is a pipeline, not a synonym for PPO:
 
-1. SFT an initial policy \(\pi_\text{SFT}\);
-2. collect comparisons and train \(r_\phi\);
-3. sample fresh responses from policy \(\pi_\theta\);
-4. optimize reward while constraining drift from reference \(\pi_\text{ref}\);
+1. SFT an initial policy $\pi_\text{SFT}$;
+2. collect comparisons and train $r_\phi$;
+3. sample fresh responses from policy $\pi_\theta$;
+4. optimize reward while constraining drift from reference $\pi_\text{ref}$;
 5. evaluate with humans and safety tests, then refresh feedback if needed.
 
 The regularized objective is commonly written
 
-\[ \max_\theta\; \mathbb E_{x\sim D_x,y\sim\pi_\theta(\cdot|x)} \left[r_\phi(x,y) -\beta
-D_\mathrm{KL}\!\left(\pi_\theta(\cdot|x)\| \pi_\text{ref}(\cdot|x)\right)\right]. \]
+$$
+\max_\theta\; \mathbb E_{x\sim D_x,y\sim\pi_\theta(\cdot|x)} \left[r_\phi(x,y) -\beta
+D_\mathrm{KL}\!\left(\pi_\theta(\cdot|x)\| \pi_\text{ref}(\cdot|x)\right)\right].
+$$
 
-\(\beta>0\) controls the reward–drift trade-off. The KL term is not a safety proof; it merely discourages distributional
+$\beta>0$ controls the reward–drift trade-off. The KL term is not a safety proof; it merely discourages distributional
 movement from a reference that can itself be unsafe.
 
 ### 7.6.1 PPO
 
 Proximal Policy Optimization (PPO) [R1] reuses a sampled batch while clipping policy-ratio changes:
 
-\[ \mathcal L_\text{clip} =-\mathbb E_t\left[ \min(\rho_t A_t, \operatorname{clip}(\rho_t,1-\epsilon,1+\epsilon)A_t)
-\right], \qquad \rho_t=\frac{\pi_\theta(a_t|s_t)} {\pi_{\theta_\text{old}}(a_t|s_t)}. \]
+$$
+\mathcal L_\text{clip} =-\mathbb E_t\left[ \min(\rho_t A_t, \operatorname{clip}(\rho_t,1-\epsilon,1+\epsilon)A_t)
+\right], \qquad \rho_t=\frac{\pi_\theta(a_t|s_t)} {\pi_{\theta_\text{old}}(a_t|s_t)}.
+$$
 
-\(s_t\) is prompt plus prior tokens, \(a_t\) the next token, \(A_t\) an estimated advantage, \(\epsilon\) a clipping
-threshold, and \(\pi_{\theta_\text{old}}\) the behavior policy that generated the batch. A value/critic model estimates
+$s_t$ is prompt plus prior tokens, $a_t$ the next token, $A_t$ an estimated advantage, $\epsilon$ a clipping
+threshold, and $\pi_{\theta_\text{old}}$ the behavior policy that generated the batch. A value/critic model estimates
 returns; practical RLHF also uses KL shaping, whitening, clipping, and implementation-specific loss terms.
 
 PPO is an **online, on-policy-family RL method**: it repeatedly refreshes samples from a recent policy. Multiple
@@ -263,16 +275,18 @@ foundational pipeline [R4]. These are influential demonstrations, not evidence t
 Direct Preference Optimization (DPO) derives an implicit reward from the KL-regularized RLHF solution and trains the
 policy with binary classification [R6]:
 
-\[ \mathcal L_\text{DPO} =-\mathbb E_D\log\sigma\left(\beta\left[ \log\frac{\pi_\theta(y^+|x)}{\pi_\text{ref}(y^+|x)}
--\log\frac{\pi_\theta(y^-|x)}{\pi_\text{ref}(y^-|x)} \right]\right). \]
+$$
+\mathcal L_\text{DPO} =-\mathbb E_D\log\sigma\left(\beta\left[ \log\frac{\pi_\theta(y^+|x)}{\pi_\text{ref}(y^+|x)}
+-\log\frac{\pi_\theta(y^-|x)}{\pi_\text{ref}(y^-|x)} \right]\right).
+$$
 
-\(\pi_\theta(y|x)\) is the sequence likelihood, usually the sum of completion-token log probabilities;
-\(\pi_\text{ref}\) is a frozen reference; and \(\beta\) follows the implementation's convention. DPO needs no explicit
+$\pi_\theta(y|x)$ is the sequence likelihood, usually the sum of completion-token log probabilities;
+$\pi_\text{ref}$ is a frozen reference; and $\beta$ follows the implementation's convention. DPO needs no explicit
 RM, value model, or online rollout during ordinary offline training.
 
-**Worked example.** Suppose the policy-minus-reference log ratios are \(0.7\) for chosen and \(0.2\) for rejected. With
-\(\beta=0.1\), the logit is \(0.05\), loss \(-\log\sigma(0.05)\approx0.668\). If the rejected ratio rises above the
-chosen ratio, the loss exceeds \(\log2\) and the update pushes their relative margin back. `ILLUSTRATIVE`
+**Worked example.** Suppose the policy-minus-reference log ratios are $0.7$ for chosen and $0.2$ for rejected. With
+$\beta=0.1$, the logit is $0.05$, loss $-\log\sigma(0.05)\approx0.668$. If the rejected ratio rises above the
+chosen ratio, the loss exceeds $\log2$ and the update pushes their relative margin back. `ILLUSTRATIVE`
 
 DPO is offline, fixed-data, direct, reference-based, and non-RL in its training procedure. It is also behavior-policy
 dependent: if pairs came from a very different generator, the dataset may be off-policy for the current model and omit
@@ -282,15 +296,19 @@ its actual failure modes. A reference-free option in a library is not the origin
 
 ### 7.7.2 IPO
 
-Identity Preference Optimization (IPO) is a special case of \(\Psi\)-preference optimization from Azar et al. [R7]. It
+Identity Preference Optimization (IPO) is a special case of $\Psi$-preference optimization from Azar et al. [R7]. It
 avoids DPO's unbounded logit transform and fits a finite target:
 
-\[ \mathcal L_\text{IPO} =\mathbb E_D\left[ h_\theta(x,y^+,y^-)-\frac{1}{2\tau} \right]^2, \]
+$$
+\mathcal L_\text{IPO} =\mathbb E_D\left[ h_\theta(x,y^+,y^-)-\frac{1}{2\tau} \right]^2,
+$$
 
-\[ h_\theta= \log\frac{\pi_\theta(y^+|x)}{\pi_\text{ref}(y^+|x)} -\log\frac{\pi_\theta(y^-|x)}{\pi_\text{ref}(y^-|x)}.
-\]
+$$
+h_\theta= \log\frac{\pi_\theta(y^+|x)}{\pi_\text{ref}(y^+|x)} -\log\frac{\pi_\theta(y^-|x)}{\pi_\text{ref}(y^-|x)}.
 
-\(\tau\) is the paper's regularization parameter. Libraries may expose a differently named/scaled hyperparameter; do not
+$$
+
+$\tau$ is the paper's regularization parameter. Libraries may expose a differently named/scaled hyperparameter; do not
 transfer values mechanically. IPO is offline, direct, reference-based, non-RL. Its bounded target is attractive when
 near-deterministic labels cause DPO to keep widening margins, but it does not correct bad labels or coverage.
 
@@ -301,11 +319,14 @@ near-deterministic labels cause DPO to keep widening margins, but it does not co
 Odds Ratio Preference Optimization (ORPO) combines chosen-response negative log likelihood with an odds-ratio contrast
 [R9]:
 
-\[ \mathcal L_\text{ORPO} =\mathcal L_\text{SFT}(x,y^+) -\lambda\log\sigma\left(
-\log\frac{\operatorname{odds}_\theta(y^+|x)} {\operatorname{odds}_\theta(y^-|x)} \right), \] <!-- markdownlint-disable-line MD013 MD049 -->
+$$
+\mathcal L_\text{ORPO} =\mathcal L_\text{SFT}(x,y^+) -\lambda\log\sigma\left(
+\log\frac{\operatorname{odds}_\theta(y^+|x)} {\operatorname{odds}_\theta(y^-|x)} \right),
+$$
+<!-- markdownlint-disable-line MD013 MD049 -->
 
-where \(\operatorname{odds}(y|x)=P_\theta(y|x)/(1-P_\theta(y|x))\), with exact sequence-probability handling defined by
-the implementation, and \(\lambda\) controls the preference term. ORPO is offline, direct, explicitly reference-free,
+where $\operatorname{odds}(y|x)=P_\theta(y|x)/(1-P_\theta(y|x))$, with exact sequence-probability handling defined by
+the implementation, and $\lambda$ controls the preference term. ORPO is offline, direct, explicitly reference-free,
 non-RL, and “monolithic”: it can learn chosen behavior and reject disfavored behavior in one stage.
 
 Reference-free means no frozen reference forward pass. Initialization, chosen NLL, and data still anchor behavior. It
@@ -319,10 +340,12 @@ Kahneman–Tversky Optimization (KTO) learns from individually labeled desirable
 responses [R8]. It constructs a utility from the policy/reference log ratio relative to a KL-derived reference point,
 with separate desirable and undesirable terms and weights. Conceptually:
 
-\[ r_\theta(x,y)=\beta\log \frac{\pi_\theta(y|x)}{\pi_\text{ref}(y|x)},\qquad v_\theta\approx\mathbb
-E[\operatorname{KL}(\pi_\theta\|\pi_\text{ref})], \]
+$$
+r_\theta(x,y)=\beta\log \frac{\pi_\theta(y|x)}{\pi_\text{ref}(y|x)},\qquad v_\theta\approx\mathbb
+E[\operatorname{KL}(\pi_\theta\|\pi_\text{ref})],
+$$
 
-then increases a sigmoid utility of \(r_\theta-v_\theta\) for desirable examples and decreases the corresponding utility
+then increases a sigmoid utility of $r_\theta-v_\theta$ for desirable examples and decreases the corresponding utility
 for undesirable examples. The exact stop-gradient, weighting, batching, and KL estimate are implementation-defining; use
 the paper or frozen library source rather than reimplementing from this summary.
 
@@ -337,11 +360,15 @@ and confounding prompt difficulty with response quality.
 Simple Preference Optimization (SimPO) uses average completion log probability as a reference-free implicit reward and
 imposes a target margin [R10]:
 
-\[ s_\theta(x,y)=\frac{\beta}{|y|} \log\pi_\theta(y|x), \]
+$$
+s_\theta(x,y)=\frac{\beta}{|y|} \log\pi_\theta(y|x),
+$$
 
-\[ \mathcal L_\text{SimPO} =-\mathbb E_D\log\sigma\left( s_\theta(x,y^+)-s_\theta(x,y^-)-\gamma \right). \]
+$$
+\mathcal L_\text{SimPO} =-\mathbb E_D\log\sigma\left( s_\theta(x,y^+)-s_\theta(x,y^-)-\gamma \right).
+$$
 
-\(|y|\) is completion length, \(\beta\) a scale, and \(\gamma\) the target margin. Length normalization addresses a
+$|y|$ is completion length, $\beta$ a scale, and $\gamma$ the target margin. Length normalization addresses a
 mismatch between summed sequence likelihood and generation-time comparison; it can also change preferences for concise
 versus detailed domain answers, so evaluate by answer type. SimPO is offline, direct, reference-free, non-RL.
 
@@ -356,12 +383,16 @@ to `loss_type="ipo"` [R19]. This mapping is `DOC-VERIFIED` on the access date, n
 
 ### 7.8.1 RLOO
 
-REINFORCE Leave-One-Out (RLOO) samples \(G\) completions for the same prompt. For completion \(i\), the other samples
+REINFORCE Leave-One-Out (RLOO) samples $G$ completions for the same prompt. For completion $i$, the other samples
 form a baseline:
 
-\[ b_i=\frac{1}{G-1}\sum_{j\ne i}R_j,\qquad \hat A_i=R_i-b_i, \]
+$$
+b_i=\frac{1}{G-1}\sum_{j\ne i}R_j,\qquad \hat A_i=R_i-b_i,
+$$
 
-\[ \mathcal L_\text{RLOO} =-\frac1G\sum_{i=1}^G\hat A_i \log\pi_\theta(y_i|x). \]
+$$
+\mathcal L_\text{RLOO} =-\frac1G\sum_{i=1}^G\hat A_i \log\pi_\theta(y_i|x).
+$$
 
 The leave-one-out baseline reduces variance without a learned value network. Ahmadian et al. revisit REINFORCE-style
 RLHF and report competitive results under their tested settings [R11]. `PAPER-REPORTED`
@@ -376,10 +407,12 @@ adds clipped importance ratios when reusing a rollout and treats KL as detached 
 Group Relative Policy Optimization (GRPO), introduced in DeepSeekMath [R12], samples a group of completions for a prompt
 and normalizes rewards within the group:
 
-\[ \hat A_i=\frac{R_i-\bar R}{s_R+\delta}, \quad \bar R=\frac1G\sum_iR_i, \quad s_R=\sqrt{\frac1G\sum_i(R_i-\bar R)^2}.
-\]
+$$
+\hat A_i=\frac{R_i-\bar R}{s_R+\delta}, \quad \bar R=\frac1G\sum_iR_i, \quad s_R=\sqrt{\frac1G\sum_i(R_i-\bar R)^2}.
 
-It then uses a PPO-like clipped ratio plus a KL term, but no learned value model. \(\delta\) prevents division by zero.
+$$
+
+It then uses a PPO-like clipped ratio plus a KL term, but no learned value model. $\delta$ prevents division by zero.
 If every completion receives the same reward, the group offers little or no learning signal. Reward scale, group size,
 duplicates, difficulty, and zero-variance handling matter.
 
@@ -388,7 +421,7 @@ It is especially natural for **verifiable** rewards—exact answers, tests, sche
 samples can be ranked without a learned judge. For open-ended repair or pharmacy prose, a weak judge can merely turn
 GRPO into efficient reward hacking.
 
-RLOO and GRPO save the learned critic, not rollout generation. With \(G\) completions per prompt, generation can
+RLOO and GRPO save the learned critic, not rollout generation. With $G$ completions per prompt, generation can
 dominate compute. GRPO's recent popularity does not establish universal superiority over PPO, RLOO, DPO, or SFT.
 
 <a id="ch07-taxonomy"></a>
@@ -406,8 +439,8 @@ dominate compute. GRPO's recent popularity does not establish universal superior
 | ORPO     | fixed pairs            | chosen NLL + odds         | no                 | no explicit         | offline/off-policy data     | one trainable model               |
 | KTO      | fixed binary labels    | utility direct            | no                 | yes                 | offline/off-policy data     | policy + reference forwards       |
 | SimPO    | fixed pairs            | length-normalized margin  | no                 | no explicit         | offline/off-policy data     | one trainable model               |
-| RLOO     | fresh grouped rollouts | REINFORCE LOO             | reward required    | usually yes         | on-policy-family            | \(G\) generations + reward        |
-| GRPO     | fresh grouped rollouts | clipped group-relative RL | reward required    | optional/configured | on-policy-family            | \(G\) generations + reward        |
+| RLOO     | fresh grouped rollouts | REINFORCE LOO             | reward required    | usually yes         | on-policy-family            | $G$ generations + reward        |
+| GRPO     | fresh grouped rollouts | clipped group-relative RL | reward required    | optional/configured | on-policy-family            | $G$ generations + reward        |
 <!-- markdownlint-restore -->
 
 **TBL-CH07-02 — Core method classification (`STATICALLY REVIEWED`).** “Reference-free” means no explicit frozen
@@ -418,8 +451,10 @@ responses were generated by an earlier or different policy.
 
 Count functions, not slogans:
 
-\[ \text{peak training memory}\approx \text{trainable weights}+\text{gradients}+\text{optimizer}
-+\text{activations}+\text{reference/RM/critic residency} +\text{rollout buffers}. \]
+$$
+\text{peak training memory}\approx \text{trainable weights}+\text{gradients}+\text{optimizer}
++\text{activations}+\text{reference/RM/critic residency} +\text{rollout buffers}.
+$$
 
 - Offline direct methods avoid generation during updates. Reference-based methods still need reference log
   probabilities, which can be precomputed when data and tokenization are immutable, trading storage for compute.
@@ -460,8 +495,8 @@ taxonomy, not a judgment that the underlying paper is invalid.
 
 These methods are relevant, but fewer variants are usually better than an uncontrolled “loss zoo.”
 
-- **Rejection sampling / best-of-\(N\):** generate \(N\) candidates, retain the best under experts, a judge, or a
-  verifier, then SFT. Simple and often a strong baseline; inference/data-generation cost grows with \(N\), and judge
+- **Rejection sampling / best-of-$N$:** generate $N$ candidates, retain the best under experts, a judge, or a
+  verifier, then SFT. Simple and often a strong baseline; inference/data-generation cost grows with $N$, and judge
   exploitation remains.
 - **RLAIF and Constitutional AI:** AI feedback can scale ranking and self-revision under written principles; Bai et al.
   introduced Constitutional AI with supervised and RL phases [R13]. `PAPER-REPORTED` AI feedback transfers judge biases
@@ -846,7 +881,7 @@ behavior and safety qualification.
 ## 7.21 Review questions
 
 1. Why does “chosen” not mean factually correct?
-2. Why are pairs derived from one \(K\)-way ranking correlated?
+2. Why are pairs derived from one $K$-way ranking correlated?
 3. What is unidentifiable in the Bradley–Terry RM?
 4. Distinguish ranking accuracy from reward calibration.
 5. How does optimizing an RM create distribution shift?

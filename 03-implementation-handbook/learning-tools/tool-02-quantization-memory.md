@@ -16,7 +16,7 @@ group stores one scale and optional zero point; parameter codes are densely bit-
 Required inputs are positive `--parameters`, `--weight-bits`, `--group-size`, `--scale-bytes`; `--zero-bytes` and
 `--metadata-bytes` are nonnegative. Output keys are `tool_id`, `listing_id`, `groups`, `code_bytes`,
 `quant_metadata_bytes`, `fixed_metadata_bytes`, `total_bytes`, `effective_bits_per_parameter`, and `total_mib`.
-\(G=\lceil N/g\rceil\), \(B=\lceil Nb/8\rceil+G(s+z)+m\), \(b_\text{effective}=8B/N\). Invalid values fail. This
+$G=\lceil N/g\rceil$, $B=\lceil Nb/8\rceil+G(s+z)+m$, $b_\text{effective}=8B/N$. Invalid values fail. This
 deliberately counts a partial final group and does not infer alignment, high-precision tensors, or compression.
 
 ## Complete CLI listing
@@ -60,7 +60,7 @@ if __name__=="__main__": main()
 
 ## Fixtures, commands, interpretation, and limitations
 
-Hand fixture: 10 four-bit codes use 5 bytes; group size 4 makes 3 groups; \(3(2+1)=9\) metadata bytes; fixed 5 gives
+Hand fixture: 10 four-bit codes use 5 bytes; group size 4 makes 3 groups; $3(2+1)=9$ metadata bytes; fixed 5 gives
 19 bytes and 15.2 effective bits/parameter. Run `python tools/quantization_memory.py --self-test` or supply all six
 numeric arguments. A result estimates an encoding contract only; verify actual artifact bytes, tensor exceptions,
 alignment, and runtime-expanded memory.

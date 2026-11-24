@@ -38,20 +38,26 @@ After completing this chapter, the reader should be able to:
 
 An experimental candidate is the tuple
 
-\[ \mathcal A=(W,\tau,\chi,D,T,C,R,H,P), \]
+$$
+\mathcal A=(W,\tau,\chi,D,T,C,R,H,P),
+$$
 
-where \(W\) is model/adaptor lineage, \(\tau\) tokenizer, \(\chi\) chat template and generation policy, \(D\) data
-snapshots, \(T\) training/transformation recipe, \(C\) conversion and precision, \(R\) runtime, \(H\) hardware/software
-environment, and \(P\) protocol. Changing more than the declared independent variable makes the result a tuple
+where $W$ is model/adaptor lineage, $\tau$ tokenizer, $\chi$ chat template and generation policy, $D$ data
+snapshots, $T$ training/transformation recipe, $C$ conversion and precision, $R$ runtime, $H$ hardware/software
+environment, and $P$ protocol. Changing more than the declared independent variable makes the result a tuple
 comparison rather than a causal estimate.
 
-For higher-is-better quality \(Q\), candidate \(c\), baseline \(b\), and non-inferiority margin \(\delta>0\):
+For higher-is-better quality $Q$, candidate $c$, baseline $b$, and non-inferiority margin $\delta>0$:
 
-\[ \Delta_Q=Q_c-Q_b,\qquad c\text{ is non-inferior only if }\operatorname{LCB}_{1-\alpha}(\Delta_Q)>-\delta. \]
+$$
+\Delta_Q=Q_c-Q_b,\qquad c\text{ is non-inferior only if }\operatorname{LCB}_{1-\alpha}(\Delta_Q)>-\delta.
+$$
 
-For lower-is-better latency \(L\), a positive improvement can be written
+For lower-is-better latency $L$, a positive improvement can be written
 
-\[ \Delta_L=L_b-L_c. \]
+$$
+\Delta_L=L_b-L_c.
+$$
 
 Margins, confidence level, and minimum practically important differences (MIDs) are set by domain and target owners
 before the confirmatory run. This chapter intentionally does not invent universal values.
@@ -167,8 +173,8 @@ illustrative outcomes chosen to teach interpretation; they are not project measu
    model scores 76 but loses 6 points on general instruction following, beyond the allowed 2-point retention margin.
    DAPT does not qualify. Domain gain cannot buy back a failed retention gate.
 2. **QLoRA versus full fine-tuning:** Full FT scores 81.0 and QLoRA 80.6; the paired 95% interval for
-   QLoRA-minus-full is \([-0.9,0.1]\). With a preregistered non-inferiority margin of 1.0 point, QLoRA qualifies because
-   the lower bound exceeds \(-1.0\). If export parity fails, it is still rejected.
+   QLoRA-minus-full is $[-0.9,0.1]$. With a preregistered non-inferiority margin of 1.0 point, QLoRA qualifies because
+   the lower bound exceeds $-1.0$. If export parity fails, it is still rejected.
 3. **Android quantization:** Q4-A uses 2.2 GiB and decodes at 9 tokens/s; Q4-B uses 2.0 GiB but decodes at 6 tokens/s and
    loses 3 quality points. Neither universally wins. A 2.1 GiB RAM cap eliminates Q4-A; a quality margin may eliminate
    Q4-B, leaving no qualified candidate.
@@ -248,7 +254,7 @@ hard gates, interpret uncertainty, and allow rejection or inconclusive outcomes.
 ### RQ2 — Does QLoRA preserve domain performance compared with full fine-tuning?
 
 - **Falsifiable hypothesis:** QLoRA is non-inferior to full fine-tuning on the primary domain metric within margin
-  \(\delta_Q\), passes safety/retention gates, and reduces peak training memory or total training resource consumption.
+  $\delta_Q$, passes safety/retention gates, and reduces peak training memory or total training resource consumption.
 - **Baseline:** Full fine-tuning from the same initialization; LoRA is a secondary comparator.
 - **Independent variables:** Update method—full FT, LoRA, QLoRA; a small preregistered rank set may be exploratory.
 - **Controlled variables:** Accepted SFT tokens/order, sequence length, effective batch, search budget, validation rule,
@@ -706,8 +712,10 @@ Resource tiers are envelopes to fill with project-specific quantities, not fabri
 
 Every tier separately budgets:
 
-\[ B=(h_\text{accelerator},n_\text{teacher tokens},h_\text{expert},
-h_\text{device},S_\text{storage},h_\text{engineering},n_\text{retries}). \]
+$$
+B=(h_\text{accelerator},n_\text{teacher tokens},h_\text{expert},
+h_\text{device},S_\text{storage},h_\text{engineering},n_\text{retries}).
+$$
 
 Dollar budgets are calculated only from dated official prices and measured usage. Expert review, failed runs,
 conversion, physical-device time, observability, artifact retention, and rework belong in the budget.
@@ -844,7 +852,7 @@ declared artifact, protocol, intended use, and date.
 | many paraphrases counted independently | narrow uncertainty        | resample root families                            |
 | sealed test used for selection         | confirmatory gain         | retire exposure; use fresh roots                  |
 | lower mean without margin              | non-inferiority           | preregister and test the margin                   |
-| \(p<0.05\) after many variants         | winner established        | multiplicity control and effect interval          |
+| $p<0.05$ after many variants         | winner established        | multiplicity control and effect interval          |
 | smaller checkpoint                     | mobile optimization       | measure load/peak/latency/energy                  |
 | runtime changed with quantizer         | quantizer caused speedup  | call it a tuple comparison                        |
 | OOM trial removed                      | faster successful system  | retain failure denominator                        |

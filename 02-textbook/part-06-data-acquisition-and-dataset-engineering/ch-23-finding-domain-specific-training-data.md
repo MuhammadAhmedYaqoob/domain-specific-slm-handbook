@@ -335,24 +335,28 @@ clinical/production validation ([terms](https://open.fda.gov/terms/), [API overv
 
 A score prioritizes review; it never overrides a veto.
 
-\[ Q_s = 0.25A + 0.15P + 0.15C + 0.10F + 0.10X + 0.10V + 0.10S + 0.05L \]
+$$
+Q_s = 0.25A + 0.15P + 0.15C + 0.10F + 0.10X + 0.10V + 0.10S + 0.05L
+$$
 
-Each term is 0–5: authority \(A\), provenance \(P\), capability coverage \(C\), freshness \(F\), consistency \(X\),
-independent verifiability \(V\), structural usability \(S\), and language/locale fit \(L\). A source with scores
-\(5,5,3,4,4,5,4,5\) has \(Q_s=4.40\).
+Each term is 0–5: authority $A$, provenance $P$, capability coverage $C$, freshness $F$, consistency $X$,
+independent verifiability $V$, structural usability $S$, and language/locale fit $L$. A source with scores
+$5,5,3,4,4,5,4,5$ has $Q_s=4.40$.
 
 Risk remains separate:
 
-\[ R_s = \max(R_{\text{rights}},R_{\text{privacy}},R_{\text{safety}},R_{\text{security}}) + 0.4R_{\text{stale}} +
-0.3R_{\text{bias}} + 0.3R_{\text{dup}}, \]
+$$
+R_s = \max(R_{\text{rights}},R_{\text{privacy}},R_{\text{safety}},R_{\text{security}}) + 0.4R_{\text{stale}} +
+0.3R_{\text{bias}} + 0.3R_{\text{dup}},
+$$
 
 with each component 0–5. The maximum preserves catastrophic dimensions. Suggested policy:
 
 - unresolved rights, prohibited access, personal clinical data, confidential records, or dangerous security detail →
-  **veto/quarantine**, regardless of \(Q_s\);
-- \(Q_s \ge 4.0\), no component risk above 2 → priority review;
-- \(3.0 \le Q_s < 4.0\) → potentially useful with corrective controls;
-- \(Q_s < 3.0\) → discovery vocabulary, negative examples, or rejection;
+  **veto/quarantine**, regardless of $Q_s$;
+- $Q_s \ge 4.0$, no component risk above 2 → priority review;
+- $3.0 \le Q_s < 4.0$ → potentially useful with corrective controls;
+- $Q_s < 3.0$ → discovery vocabulary, negative examples, or rejection;
 - safety-critical claims require applicable A-tier evidence and qualified review.
 
 **Supplemental quality/risk rubric.** `ILLUSTRATIVE`; thresholds are proposed project policy, not empirical findings.

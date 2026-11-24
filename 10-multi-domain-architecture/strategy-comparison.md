@@ -41,8 +41,8 @@ flowchart TB
   C --> O["Domain response"]
 ```
 
-For a transformer matrix \(W\), LoRA applies \(W' = W + (\alpha/r)BA\). The base \(W\) is shared, while each domain owns
-different low-rank matrices \(A\) and \(B\). This saves storage and retraining cost, but an adapter is only valid with
+For a transformer matrix $W$, LoRA applies $W' = W + (\alpha/r)BA$. The base $W$ is shared, while each domain owns
+different low-rank matrices $A$ and $B$. This saves storage and retraining cost, but an adapter is only valid with
 the exact base, tokenizer, target modules, rank, scaling, and runtime tested with it.
 
 Example: a 1.1 GB base and three 70 MB adapters use 1.31 GB, 60% less than three 1.1 GB checkpoints. Peak memory may
@@ -67,9 +67,11 @@ flowchart LR
 Deployment is simple: one resident artifact, no adapter switch. The cost is **interference**. If gradients from two
 domains point in conflicting directions, improving one loss can increase the other:
 
-\[
+$$
+
 \cos(g_a,g_b)=\frac{g_a\cdot g_b}{\lVert g_a\rVert\lVert g_b\rVert}.
-\]
+
+$$
 
 A negative cosine is evidence of local gradient conflict, not proof of product failure. Measure per-domain validation,
 worst-group results, and safety suites after every mixture change. Oversampling a small pharmacy dataset can preserve
@@ -169,7 +171,7 @@ Routing selects an already-trained artifact. It MUST NOT retrieve knowledge.
 <!-- markdownlint-disable MD013 -->
 | Strategy        | Interference/forgetting                                              | Storage and RAM                                 | Update/release                             | Isolation, rights, access                            | Safety                                       |
 | --------------- | -------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------ | ---------------------------------------------------- | -------------------------------------------- |
-| Independent     | no cross-model gradient interference; each can forget general skills | \(K\) files; one or many resident               | domain-local, repeated export/test         | strongest artifact boundary; base terms still apply  | separate gates; router still hazardous       |
+| Independent     | no cross-model gradient interference; each can forget general skills | $K$ files; one or many resident               | domain-local, repeated export/test         | strongest artifact boundary; base terms still apply  | separate gates; router still hazardous       |
 | Base + adapters | adapters isolated until composed                                     | one base + deltas; base/KV/runtime dominate RAM | replace one compatible adapter             | adapter entitlement plus shared-base dependency      | evaluate exact pair/composition              |
 | Joint dense     | joint gradient conflict possible                                     | one file and resident model                     | every update triggers all-domain tests     | knowledge inseparable                                | confusion and policy leakage                 |
 | Continual       | explicit sequential forgetting                                       | latest plus rollback history                    | order/replay dependent                     | deletion/unlearning difficult                        | old safety behavior may regress              |
@@ -183,9 +185,11 @@ Routing selects an already-trained artifact. It MUST NOT retrieve knowledge.
 
 Storage MUST be separated from runtime memory:
 
-\[ S_{\text{weights}}=\frac{Pb}{8},\qquad M_{\text{peak}}=M_W+M_{KV}+M_A+M_R+M_T+M_{\text{alternatives}}. \]
+$$
+S_{\text{weights}}=\frac{Pb}{8},\qquad M_{\text{peak}}=M_W+M_{KV}+M_A+M_R+M_T+M_{\text{alternatives}}.
+$$
 
-Here \(P\) is parameter count, \(b\) bits per stored weight, \(M_A\) activations, \(M_R\) runtime buffers, and \(M_T\)
+Here $P$ is parameter count, $b$ bits per stored weight, $M_A$ activations, $M_R$ runtime buffers, and $M_T$
 temporary allocations. Metadata, quantization scales, alignment, dequantization, and allocator behavior MUST be
 measured. A file that fits storage may not fit RAM.
 

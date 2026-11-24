@@ -100,7 +100,7 @@ Replacing a tokenizer changes embeddings, output rows, and export compatibility.
 Context is artifact-specific: record trained/native context, extension method, packaged runtime maximum, tested length,
 cache precision, and quality near limits. Long advertised context is not evidence of reliable long-context recall.
 
-For dense weights, \(Pb/8\) is only an `ESTIMATE`. Runtime qualification adds quantization metadata, embeddings,
+For dense weights, $Pb/8$ is only an `ESTIMATE`. Runtime qualification adds quantization metadata, embeddings,
 Key-Value cache, activations, workspaces, tokenizer, runtime, and application memory. “Fits in storage,” “loads,” and
 “runs interactively without thermal collapse” are separate gates.
 

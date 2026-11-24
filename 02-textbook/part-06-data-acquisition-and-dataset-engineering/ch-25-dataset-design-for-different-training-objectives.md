@@ -75,13 +75,17 @@ These are offline preparation flows, not runtime retrieval. The released model r
 
 For causal CPT,
 
-\[ \mathcal L_{\mathrm{CPT}}=-\sum_t\log p_\theta(x_t\mid x_{<t}), \]
+$$
+\mathcal L_{\mathrm{CPT}}=-\sum_t\log p_\theta(x_t\mid x_{<t}),
+$$
 
 nearly every valid token is a target. For assistant-only SFT,
 
-\[ \mathcal L_{\mathrm{SFT}}=-\sum_t m_t\log p_\theta(y_t\mid x,y_{<t}), \]
+$$
+\mathcal L_{\mathrm{SFT}}=-\sum_t m_t\log p_\theta(y_t\mid x,y_{<t}),
+$$
 
-where \(m_t=1\) only on approved assistant output. A preference pair trains an ordering, not either response as
+where $m_t=1$ only on approved assistant output. A preference pair trains an ordering, not either response as
 unqualified truth. Calibration may not update parameters: it estimates activation, curvature, or importance statistics.
 A benchmark estimates generalization and must remain causally independent of pipeline selection.
 
@@ -171,7 +175,7 @@ training schema.
 }
 ```
 
-The lineage graph \(G=(V,E)\) is a directed acyclic graph; \((u,v)\) means \(v\) derives from \(u\). Every derived
+The lineage graph $G=(V,E)$ is a directed acyclic graph; $(u,v)$ means $v$ derives from $u$. Every derived
 record must reach an approved source or expert case. Descendants inherit rights restrictions, share a root split, and
 participate in withdrawal. Every transform records code/model revision, parameters, actor, timestamp, and hashes.
 
@@ -245,12 +249,14 @@ Evaluate history dependence by deleting or changing decisive prior turns.
 
 ## 25.8 Diagnostic-reasoning datasets
 
-Diagnostic data represent a partially observable process, not `symptom → answer`. Let state \(s_t\) contain observed
-evidence, action \(a_t\) be a question/test/escalation, and \(o_{t+1}\) its result:
+Diagnostic data represent a partially observable process, not `symptom → answer`. Let state $s_t$ contain observed
+evidence, action $a_t$ be a question/test/escalation, and $o_{t+1}$ its result:
 
-\[ (s_t,A_t^{\mathrm{allowed}},a_t^\star,o_{t+1},H_{t+1}). \]
+$$
+(s_t,A_t^{\mathrm{allowed}},a_t^\star,o_{t+1},H_{t+1}).
+$$
 
-\(H_{t+1}\) is an updated hypothesis set. Store context/version, timestamped observations and units, hazards, allowable
+$H_{t+1}$ is an updated hypothesis set. Store context/version, timestamped observations and units, hazards, allowable
 tests and prerequisites, expert-ranked next actions, evidence-linked rationale, disposition, and adjudication. Keep root
 cause and evaluator state hidden.
 
@@ -302,7 +308,7 @@ under a rubric, not true. See
 The schema depends on the teacher signal:
 
 - **response/sequence:** prompt, raw/reviewed teacher text, decoding;
-- **logit:** exact token IDs, tokenizer/template hashes, precision, full or top-\(k\) logits, omitted mass;
+- **logit:** exact token IDs, tokenizer/template hashes, precision, full or top-$k$ logits, omitted mass;
 - **feature/attention:** layer/head map, shapes, dtype, masks, positions, storage hashes;
 - **multi-teacher:** separate signals and conflict policy.
 
@@ -317,7 +323,7 @@ vocabulary ordering and sequence boundaries.
 ```
 <!-- markdownlint-restore -->
 
-`logsumexp_all_logits` permits accounting for omitted top-\(k\) probability mass. Distillation can transfer falsehood,
+`logsumexp_all_logits` permits accounting for omitted top-$k$ probability mass. Distillation can transfer falsehood,
 memorization, and unsafe confidence. See
 [CH-13](../part-04-model-compression-and-optimization/ch-13-knowledge-distillation-complete-research-and-implementation.md).
 
@@ -348,9 +354,11 @@ movement criteria), hidden-state similarity (layer influence), or runtime costs 
 masks, target provenance, eligible groups, statistic type, and accumulation precision. Compare general-only,
 domain-only, and mixed calibration.
 
-For retained sets \(A\) and \(B\), calibration sensitivity can be summarized by:
+For retained sets $A$ and $B$, calibration sensitivity can be summarized by:
 
-\[ J(A,B)=\frac{|A\cap B|}{|A\cup B|}. \]
+$$
+J(A,B)=\frac{|A\cap B|}{|A\cup B|}.
+$$
 
 Low Jaccard overlap does not identify the better mask; it shows that importance is distribution-dependent.
 
@@ -389,11 +397,13 @@ or error-driven training. Once an item guides adaptation, retire it to developme
 Random row splitting is usually invalid. Group before transformation by source/revision, incident/case, product family,
 person/asset/site, synthetic seed, teacher prompt, counterfactual template, and time/supersession chain.
 
-Let \(g(r)\) map record \(r\) to its root group:
+Let $g(r)$ map record $r$ to its root group:
 
-\[ g(r_i)=g(r_j)\Rightarrow\operatorname{split}(r_i)=\operatorname{split}(r_j). \]
+$$
+g(r_i)=g(r_j)\Rightarrow\operatorname{split}(r_i)=\operatorname{split}(r_j).
+$$
 
-For time-forward claims, enforce \(\max t_{\mathrm{train}}<\min t_{\mathrm{test}}\), subject to documented embargo and
+For time-forward claims, enforce $\max t_{\mathrm{train}}<\min t_{\mathrm{test}}$, subject to documented embargo and
 revision rules. Hold out whole product families for product generalization.
 
 Leakage classes are:
@@ -433,24 +443,28 @@ optimization manifest.
 Raw abundance is not importance. Long automotive manuals can dominate beekeeping; long explanations can dominate
 classifications; duplicated low-authority pages can swamp one official warning.
 
-For stratum \(k\) with \(n_k\) eligible units, temperature sampling is:
+For stratum $k$ with $n_k$ eligible units, temperature sampling is:
 
-\[ q_k=\frac{n_k^\tau}{\sum_j n_j^\tau},\qquad 0\le\tau\le1. \]
+$$
+q_k=\frac{n_k^\tau}{\sum_j n_j^\tau},\qquad 0\le\tau\le1.
+$$
 
-\(\tau=1\) is proportional, \(\tau=0\) equalizes strata, and intermediate values flatten. With 100,000 automotive and
-1,000 beekeeping units, proportional beekeeping exposure is \(0.99\%\); square-root sampling gives approximately
-\(9.09\%\). This is `ILLUSTRATIVE`, not a recommendation.
+$\tau=1$ is proportional, $\tau=0$ equalizes strata, and intermediate values flatten. With 100,000 automotive and
+1,000 beekeeping units, proportional beekeeping exposure is $0.99\%$; square-root sampling gives approximately
+$9.09\%$. This is `ILLUSTRATIVE`, not a recommendation.
 
 Use hierarchical sampling: choose domain, task, risk/difficulty, authority/source, then record. Track configured and
 realized exposure in rows, input tokens, target tokens, unique roots, and repetitions. Equal rows do not mean equal
 gradient influence.
 
-Sampling probability \(q_i\) and loss weight \(w_i\) differ. Sampling changes frequency; weighting changes gradient
+Sampling probability $q_i$ and loss weight $w_i$ differ. Sampling changes frequency; weighting changes gradient
 after sampling. To estimate natural-distribution risk under altered stratum sampling:
 
-\[ \widehat R=\frac1N\sum_{i=1}^N\frac{p(s_i)}{q(s_i)}\ell_i, \]
+$$
+\widehat R=\frac1N\sum_{i=1}^N\frac{p(s_i)}{q(s_i)}\ell_i,
+$$
 
-where \(p(s)\) is target prevalence and \(q(s)\) sampled prevalence. Large ratios have high variance. Training can
+where $p(s)$ is target prevalence and $q(s)$ sampled prevalence. Large ratios have high variance. Training can
 intentionally alter prevalence, but evaluation must separately report natural-prevalence and balanced safety views.
 
 Practical controls:
@@ -494,7 +508,9 @@ Difficulty is multidimensional:
 Difficulty and consequence are separate: a case may be easy but critical. Do not define difficulty solely by one model's
 error. After a pilot, preserve empirical item facility separately:
 
-\[ \hat p_i=\frac{\text{correct eligible attempts on item }i}{\text{eligible attempts}}. \]
+$$
+\hat p_i=\frac{\text{correct eligible attempts on item }i}{\text{eligible attempts}}.
+$$
 
 Curriculum is a `PLANNED EXPERIMENT`. Compare shuffled, easy-to-hard, and competence-based schedules at equal unique
 records and target tokens. Do not postpone all critical cases until training may already have stopped.
@@ -518,9 +534,11 @@ train/evaluation floors, reviewer qualification, and non-compensatory release th
 
 A planning risk term is:
 
-\[ R_h=p_hC_he_h, \]
+$$
+R_h=p_hC_he_h,
+$$
 
-for prevalence \(p_h\), consequence \(C_h\), and miss rate \(e_h\). These are often uncertain ranges. Low prevalence
+for prevalence $p_h$, consequence $C_h$, and miss rate $e_h$. These are often uncertain ranges. Low prevalence
 does not justify ignoring catastrophic consequence. Duplicating five records hundreds of times does not create coverage;
 count independent roots.
 
@@ -685,15 +703,17 @@ files; logit KD may need chunked tensors; preference/evaluation retain human-rea
 exports.
 
 Record uncompressed/compressed bytes; rows and unique roots; characters, input tokens, and target tokens; shard/index
-versions and hashes; tokenizer/template; teacher-logit precision, top-\(k\), residual mass, and cache bytes; read
+versions and hashes; tokenizer/template; teacher-logit precision, top-$k$, residual mass, and cache bytes; read
 throughput; preprocessing CPU-hours, peak RAM, temporary disk, and failures.
 
 Full logit storage is:
 
-\[ B_{\mathrm{logits}}\approx N_{\mathrm{positions}}Vb. \]
+$$
+B_{\mathrm{logits}}\approx N_{\mathrm{positions}}Vb.
+$$
 
 Ten million positions, vocabulary 32,000, and FP16 values imply about 640 GB decimal before metadata (`ESTIMATE`).
-Top-\(k\), quantized caches, and online recomputation trade storage against approximation or teacher compute.
+Top-$k$, quantized caches, and online recomputation trade storage against approximation or teacher compute.
 
 Distributed sampling must be deterministic. Log realized stratum/token exposure after sharding; independent worker
 rounding can erase small strata.
@@ -871,7 +891,7 @@ entering training.
 8. Distinguish sampling probability and loss weight.
 9. Why are difficulty and consequence separate?
 10. Why can rare-case oversampling increase false positives?
-11. What makes a top-\(k\) logit cache auditable?
+11. What makes a top-$k$ logit cache auditable?
 12. When is an evaluation item retired?
 
 ### Engineering exercises
@@ -887,7 +907,7 @@ entering training.
 7. Compare common, quantization-specific, and pruning-specific calibration through quantization error, mask overlap, and
    untouched safety tests.
 8. Preserve ties and both-bad preferences; compare forced pairs with SFT-repair routing.
-9. Calculate full-logit and top-\(k\) storage including IDs, values, and residual mass.
+9. Calculate full-logit and top-$k$ storage including IDs, values, and residual mass.
 10. Extend CH25-L02 with schema, DAG, authorization, duplicate, and tokenizer-mask checks.
 11. Rerun one sealed suite on source, quantized, and pruned artifacts by domain, difficulty, and hazard.
 12. Publish a dataset card with intended use, composition, rights, risks, splits, known leakage, maintenance, and

@@ -25,10 +25,12 @@ Prerequisites are [CH-16](ch-16-edge-ai-fundamentals.md), [CH-17](ch-17-mobile-h
 
 A release concerns the tuple
 
-\[ D=(W,T,C,F,R,B,O,H,P), \tag{EQ-CH21-01} \]
+$$
+D=(W,T,C,F,R,B,O,H,P), \tag{EQ-CH21-01}
+$$
 
-where \(W\)=weights, \(T\)=tokenizer, \(C\)=chat/stop contract, \(F\)=converted format and quantization, \(R\)=runtime,
-\(B\)=backend and actual placement, \(O\)=iOS version, \(H\)=hardware, and \(P\)=product policy. Changing one member can
+where $W$=weights, $T$=tokenizer, $C$=chat/stop contract, $F$=converted format and quantization, $R$=runtime,
+$B$=backend and actual placement, $O$=iOS version, $H$=hardware, and $P$=product policy. Changing one member can
 change correctness, memory, or performance.
 
 An offline app must authenticate and locate assets; initialize off the main thread; preserve tokenizer/template
@@ -141,9 +143,11 @@ supporting a model-family name does not prove support for every checkpoint.
 | MLX/MLC/MNN/ncnn  | runtime-specific grouped/packed formats                              | similarly named bit widths are not interchangeable        |
 <!-- markdownlint-restore -->
 
-Weight, activation, accumulator, and KV precision are separate. For \(P\) parameters and effective \(b\) bits:
+Weight, activation, accumulator, and KV precision are separate. For $P$ parameters and effective $b$ bits:
 
-\[ M_{W,\mathrm{ideal}}=Pb/8. \tag{EQ-CH21-02} \]
+$$
+M_{W,\mathrm{ideal}}=Pb/8. \tag{EQ-CH21-02}
+$$
 
 An `ILLUSTRATIVE` 1B-parameter artifact at 4.5 effective bits has 562.5 MB decimal payload before metadata, mixed
 tensors, copies, KV, workspaces, and app memory.
@@ -201,7 +205,9 @@ byte fragments, or display-safe strings. Coalesce UI updates to avoid re-layout 
 
 Reserve output and special tokens:
 
-\[ T_\text{history}+T_\text{input}+T_\text{special}+T_\text{output} \le T_\text{context}. \tag{EQ-CH21-03} \]
+$$
+T_\text{history}+T_\text{input}+T_\text{special}+T_\text{output} \le T_\text{context}. \tag{EQ-CH21-03}
+$$
 
 Reject or explicitly compact overlong conversations; silent truncation can remove identity, units, or safety
 constraints.
@@ -218,10 +224,14 @@ encode sensitive conversation state and is runtime/version-specific.
 
 ## 21.6 Memory, thermal behavior, and acceleration
 
-\[ M_\text{peak}=M_W+M_\text{KV}+M_A+M_\text{workspace} +M_\text{compiled}+M_\text{runtime}+M_\text{UI}+M_\text{margin}.
-\tag{EQ-CH21-04} \]
+$$
+M_\text{peak}=M_W+M_\text{KV}+M_A+M_\text{workspace} +M_\text{compiled}+M_\text{runtime}+M_\text{UI}+M_\text{margin}.
+\tag{EQ-CH21-04}
+$$
 
-\[ M_\text{KV}\approx2LBT H_{kv}d_hb. \tag{EQ-CH21-05} \]
+$$
+M_\text{KV}\approx2LBT H_{kv}d_hb. \tag{EQ-CH21-05}
+$$
 
 For 24 layers, batch one, 4,096 tokens, 8 KV heads, width 64, and FP16, ideal KV payload is about 192 MiB
 (`ILLUSTRATIVE`). Doubling context doubles it. Runtime overhead is additional.

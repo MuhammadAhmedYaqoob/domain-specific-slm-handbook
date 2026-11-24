@@ -36,13 +36,17 @@ quality, resource, and latency utilities of 0.267, 0.680, 0.280 and 0.600, 0.070
 
 With weights quality 0.50, resource 0.30, and latency 0.20:
 
-\[
-U(A)=0.50(0.267)+0.30(0.680)+0.20(0.280)=0.394,
-\]
+$$
 
-\[
+U(A)=0.50(0.267)+0.30(0.680)+0.20(0.280)=0.394,
+
+$$
+
+$$
+
 U(B)=0.50(0.600)+0.30(0.070)+0.20(0.090)=0.339.
-\]
+
+$$
 
 A is the illustrative balanced preference; B remains the quality-forward frontier option. C is rejected before scoring despite stronger numbers.
 
@@ -54,7 +58,7 @@ acceptable-use restrictions, and downstream terms. Separately estimate maintenan
 kernels, conversion steps, security response, device or instance coverage, observability, and rollback drills.
 
 For example, if A requires 2 engineer-days per quarterly update and B requires 5, annual maintenance is illustratively
-\(2\times4=8\) versus \(5\times4=20\) engineer-days. This may influence preference only after both options pass rights
+$2\times4=8$ versus $5\times4=20$ engineer-days. This may influence preference only after both options pass rights
 and ownership gates.
 
 ## Interpretation and next decision

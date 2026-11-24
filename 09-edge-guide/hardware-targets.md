@@ -25,16 +25,18 @@ installed RAM. Keep explicit unsupported states and never silently route an offl
 
 ## 3. Memory model
 
-For \(N\) parameters and effective \(b_w\) bits per weight,
-\(M_W=N b_w/8\). Effective bits include group scales, zero points, metadata, and high-precision tensors.
+For $N$ parameters and effective $b_w$ bits per weight,
+$M_W=N b_w/8$. Effective bits include group scales, zero points, metadata, and high-precision tensors.
 
 For a conventional decoder KV cache,
 
-\[
-M_{KV}=2LBT H_{kv}d_hb_{kv}
-\]
+$$
 
-where \(L\) is layer count, \(B\) batch, \(T\) cached tokens, \(H_{kv}\) KV heads, \(d_h\) head width, and \(b_{kv}\)
+M_{KV}=2LBT H_{kv}d_hb_{kv}
+
+$$
+
+where $L$ is layer count, $B$ batch, $T$ cached tokens, $H_{kv}$ KV heads, $d_h$ head width, and $b_{kv}$
 bytes per element. Add activations, prefill workspace, backend programs, tokenizer, runtime, UI, temporary conversion,
 and a pressure-tested margin.
 
@@ -47,9 +49,11 @@ pressure reserve. Every non-formula number is illustrative; measure load, prefil
 
 Storage needs more than the active model. A side-by-side update may require:
 
-\[
+$$
+
 S_{peak}=S_{active}+S_{previous}+S_{partial}+S_{staged}+S_{unpacked}+S_{margin}.
-\]
+
+$$
 
 ## 4. Build a hardware cohort
 

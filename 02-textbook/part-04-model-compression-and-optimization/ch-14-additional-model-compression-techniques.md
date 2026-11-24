@@ -79,26 +79,35 @@ flowchart LR
 
 ### Problem, intuition, internals, and math
 
-If \(W\in\mathbb R^{m\times n}\) mostly acts through an \(r\)-dimensional subspace, replace it with:
+If $W\in\mathbb R^{m\times n}$ mostly acts through an $r$-dimensional subspace, replace it with:
 
-<a id="eq-ch14-01"></a> \[ \boxed{W\approx UV,\quad U\in\mathbb R^{m\times r},\quad V\in\mathbb R^{r\times n}}
-\tag{EQ-CH14-01} \]
+<a id="eq-ch14-01"></a>
+$$
+\boxed{W\approx UV,\quad U\in\mathbb R^{m\times r},\quad V\in\mathbb R^{r\times n}}
+\tag{EQ-CH14-01}
+$$
 
-The full matrix has \(mn\) parameters; factors have \(r(m+n)\). Savings require:
+The full matrix has $mn$ parameters; factors have $r(m+n)$. Savings require:
 
-<a id="eq-ch14-02"></a> \[ \boxed{r<\frac{mn}{m+n}} \tag{EQ-CH14-02} \]
+<a id="eq-ch14-02"></a>
+$$
+\boxed{r<\frac{mn}{m+n}} \tag{EQ-CH14-02}
+$$
 
-For \(4096\times4096\), rank 512 changes 16,777,216 values to 4,194,304 (`ILLUSTRATIVE`). Execution becomes
-\(4096\rightarrow512\rightarrow4096\). Two launches, an intermediate, and poor shapes can erase theoretical speedup.
+For $4096\times4096$, rank 512 changes 16,777,216 values to 4,194,304 (`ILLUSTRATIVE`). Execution becomes
+$4096\rightarrow512\rightarrow4096$. Two launches, an intermediate, and poor shapes can erase theoretical speedup.
 
-With singular value decomposition \(W=P\Sigma Q^\top\), truncated SVD retains the top \(r\) singular values:
+With singular value decomposition $W=P\Sigma Q^\top$, truncated SVD retains the top $r$ singular values:
 
-<a id="eq-ch14-03"></a> \[ W_r=P_{:r}\Sigma_{:r}Q_{:r}^{\top}. \tag{EQ-CH14-03} \]
+<a id="eq-ch14-03"></a>
+$$
+W_r=P_{:r}\Sigma_{:r}Q_{:r}^{\top}. \tag{EQ-CH14-03}
+$$
 
 This minimizes reconstruction error, not language-model loss. Use per-layer sensitivity and recovery training. Paths are
 post-training SVD, direct factorized training, or gated rank-one pruning [R1–R4].
 
-This is not LoRA: LoRA keeps full \(W\) and learns low-rank \(\Delta W\). Merging LoRA normally restores a full dense
+This is not LoRA: LoRA keeps full $W$ and learns low-rank $\Delta W$. Merging LoRA normally restores a full dense
 matrix.
 
 ### Implementation
@@ -144,16 +153,19 @@ indiscriminate whole-model factorization is **impractical initially**.
 
 Matrix flattening can hide layer/head/channel structure. Common representations are:
 
-- CP: \(\mathcal W\approx\sum_{j=1}^{r}a_j\circ b_j\circ c_j\);
-- Tucker: \(\mathcal W\approx\mathcal G\times_1A\times_2B\times_3C\);
+- CP: $\mathcal W\approx\sum_{j=1}^{r}a_j\circ b_j\circ c_j$;
+- Tucker: $\mathcal W\approx\mathcal G\times_1A\times_2B\times_3C$;
 - Tensor Train: a chain of contracted cores;
 - Block-Term Decomposition (BTD): a sum of Tucker-like blocks.
 
-For \(\mathcal W\in\mathbb R^{I\times J\times K}\), Tucker storage is:
+For $\mathcal W\in\mathbb R^{I\times J\times K}$, Tucker storage is:
 
-<a id="eq-ch14-04"></a> \[ IR_1+JR_2+KR_3+R_1R_2R_3 \tag{EQ-CH14-04} \]
+<a id="eq-ch14-04"></a>
+$$
+IR_1+JR_2+KR_3+R_1R_2R_3 \tag{EQ-CH14-04}
+$$
 
-instead of \(IJK\), before metadata. A Tensorized Transformer used BTD/shared projections in attention [R2].
+instead of $IJK$, before metadata. A Tensorized Transformer used BTD/shared projections in attention [R2].
 
 Implementation requires a meaningful tensorization, rank search, decomposition or from-scratch training,
 contraction-order optimization, recovery, and export validation. A compact formula can become transposes, temporaries,
@@ -171,8 +183,11 @@ contractions efficiently. **Maturity:** **advanced/experimental; impractical for
 Depth imposes serial latency. Removing whole blocks reduces parameters, block operations, dispatches, and per-layer KV.
 LayerDrop trains with complete blocks randomly bypassed so fixed shallower subnetworks are more robust [R5]:
 
-<a id="eq-ch14-05"></a> \[ h_{l+1}=h_l+\frac{z_l}{1-p}F_l(h_l),\qquad z_l\sim\mathrm{Bernoulli}(1-p). \tag{EQ-CH14-05}
-\]
+<a id="eq-ch14-05"></a>
+$$
+h_{l+1}=h_l+\frac{z_l}{1-p}F_l(h_l),\qquad z_l\sim\mathrm{Bernoulli}(1-p). \tag{EQ-CH14-05}
+
+$$
 
 Exact conventions vary. Post-hoc dropping, LayerDrop training, and early exit are different. Selection may use uniform
 spacing, validation search, similarity, importance, or learned gates. Materialize a new dense checkpoint/configuration;
@@ -181,7 +196,10 @@ do not merely skip blocks in Python.
 Architecture shrinking also includes hidden width, FFN width, heads/KV heads, experts, vocabulary, and context/attention
 design. For a gated decoder block, an approximate count is:
 
-<a id="eq-ch14-06"></a> \[ N_{\rm block}\approx2d^2+2d(H_{kv}d_h)+3dd_{\rm ffn}. \tag{EQ-CH14-06} \]
+<a id="eq-ch14-06"></a>
+$$
+N_{\rm block}\approx2d^2+2d(H_{kv}d_h)+3dd_{\rm ffn}. \tag{EQ-CH14-06}
+$$
 
 Width changes couple embeddings, norms, residuals, Q/K/V/O, FFNs, and head divisibility. Arbitrary first-channel slicing
 is invalid unless trained for it. MatFormer trains nested FFN prefixes [R22]; MobileLLM studied deep-thin layouts, GQA,
@@ -200,9 +218,12 @@ graph surgery is **experimental**.
 
 ## 14.7 Early exit and adaptive computation
 
-Early exit adds intermediate heads and stops when a confidence/policy threshold is met. For exit depth \(D(x)\):
+Early exit adds intermediate heads and stops when a confidence/policy threshold is met. For exit depth $D(x)$:
 
-<a id="eq-ch14-07"></a> \[ \boxed{\mathbb E[D]=\sum_{l=1}^{L}\Pr(D\ge l)} \tag{EQ-CH14-07} \]
+<a id="eq-ch14-07"></a>
+$$
+\boxed{\mathbb E[D]=\sum_{l=1}^{L}\Pr(D\ge l)} \tag{EQ-CH14-07}
+$$
 
 Expected savings do not reduce worst-case depth. DeeBERT used entropy thresholds for encoder classification [R7];
 Depth-Adaptive Transformer studied decoder depth [R6].
@@ -227,7 +248,10 @@ add cost. Confidence is not correctness; unsafe answers can be confidently wrong
 Adaptive computation generalizes exit to variable depth, width, heads, experts, iterations, or token processing. ACT and
 Universal Transformer use halting/ponder concepts [R8, R9]:
 
-<a id="eq-ch14-08"></a> \[ \mathcal L=\mathcal L_{\rm task}+\lambda\mathbb E[C(x)]. \tag{EQ-CH14-08} \]
+<a id="eq-ch14-08"></a>
+$$
+\mathcal L=\mathcal L_{\rm task}+\lambda\mathbb E[C(x)]. \tag{EQ-CH14-08}
+$$
 
 Implementation needs heads/router, compute regularization, anti-collapse limits, calibration, cache policy, and runtime
 branching. Batches may pay the deepest path unless compacted.
@@ -245,15 +269,18 @@ Cross-layer sharing reuses one tensor across repeated layer applications. It red
 arithmetic, activations, serial depth, or necessarily KV. ALBERT shares Transformer parameters and factorizes embeddings
 [R10]; Universal Transformer reuses transitions [R9].
 
-Parameter tying commonly reuses input embedding \(E\in\mathbb R^{V\times d}\) as output projection:
+Parameter tying commonly reuses input embedding $E\in\mathbb R^{V\times d}$ as output projection:
 
-<a id="eq-ch14-09"></a> \[ \boxed{W_{\rm out}=E} \tag{EQ-CH14-09} \]
+<a id="eq-ch14-09"></a>
+$$
+\boxed{W_{\rm out}=E} \tag{EQ-CH14-09}
+$$
 
-[R11, R12]. For \(V=32{,}000,d=2048\), one BF16 matrix is about 125 MiB; tying avoids a second payload (`ILLUSTRATIVE`)
+[R11, R12]. For $V=32{,}000,d=2048$, one BF16 matrix is about 125 MiB; tying avoids a second payload (`ILLUSTRATIVE`)
 but not output multiplication.
 
-Factorized embeddings use \(E=AB\), with \(A\in\mathbb R^{V\times e}\), \(B\in\mathbb R^{e\times d}\), requiring
-\(Ve+ed\) parameters. Ensure serializers preserve aliases rather than duplicating storage; optimizers must reference one
+Factorized embeddings use $E=AB$, with $A\in\mathbb R^{V\times e}$, $B\in\mathbb R^{e\times d}$, requiring
+$Ve+ed$ parameters. Ensure serializers preserve aliases rather than duplicating storage; optimizers must reference one
 parameter object.
 
 **Strengths:** tying is simple and mature; sharing can greatly reduce unique weights. **Limits:** repeated compute
@@ -265,27 +292,32 @@ tying is **foundational/core**; broad layer sharing is **advanced design-time pr
 
 ## 14.9 Model and adapter merging
 
-For common base \(\theta_0\), task vector \(\tau_i=\theta_i-\theta_0\), task arithmetic forms:
+For common base $\theta_0$, task vector $\tau_i=\theta_i-\theta_0$, task arithmetic forms:
 
-<a id="eq-ch14-10"></a> \[ \theta_{\rm merge}=\theta_0+\sum_i\alpha_i\tau_i. \tag{EQ-CH14-10} \]
+<a id="eq-ch14-10"></a>
+$$
+\theta_{\rm merge}=\theta_0+\sum_i\alpha_i\tau_i. \tag{EQ-CH14-10}
+$$
 
 TIES trims small deltas, elects signs, and merges aligned entries [R17, R18]. DARE drops/rescales delta entries before
 merging [R19]. Inputs normally need the same base, architecture, shapes, tokenizer IDs, and parameter semantics.
 
-Turning \(K\) full models into one can reduce fleet storage/operations, but one merged model usually retains one model's
+Turning $K$ full models into one can reduce fleet storage/operations, but one merged model usually retains one model's
 parameter count, compute, and KV. Risks are destructive interference, calibration changes, tokenizer mismatch, and
 license incompatibility.
 
-For LoRA adapter \(i\), \(\Delta W_i=B_iA_i\). Operations differ:
+For LoRA adapter $i$, $\Delta W_i=B_iA_i$. Operations differ:
 
-1. merge one adapter into \(W\);
-2. sum full deltas \(\sum_i\alpha_iB_iA_i\);
+1. merge one adapter into $W$;
+2. sum full deltas $\sum_i\alpha_iB_iA_i$;
 3. concatenate factors, increasing rank;
 4. refactor the summed delta by SVD, adding approximation.
 
 Direct factor averaging is not delta averaging because:
 
-\[ \left(\sum_i\alpha_iB_i\right)\left(\sum_j\alpha_jA_j\right) \ne\sum_i\alpha_iB_iA_i. \]
+$$
+\left(\sum_i\alpha_iB_i\right)\left(\sum_j\alpha_jA_j\right) \ne\sum_i\alpha_iB_iA_i.
+$$
 
 PEFT documents linear, concatenation, SVD, TIES, and DARE combinations; APIs are version-dependent [R27].
 
@@ -299,7 +331,7 @@ merge is **core practical**; multi-model/adapter interference-aware merging is *
 
 ## 14.10 Vocabulary optimization and embedding compression
 
-Embedding/output matrices cost \(Vd\) each when untied. Smaller vocabulary can reduce these and logits, but increase
+Embedding/output matrices cost $Vd$ each when untied. Smaller vocabulary can reduce these and logits, but increase
 sequence length, prefill, KV, and spelling errors. Token IDs are part of the model contract; deleting rows without
 tokenizer remapping corrupts semantics, while remapping requires retraining.
 
@@ -309,9 +341,12 @@ smaller dimensions to rarer vocabulary bands [R13]; GroupReduce uses frequency-b
 
 For a tied embedding:
 
-<a id="eq-ch14-11"></a> \[ \Delta N=(V_{\rm old}-V_{\rm new})d. \tag{EQ-CH14-11} \]
+<a id="eq-ch14-11"></a>
+$$
+\Delta N=(V_{\rm old}-V_{\rm new})d. \tag{EQ-CH14-11}
+$$
 
-Reducing 64,000 to 40,000 at \(d=2048\) removes 49,152,000 parameters, about 93.75 MiB BF16 (`ILLUSTRATIVE`). If
+Reducing 64,000 to 40,000 at $d=2048$ removes 49,152,000 parameters, about 93.75 MiB BF16 (`ILLUSTRATIVE`). If
 automotive terms expand from 1.4 to 2.0 tokens, end-to-end performance may worsen.
 
 **Implementation gates:** measure token-length distributions by domain/language; exact identifiers/units/drug names;
@@ -324,18 +359,24 @@ embeddings are **advanced**; post-hoc vocabulary replacement is **experimental a
 
 ## 14.11 Weight clustering and entropy coding
 
-Weight clustering stores index \(a_i\) into centroids \(c_k\):
+Weight clustering stores index $a_i$ into centroids $c_k$:
 
-<a id="eq-ch14-12"></a> \[ \min_{\{c_k\},\{a_i\}}\sum_{i=1}^{N}(w_i-c_{a_i})^2, \qquad \text{bits}\approx
-N\lceil\log_2K\rceil+Kb_c. \tag{EQ-CH14-12} \]
+<a id="eq-ch14-12"></a>
+$$
+\min_{\{c_k\},\{a_i\}}\sum_{i=1}^{N}(w_i-c_{a_i})^2, \qquad \text{bits}\approx
+N\lceil\log_2K\rceil+Kb_c. \tag{EQ-CH14-12}
+$$
 
 Centroids can be retrained using aggregated gradients. Deep Compression combined pruning, trained clustering/weight
 sharing, and Huffman coding [R15]. If a runtime reconstructs dense weights, clustering saves disk but not steady-state
 memory/compute. Native indexed kernels are required for more.
 
-Entropy coding uses shorter codes for common symbols. For \(p_i\):
+Entropy coding uses shorter codes for common symbols. For $p_i$:
 
-<a id="eq-ch14-13"></a> \[ H(X)=-\sum_i p_i\log_2p_i. \tag{EQ-CH14-13} \]
+<a id="eq-ch14-13"></a>
+$$
+H(X)=-\sum_i p_i\log_2p_i. \tag{EQ-CH14-13}
+$$
 
 Quantized indices and sparse deltas are more compressible than high-entropy floating weights. Distribution-only
 compression saves download bytes; load-time decompression can worsen startup, temporary disk, CPU, battery, and peak
@@ -389,10 +430,13 @@ touched working set. **Maturity:** **core practical**, target-measured.
 ## 14.13 Hardware-aware NAS and joint compression search
 
 Parameters/FLOPs are imperfect latency proxies. Hardware-aware neural architecture search (NAS) selects architecture
-\(a\) under measured target constraints:
+$a$ under measured target constraints:
 
-<a id="eq-ch14-14"></a> \[ \max_{a\in\mathcal A}Q(a) \;\text{s.t.}\; L_H(a)\le L_{\max},\ M_H(a)\le M_{\max},\ E_H(a)\le
-E_{\max}. \tag{EQ-CH14-14} \]
+<a id="eq-ch14-14"></a>
+$$
+\max_{a\in\mathcal A}Q(a) \;\text{s.t.}\; L_H(a)\le L_{\max},\ M_H(a)\le M_{\max},\ E_H(a)\le
+E_{\max}. \tag{EQ-CH14-14}
+$$
 
 Safety remains a hard gate. MnasNet used measured mobile latency; ProxylessNAS searched target task/hardware;
 Once-for-All trained a supernet and specialized subnetworks [R20, R21, R24]. These vision results do not establish SLM
@@ -447,8 +491,8 @@ resident memory, while KV cache remains acceptable.
 
 1. **Do not begin with early exit.** It changes expected depth but retains worst-case weights and complicates causal KV
    state, so it does not directly solve the stated capacity problem.
-2. **Calculate a factorization candidate.** A \(4096\times4096\) MLP projection has 16,777,216 values. Rank 512 uses
-   \(512(4096+4096)=4,194,304\), a 75% parameter reduction for that matrix. The candidate is worthwhile only if two
+2. **Calculate a factorization candidate.** A $4096\times4096$ MLP projection has 16,777,216 values. Rank 512 uses
+   $512(4096+4096)=4,194,304$, a 75% parameter reduction for that matrix. The candidate is worthwhile only if two
    smaller GEMMs execute efficiently and recovery preserves quality.
 3. **Compare dense shrinking.** Reducing a gated MLP width requires coordinated gate/up rows and down columns. It
    produces ordinary smaller dense tensors and is often easier to export, but removes channels rather than approximating

@@ -33,9 +33,9 @@ gates. Continued pretraining is optional; “do not run it” is a valid enginee
 
 ## 5.2 The decision before the training
 
-The problem is distribution mismatch. Let \(P_0(x)\) denote the broad pretraining distribution, \(P_D(x)\) a
-target-domain distribution, and \(P_T(x)\) the input distribution of a particular downstream task. A model trained
-mostly on \(P_0\) may tokenize, represent, and predict \(P_D\) poorly. The practical question is not merely whether the
+The problem is distribution mismatch. Let $P_0(x)$ denote the broad pretraining distribution, $P_D(x)$ a
+target-domain distribution, and $P_T(x)$ the input distribution of a particular downstream task. A model trained
+mostly on $P_0$ may tokenize, represent, and predict $P_D$ poorly. The practical question is not merely whether the
 distributions differ; it is whether updating parameters on available domain text produces enough **held-out product
 value** to justify compute, governance, and regression risk.
 
@@ -71,12 +71,15 @@ pretraining** is reserved for sequential updates where retention across time or 
 
 ### 5.3.1 Continued pretraining
 
-For a decoder-only model with parameters \(\theta_0\), CPT resumes next-token optimization on corpus \(D_C\):
+For a decoder-only model with parameters $\theta_0$, CPT resumes next-token optimization on corpus $D_C$:
 
-<a id="eq-ch05-01"></a> \[ \boxed{ \theta_C=\arg\min_\theta -\frac{1}{N_C}\sum_{x\in D_C}\sum_{t\in\mathcal V(x)} \log
-p_\theta(x_t\mid x_{<t}) } \tag{EQ-CH05-01} \]
+<a id="eq-ch05-01"></a>
+$$
+\boxed{ \theta_C=\arg\min_\theta -\frac{1}{N_C}\sum_{x\in D_C}\sum_{t\in\mathcal V(x)} \log
+p_\theta(x_t\mid x_{<t}) } \tag{EQ-CH05-01}
+$$
 
-\(\mathcal V(x)\) is the set of valid, non-padding target positions and \(N_C\) their count. Unlike SFT with
+$\mathcal V(x)$ is the set of valid, non-padding target positions and $N_C$ their count. Unlike SFT with
 assistant-only masking, ordinary causal CPT learns from headings, prose, tables converted to text, warnings, references,
 and every other retained token. The model is not told which sentences are answers or which statements are
 safety-critical.
@@ -272,10 +275,13 @@ and which conditional distribution is trained.
 
 ## 5.8 Domain mixtures and general-data replay
 
-Let domains \(D_1,\ldots,D_K\) have sampling weights \(w_k\ge0\), \(\sum_k w_k=1\):
+Let domains $D_1,\ldots,D_K$ have sampling weights $w_k\ge0$, $\sum_k w_k=1$:
 
-<a id="eq-ch05-02"></a> \[ \boxed{\mathcal L_{\text{mix}}(\theta)=\sum_{k=1}^{K}w_k\, \mathbb E_{x\sim
-D_k}\left[\mathcal L_{\mathrm{LM}}(x;\theta)\right]} \tag{EQ-CH05-02} \]
+<a id="eq-ch05-02"></a>
+$$
+\boxed{\mathcal L_{\text{mix}}(\theta)=\sum_{k=1}^{K}w_k\, \mathbb E_{x\sim
+D_k}\left[\mathcal L_{\mathrm{LM}}(x;\theta)\right]} \tag{EQ-CH05-02}
+$$
 
 Weights are token-sampling probabilities, not necessarily raw corpus fractions. A 10-million-token safety corpus mixed
 naturally with 990 million manual tokens gets about 1% of updates. Upsampling increases exposure but also duplication
@@ -284,11 +290,14 @@ and memorization.
 Separate core domain documents, high-authority safety/regulatory text, diverse general replay, optional
 neighboring-domain data, TAPT inputs, and evaluation. Evaluation must never enter training.
 
-With replay fraction \(\rho\):
+With replay fraction $\rho$:
 
-<a id="eq-ch05-03"></a> \[ \boxed{\mathcal L=(1-\rho)\mathcal L_D+\rho\mathcal L_G} \tag{EQ-CH05-03} \]
+<a id="eq-ch05-03"></a>
+$$
+\boxed{\mathcal L=(1-\rho)\mathcal L_D+\rho\mathcal L_G} \tag{EQ-CH05-03}
+$$
 
-\(\mathcal L_D\) is domain loss and \(\mathcal L_G\) general replay loss. Increasing \(\rho\) can reduce forgetting but
+$\mathcal L_D$ is domain loss and $\mathcal L_G$ general replay loss. Increasing $\rho$ can reduce forgetting but
 spends updates away from the domain; no ratio is universal.
 
 Ibrahim et al. studied continual pretraining at scales through 10B parameters and reported that learning-rate
@@ -361,12 +370,15 @@ Ke et al. propose soft masking for sequential DAPT [R10]. Jin et al. report effe
 methods in research-paper and tweet streams [R11]. **PAPER-REPORTED.** Compare these with replay and smaller updates
 before accepting added complexity.
 
-For a higher-is-better metric \(m_j\), relative retention is:
+For a higher-is-better metric $m_j$, relative retention is:
 
-<a id="eq-ch05-04"></a> \[ \boxed{ R_j=\frac{m_j(\theta_C)-m_j(\theta_0)} {\max(|m_j(\theta_0)|,\epsilon)} }
-\tag{EQ-CH05-04} \]
+<a id="eq-ch05-04"></a>
+$$
+\boxed{ R_j=\frac{m_j(\theta_C)-m_j(\theta_0)} {\max(|m_j(\theta_0)|,\epsilon)} }
+\tag{EQ-CH05-04}
+$$
 
-If exact match falls from 60% to 57%, \(R=-0.05\), a 5% relative drop. **ILLUSTRATIVE.** Reverse sign or report a ratio
+If exact match falls from 60% to 57%, $R=-0.05$, a 5% relative drop. **ILLUSTRATIVE.** Reverse sign or report a ratio
 for losses. Do not average a severe contraindication regression with easy style wins; enforce per-gate floors.
 
 <a id="ch05-tokenizer"></a>
@@ -388,8 +400,8 @@ Add tokens only if fertility and downstream ablation justify it:
 5. continue full-model training if needed; and
 6. validate old-token logits, special IDs, export, and edge runtime.
 
-Changing vocabulary by \(V_{\text{new}}\) rows at width \(d\) adds \(V_{\text{new}}d\) parameters when weights are tied
-and up to twice that when untied. For 2,000 tokens and \(d=2{,}048\), a tied matrix adds 4,096,000 parameters, about
+Changing vocabulary by $V_{\text{new}}$ rows at width $d$ adds $V_{\text{new}}d$ parameters when weights are tied
+and up to twice that when untied. For 2,000 tokens and $d=2{,}048$, a tied matrix adds 4,096,000 parameters, about
 7.81 MiB at two bytes/parameter before metadata. **ILLUSTRATIVE.**
 
 SciBERT evaluated general and scientific vocabularies [R3]. PubMedBERT argued that in-domain vocabulary was one benefit
@@ -423,10 +435,13 @@ and a large one-pass corpus can have equal processed tokens but different memori
 
 ## 5.12 Domain perplexity: useful and narrow
 
-For \(N\) held-out tokens:
+For $N$ held-out tokens:
 
-<a id="eq-ch05-05"></a> \[ \boxed{ \mathrm{PPL}_D= \exp\left( -\frac{1}{N}\sum_{i=1}^{N}\log p_\theta(x_i\mid x_{<i}) <!-- markdownlint-disable-line MD013 MD049 -->
-\right) } \tag{EQ-CH05-05} \]
+<a id="eq-ch05-05"></a>
+$$
+\boxed{ \mathrm{PPL}_D= \exp\left( -\frac{1}{N}\sum_{i=1}^{N}\log p_\theta(x_i\mid x_{<i}) <!-- markdownlint-disable-line MD013 MD049 -->
+\right) } \tag{EQ-CH05-05}
+$$
 
 If loss falls from 2.30 to 2.10 nats/token, perplexity falls from about 9.97 to 8.17, an 18.1% relative reduction.
 **ILLUSTRATIVE.** This means better average prediction on that corpus, not 18.1% better factuality.
@@ -464,10 +479,13 @@ development data for selection and a final test opened only afterward.
 
 Constrained selection is:
 
-<a id="eq-ch05-06"></a> \[ \boxed{ \theta^\star=\arg\max_{\theta\in\mathcal C}Q_D(\theta) \quad\text{s.t.}\quad
-R_j(\theta)\ge\tau_j,\; S_h(\theta)\ge\sigma_h } \tag{EQ-CH05-06} \]
+<a id="eq-ch05-06"></a>
+$$
+\boxed{ \theta^\star=\arg\max_{\theta\in\mathcal C}Q_D(\theta) \quad\text{s.t.}\quad
+R_j(\theta)\ge\tau_j,\; S_h(\theta)\ge\sigma_h } \tag{EQ-CH05-06}
+$$
 
-\(Q_D\) is domain utility; \(R_j\) retention; \(S_h\) safety; and \(\tau_j,\sigma_h\) predeclared floors. Weighted
+$Q_D$ is domain utility; $R_j$ retention; $S_h$ safety; and $\tau_j,\sigma_h$ predeclared floors. Weighted
 averages are inappropriate when one catastrophic hazard can be hidden by easy wins.
 
 <a id="ch05-contamination"></a>

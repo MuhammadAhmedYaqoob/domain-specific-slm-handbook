@@ -26,7 +26,7 @@ but different template changes the model's input distribution and stopping behav
 
 Generation has two stages. **Prefill** processes all prompt tokens in parallel and creates KV entries. **Decode**
 generates one token at a time while reading prior KV. Context growth therefore increases cache memory and attention
-work. GQA and MQA reduce \(H_{kv}\); lower cache precision reduces bytes per element but requires compatible kernels
+work. GQA and MQA reduce $H_{kv}$; lower cache precision reduces bytes per element but requires compatible kernels
 and quality evaluation.
 
 ## 3. Worked conversion example

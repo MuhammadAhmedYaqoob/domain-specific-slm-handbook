@@ -13,12 +13,14 @@ A model that fits in storage may fail to fit in memory. A model that fits in mem
 slowly. A model that is fast for a 20-second demo may throttle after five minutes. Mobile optimization is therefore a
 constrained, multi-objective problem:
 
-\[ \min \left(T_\text{first},\, T_\text{token},\, M_\text{peak},\, E_\text{token},\, S_\text{artifact}\right)
-\quad\text{subject to}\quad Q \ge Q_\min,\ C \ge C_\min,\ \text{no crash} \]
+$$
+\min \left(T_\text{first},\, T_\text{token},\, M_\text{peak},\, E_\text{token},\, S_\text{artifact}\right)
+\quad\text{subject to}\quad Q \ge Q_\min,\ C \ge C_\min,\ \text{no crash}
+$$
 
-where \(T_\text{first}\) is Time to First Token (TTFT), \(T_\text{token}\) is steady decode time per output token,
-\(M_\text{peak}\) is peak resident memory, \(E_\text{token}\) is energy per generated token, \(S_\text{artifact}\) is
-installed/downloaded model size, \(Q\) is measured task quality, and \(C\) is usable context length.
+where $T_\text{first}$ is Time to First Token (TTFT), $T_\text{token}$ is steady decode time per output token,
+$M_\text{peak}$ is peak resident memory, $E_\text{token}$ is energy per generated token, $S_\text{artifact}$ is
+installed/downloaded model size, $Q$ is measured task quality, and $C$ is usable context length.
 
 No single optimization minimizes all terms. Four-bit weights reduce storage and weight traffic, but a poorly matched
 dequantization kernel can be slower than eight-bit. A GPU can improve prefill while increasing startup cost, memory
@@ -50,14 +52,18 @@ repeatedly reads and appends cache entries one generated token at a time before 
 decode, and UI streaming have different bottlenecks and must be measured separately. Not measured; arrows show
 conceptual relationships only.
 
-Let \(P\) be input tokens and \(G\) generated tokens. A useful decomposition is:
+Let $P$ be input tokens and $G$ generated tokens. A useful decomposition is:
 
-\[ T_\text{total}=T_\text{load}+T_\text{tokenize}+T_\text{prefill}(P)
-+\sum_{i=1}^{G}T_\text{decode}(P+i-1)+T_\text{UI}. \]
+$$
+T_\text{total}=T_\text{load}+T_\text{tokenize}+T_\text{prefill}(P)
++\sum_{i=1}^{G}T_\text{decode}(P+i-1)+T_\text{UI}.
+$$
 
 Warm-request TTFT excludes loading only when the app really keeps a valid model session resident:
 
-\[ T_\text{TTFT}=T_\text{load,cold}+T_\text{tokenize} +T_\text{prefill}(P)+T_\text{decode}(P). \]
+$$
+T_\text{TTFT}=T_\text{load,cold}+T_\text{tokenize} +T_\text{prefill}(P)+T_\text{decode}(P).
+$$
 
 Report cold and warm values separately.
 
@@ -67,7 +73,7 @@ Report cold and warm values separately.
 
 Prefill evaluates all prompt tokens, produces the first logits, and writes a Key-Value (KV) cache for every layer. Its
 matrix multiplications have substantial token-level parallelism. For dense causal attention, attention-score work over
-\(P\) prompt tokens is \(O(P^2)\), although projections and MLPs also contribute heavily. Accelerators and larger prompt
+$P$ prompt tokens is $O(P^2)$, although projections and MLPs also contribute heavily. Accelerators and larger prompt
 batches can be effective because there is enough parallel work.
 
 Optimize prefill by:
@@ -79,7 +85,7 @@ Optimize prefill by:
 5. selecting an accelerator only after including compile, transfer, and synchronization costs;
 6. using an architecture with an efficient attention pattern and fewer KV heads.
 
-Chunked prefill caps a temporary-memory spike by processing \(c<P\) tokens at a time. It usually trades more launches
+Chunked prefill caps a temporary-memory spike by processing $c<P$ tokens at a time. It usually trades more launches
 and synchronization for lower peak memory. It does **not** make the semantic context shorter or remove the final KV
 cache. Chunk size is a memory/throughput tuning parameter, not a quality setting.
 
@@ -87,13 +93,15 @@ cache. Chunk size is a memory/throughput tuning parameter, not a quality setting
 
 Decode evaluates one newly selected token, appends one K/V entry per layer, and attends over prior cache entries. At
 batch one, large weight tensors are repeatedly read for very little arithmetic. Decode is commonly constrained by memory
-bandwidth, kernel-launch overhead, and serial dependency: token \(i+1\) cannot ordinarily begin before token \(i\) is
+bandwidth, kernel-launch overhead, and serial dependency: token $i+1$ cannot ordinarily begin before token $i$ is
 selected.
 
 A simple lower-bound diagnostic is:
 
-\[ T_\text{decode}\gtrsim \max\left(\frac{B_\text{weights}+B_\text{KV-read}}{\text{effective bandwidth}},
-\frac{F_\text{token}}{\text{effective FLOP/s}}\right)+T_\text{launch}. \]
+$$
+T_\text{decode}\gtrsim \max\left(\frac{B_\text{weights}+B_\text{KV-read}}{\text{effective bandwidth}},
+\frac{F_\text{token}}{\text{effective FLOP/s}}\right)+T_\text{launch}.
+$$
 
 This is not a latency predictor. Caches, fusion, dequantization, backend transfers, frequency changes, and contention
 alter all terms.
@@ -105,7 +113,7 @@ threads or accelerator placement; and testing speculation only after the baselin
 ### Worked latency example
 
 Assume an explicitly `ILLUSTRATIVE`, not measured, cold request has 1.20 s loading, 0.04 s tokenization, 1.60 s prefill,
-and 0.12 s for the first decode step. Cold TTFT is \(1.20+0.04+1.60+0.12=2.96\) s; warm TTFT with a resident session is
+and 0.12 s for the first decode step. Cold TTFT is $1.20+0.04+1.60+0.12=2.96$ s; warm TTFT with a resident session is
 1.76 s. If later decode steps average 0.10 s/token, the nominal decode rate is 10 tokens/s and 128 output tokens add
 about 12.8 s. Halving load time changes cold TTFT but not steady decode; halving prompt tokens may change prefill and
 later cache scans but does not imply exactly half the latency. This is why load, prefill, and decode must remain
@@ -130,17 +138,19 @@ separate result columns.
 ## 19.3 KV-cache mechanics and memory
 
 Without a cache, every decode step would recompute keys and values for the entire prefix. A KV cache stores them once.
-For \(L\) decoder layers, \(H_{kv}\) KV heads, head dimension \(d_h\), sequence length \(S\), batch \(B\), and \(b\)
+For $L$ decoder layers, $H_{kv}$ KV heads, head dimension $d_h$, sequence length $S$, batch $B$, and $b$
 bytes per element:
 
-\[ M_\text{KV}=2\,L\,B\,S\,H_{kv}\,d_h\,b. \]
+$$
+M_\text{KV}=2\,L\,B\,S\,H_{kv}\,d_h\,b.
+$$
 
 The factor 2 represents keys and values. Runtimes add alignment, block metadata, staging buffers, or duplicate graph
 I/O, so measured resident memory can exceed this ideal.
 
 <a id="fig-18"></a> **FIG-18 — KV-cache growth (`ESTIMATE`).** Alt text: ideal KV-cache bytes increase linearly with
 cached tokens, layers, batch, KV heads, head width, and bytes per scalar; runtime allocator curves must be measured
-separately. Formula-derived only: \(M_\text{KV}=2LBSH_{kv}d_hb\). Assumptions and worked values follow; alignment,
+separately. Formula-derived only: $M_\text{KV}=2LBSH_{kv}d_hb$. Assumptions and worked values follow; alignment,
 metadata, staging buffers, and duplicate graph I/O are excluded.
 
 ```text
@@ -151,16 +161,16 @@ runtime allocation:   unknown until measured for the exact artifact/runtime/targ
 
 ### Worked memory example
 
-Consider an `ILLUSTRATIVE` 32-layer model with \(H_q=32\), \(d_h=128\), batch one, and 4,096 active tokens:
+Consider an `ILLUSTRATIVE` 32-layer model with $H_q=32$, $d_h=128$, batch one, and 4,096 active tokens:
 
-- **MHA:** \(H_{kv}=32\), FP16: \(2(32)(4096)(32)(128)(2)=2{,}147{,}483{,}648\) bytes, or 2.00 GiB.
-- **GQA with eight KV heads:** \(H_{kv}=8\), FP16: 512 MiB.
+- **MHA:** $H_{kv}=32$, FP16: $2(32)(4096)(32)(128)(2)=2{,}147{,}483{,}648$ bytes, or 2.00 GiB.
+- **GQA with eight KV heads:** $H_{kv}=8$, FP16: 512 MiB.
 - **GQA plus ideal INT8 cache:** approximately 256 MiB before scales/metadata.
 - **Same GQA, 8,192 tokens, FP16:** approximately 1.00 GiB.
 
 Architecture and context can dominate cache memory. Weight quantization does not automatically quantize KV.
 
-Control KV memory by lowering \(S\); choosing fewer KV heads; lowering cache precision; allocating on demand; using a
+Control KV memory by lowering $S$; choosing fewer KV heads; lowering cache precision; allocating on demand; using a
 supported rotating cache; reusing a valid prefix; and destroying inactive sessions. Never infer behavior from a context
 flag alone: determine whether allocation is eager, dynamic, paged, or fixed-shape.
 
@@ -169,10 +179,12 @@ flag alone: determine whether allocation is eager, dynamic, paged, or fixed-shap
 KV quantization lowers cache storage and cache-read bandwidth independently from weight precision. A uniform asymmetric
 quantizer maps:
 
-\[ q=\operatorname{clip}\left(\operatorname{round}\left(\frac{x}{s}\right)+z,\ q_\min,q_\max\right), \qquad
-\hat{x}=s(q-z), \]
+$$
+q=\operatorname{clip}\left(\operatorname{round}\left(\frac{x}{s}\right)+z,\ q_\min,q_\max\right), \qquad
+\hat{x}=s(q-z),
+$$
 
-where \(s\) is scale and \(z\) zero point. Grouping determines which values share metadata; packing and dequantization
+where $s$ is scale and $z$ zero point. Grouping determines which values share metadata; packing and dequantization
 are not free.
 
 `PAPER-REPORTED`: KIVI observed different outlier structure in keys and values and proposed per-channel key and
@@ -201,15 +213,15 @@ dominates. “4× cache compression” is not “4× total-memory reduction.”
 
 ## 19.5 Attention heads: MHA, GQA, MQA, and pruning
 
-With \(H_q\) query heads:
+With $H_q$ query heads:
 
-- **MHA:** \(H_{kv}=H_q\);
-- **GQA:** \(1<H_{kv}<H_q\), with groups sharing K/V;
-- **MQA:** \(H_{kv}=1\).
+- **MHA:** $H_{kv}=H_q$;
+- **GQA:** $1<H_{kv}<H_q$, with groups sharing K/V;
+- **MQA:** $H_{kv}=1$.
 
 MQA targets incremental-decoding KV bandwidth [Shazeer, 2019](https://arxiv.org/abs/1911.02150). GQA interpolates
-between MHA and MQA [Ainslie et al., 2023](https://arxiv.org/abs/2305.13245). For fixed \(L,S,d_h,b\), cache memory
-falls linearly with \(H_{kv}\).
+between MHA and MQA [Ainslie et al., 2023](https://arxiv.org/abs/2305.13245). For fixed $L,S,d_h,b$, cache memory
+falls linearly with $H_{kv}$.
 
 ```mermaid
 flowchart TB
@@ -251,9 +263,11 @@ size (linear), each decode scan (approximately linear), and shared input/output 
 Do not use a model-card maximum as the mobile default. Select the smallest context that passes product tasks, then test
 larger tiers.
 
-A model trained with sliding-window attention lets each token attend to at most \(W\) recent tokens:
+A model trained with sliding-window attention lets each token attend to at most $W$ recent tokens:
 
-\[ M_\text{KV,window}\approx2LBW H_{kv}d_hb, \]
+$$
+M_\text{KV,window}\approx2LBW H_{kv}d_hb,
+$$
 
 subject to global layers/tokens and implementation. Evicting old entries from a full-attention model is not
 automatically equivalent; it changes information and may interact with RoPE, absolute positions, attention sinks, and
@@ -277,7 +291,7 @@ session state, not a global eviction policy.
 
 ## 19.8 FlashAttention: an algorithm family, not a portable switch
 
-FlashAttention tiles \(Q,K,V\), computes online softmax, and reduces transfers between large memory and on-chip memory
+FlashAttention tiles $Q,K,V$, computes online softmax, and reduces transfers between large memory and on-chip memory
 while preserving exact attention semantics apart from floating-point effects.
 
 `PAPER-REPORTED`:
@@ -312,15 +326,17 @@ single-chat optimization.
 
 ## 19.10 Speculative decoding, draft models, and multi-token prediction
 
-Speculative decoding lets a cheaper draft propose \(\gamma\) tokens. The target evaluates those positions together,
+Speculative decoding lets a cheaper draft propose $\gamma$ tokens. The target evaluates those positions together,
 accepts a valid prefix, and corrects rejection. The exact sampling algorithm preserves the target distribution
 [Leviathan et al.](https://arxiv.org/abs/2211.17192); greedy variants need separate equivalence analysis.
 
 An approximate break-even condition is:
 
-\[ \frac{\mathbb{E}[A]+1}{T_d(\gamma)+T_v(\gamma)} > \frac{1}{T_t(1)}, \]
+$$
+\frac{\mathbb{E}[A]+1}{T_d(\gamma)+T_v(\gamma)} > \frac{1}{T_t(1)},
+$$
 
-where \(A\) is accepted draft tokens, \(T_d\) draft time, \(T_v\) verification time, and \(T_t(1)\) ordinary
+where $A$ is accepted draft tokens, $T_d$ draft time, $T_v$ verification time, and $T_t(1)$ ordinary
 target-token time. It fails when the draft is slow, acceptance low, or verification cannot exploit parallel positions.
 
 Mobile costs include second-model storage/RAM, possibly two caches, tokenizer mismatch, cross-device synchronization,
@@ -479,7 +495,9 @@ concurrent update/load, app upgrade, and rollback. Exclude model/cache files fro
 
 A format defines representation; a kernel determines speed:
 
-\[ T=T_\text{read packed}+T_\text{unpack/dequant}+T_\text{compute}+T_\text{requant}+T_\text{sync}. \]
+$$
+T=T_\text{read packed}+T_\text{unpack/dequant}+T_\text{compute}+T_\text{requant}+T_\text{sync}.
+$$
 
 Match CPU ISA, quantization group/block, scale layout, activation dtype, matrix alignment, accelerator support, fusion,
 and KV dtype. INT4 may expand through a slow fallback and save disk without saving peak memory/time. A larger Q5/Q8 may
@@ -529,9 +547,11 @@ Never compare tokens/s across different prompt/output lengths, batch definitions
 Peak speed is not sustained speed. Power raises temperature; the OS lowers frequency or changes scheduling. A
 configuration may win 30 seconds and lose after ten minutes.
 
-\[ E_\text{token}=\frac{\int_{t_0}^{t_1}P(t)\,dt}{G}, \]
+$$
+E_\text{token}=\frac{\int_{t_0}^{t_1}P(t)\,dt}{G},
+$$
 
-where \(P(t)\) is device/process power and \(G\) generated tokens. Battery percentage is too coarse for short runs. Use
+where $P(t)$ is device/process power and $G$ generated tokens. Battery percentage is too coarse for short runs. Use
 platform instruments or external monitoring and declare the measurement boundary.
 
 Android exposes thermal status/headroom and optional sustained-performance mode
@@ -615,8 +635,8 @@ Do not run B–G simultaneously. If the final configuration improves, the team o
 was prompt length, kernel, cache, backend, or threads.
 
 **Latency arithmetic.** After B and C, warm TTFT is
-\(0.04_{\text{tokenize}}+0.95_{\text{prefill}}+0.12_{\text{first decode}}=1.11\) s. If D changes subsequent decode
-to \(1/12\) s/token, the remaining 127 tokens require about 10.58 s rather than 12.7 s. Report TTFT and decode
+$0.04_{\text{tokenize}}+0.95_{\text{prefill}}+0.12_{\text{first decode}}=1.11$ s. If D changes subsequent decode
+to $1/12$ s/token, the remaining 127 tokens require about 10.58 s rather than 12.7 s. Report TTFT and decode
 separately; combining them into one tokens/s value hides which user experience improved.
 
 **Thermal interpretation.** Suppose G produces 13 tok/s in minutes 0–1 and 8 tok/s in minutes 9–10, while D produces
@@ -681,8 +701,8 @@ length avoids early-EOS bias but cannot replace natural completion tests.
 
 - artifact open to ready session (`load_ms`);
 - submit to first model token and first rendered text (`TTFT_ms`);
-- \(\text{prefill tok/s}=\text{input tokens}/\text{prefill seconds}\);
-- \(\text{decode tok/s}=\text{generated tokens}/\text{decode seconds}\), excluding prefill;
+- $\text{prefill tok/s}=\text{input tokens}/\text{prefill seconds}$;
+- $\text{decode tok/s}=\text{generated tokens}/\text{decode seconds}$, excluding prefill;
 - median/p95 inter-token latency;
 - peak proportional/resident memory and post-load memory;
 - download/install peak bytes;
@@ -813,7 +833,7 @@ continuation.
 **Table CH19-3 — Failure-mode guide.**
 
 Also avoid comparing unequal prompts; importing server gains as mobile estimates; excluding
-tokenization/compile/transfer/UI; reporting best-of-\(n\); changing several variables together; treating backend
+tokenization/compile/transfer/UI; reporting best-of-$n$; changing several variables together; treating backend
 selection as proof of acceleration; budgeting model, KV, and app memory separately; persisting sensitive state without
 policy; or shortening away safety behavior.
 
@@ -836,7 +856,7 @@ optimization passes only when runtime and risk-weighted domain metrics pass.
 
 ## 19.26 Exercises and laboratory work
 
-1. **KV calculator:** derive memory for 24 layers, 16 query heads, 4 KV heads, \(d_h=128\), batch one, FP16 at 2K/4K/8K.
+1. **KV calculator:** derive memory for 24 layers, 16 query heads, 4 KV heads, $d_h=128$, batch one, FP16 at 2K/4K/8K.
    Repeat for INT8 and an explicitly illustrative 2% metadata overhead.
 2. **Architecture choice:** compare similarly capable MHA/GQA checkpoints and identify controls needed before
    attributing gains to GQA.

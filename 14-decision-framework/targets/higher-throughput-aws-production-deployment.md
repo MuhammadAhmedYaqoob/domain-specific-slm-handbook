@@ -36,13 +36,17 @@ quality, resource, and latency utilities of 0.333, 0.600, 0.433 and 0.750, 0.067
 
 With weights quality 0.50, resource 0.30, and latency 0.20:
 
-\[
-U(A)=0.50(0.333)+0.30(0.600)+0.20(0.433)=0.433,
-\]
+$$
 
-\[
+U(A)=0.50(0.333)+0.30(0.600)+0.20(0.433)=0.433,
+
+$$
+
+$$
+
 U(B)=0.50(0.750)+0.30(0.067)+0.20(0.200)=0.435.
-\]
+
+$$
 
 B leads a quality-forward calculation; A offers lower cost and better latency. C's attractive throughput and cost cannot compensate for reliability.
 
@@ -54,7 +58,7 @@ acceptable-use restrictions, and downstream terms. Separately estimate maintenan
 kernels, conversion steps, security response, device or instance coverage, observability, and rollback drills.
 
 For example, if A requires 2 engineer-days per quarterly update and B requires 5, annual maintenance is illustratively
-\(2\times4=8\) versus \(5\times4=20\) engineer-days. This may influence preference only after both options pass rights
+$2\times4=8$ versus $5\times4=20$ engineer-days. This may influence preference only after both options pass rights
 and ownership gates.
 
 ## Interpretation and next decision

@@ -40,8 +40,10 @@ card may advertise 128K context while a mobile package supports 4K or 8K.
 
 The actual object selected is a tuple:
 
-\[ C=(\text{repository},\text{revision},\text{weights},\text{tokenizer}, \text{template},\text{license},\text{runtime
-artifact}) \]
+$$
+C=(\text{repository},\text{revision},\text{weights},\text{tokenizer}, \text{template},\text{license},\text{runtime
+artifact})
+$$
 
 Changing any element can change behavior, compatibility, context, or legal obligations.
 
@@ -98,21 +100,25 @@ Exact checkpoint
 
 ### 3.3.1 Parameters and memory
 
-Parameter count is not a quality score. For \(P\) dense parameters stored at \(b\) bits, idealized weight-only memory
+Parameter count is not a quality score. For $P$ dense parameters stored at $b$ bits, idealized weight-only memory
 is:
 
-\[ M_\text{weights}=\frac{Pb}{8} \]
+$$
+M_\text{weights}=\frac{Pb}{8}
+$$
 
 A 1.5B model is about 3.0 GB at 16 bits or 0.75 GB at 4 bits before scales, metadata, alignment, tokenizer files, and
 runtime overhead. This is `ILLUSTRATIVE`, not a measured artifact size.
 
-\[ M_\text{runtime}\approx M_\text{weights}+M_\text{KV}+M_\text{activations} +M_\text{workspace}+M_\text{runtime
-overhead} \]
+$$
+M_\text{runtime}\approx M_\text{weights}+M_\text{KV}+M_\text{activations} +M_\text{workspace}+M_\text{runtime
+overhead}
+$$
 
 Model file size, loaded weight memory, peak memory, and sustained interactive performance are distinct. A model can fit
 in storage but fail to load; it can load but thermally throttle.
 
-Embeddings matter disproportionately in SLMs. A vocabulary of \(V\) tokens and hidden width \(d\) requires \(Vd\)
+Embeddings matter disproportionately in SLMs. A vocabulary of $V$ tokens and hidden width $d$ requires $Vd$
 input-embedding parameters before considering tied output weights. Phi-4 Mini's documented 200K vocabulary is therefore
 both a coverage feature and a capacity/storage choice. `DOC-VERIFIED`
 
@@ -134,9 +140,11 @@ No shape is inherently fastest across a server GPU, laptop CPU, mobile GPU, and 
 Multi-head attention (MHA) gives query heads corresponding key/value heads. Multi-query attention (MQA) shares one KV
 pair. Grouped-query attention (GQA) uses several KV groups. A simplified autoregressive cache estimate is:
 
-\[ M_\text{KV}\approx2LTH_\text{KV}d_hs \]
+$$
+M_\text{KV}\approx2LTH_\text{KV}d_hs
+$$
 
-where \(L\) is layers, \(T\) cached tokens, \(H_\text{KV}\) KV heads, \(d_h\) head dimension, \(s\) bytes per scalar,
+where $L$ is layers, $T$ cached tokens, $H_\text{KV}$ KV heads, $d_h$ head dimension, $s$ bytes per scalar,
 and 2 represents keys and values. Fewer KV heads can materially reduce cache memory. Qwen2.5-0.5B documents 14 query
 heads and 2 KV heads; Llama 3.2 and many candidates use GQA. `DOC-VERIFIED` This does not guarantee overall speed.
 
@@ -160,7 +168,9 @@ checkpoint MoE.
 Tokenizer behavior affects domain strings, Unicode, multilingual text, codes, units, sequence length, and runtime
 portability. Vocabulary size alone does not prove efficiency. Measure token fertility:
 
-\[ F=\frac{\text{tokens produced}}{\text{defined text units}} \]
+$$
+F=\frac{\text{tokens produced}}{\text{defined text units}}
+$$
 
 Use fixed strata: prose, `P0420`-style codes, part numbers, `μg/mL`, drug names, species names, and target languages.
 `PLANNED EXPERIMENT`
@@ -361,7 +371,7 @@ layers: ten double-gated short-convolution and six GQA blocks, with 32,768 conte
 and caution against knowledge-intensive/programming tasks at these sizes. `DOC-VERIFIED`
 
 This is the primary hybrid edge arm but requires backend-specific kernels. LFM Open License v1.0 permits commercial use
-only below a stated $10M annual-revenue threshold. Sources: [350M](https://huggingface.co/LiquidAI/LFM2-350M),
+only below a stated \$10M annual-revenue threshold. Sources: [350M](https://huggingface.co/LiquidAI/LFM2-350M),
 [700M](https://huggingface.co/LiquidAI/LFM2-700M), [1.2B](https://huggingface.co/LiquidAI/LFM2-1.2B),
 [license](https://huggingface.co/LiquidAI/LFM2-1.2B/raw/main/LICENSE).
 
@@ -650,7 +660,7 @@ better on at least one. Prefer named outcomes—“lowest-memory qualified,” �
 
 Suppose a phone budget allows 1.5 GiB for model weights and 256 MiB for KV cache at a 4,096-token context. Idealized
 4-bit weights for 1B, 1.7B, and 3B models are about 0.47, 0.79, and 1.40 GiB respectively
-(\(P\times4/8\), converted to GiB). The 3B candidate is already too close to the weight ceiling once quantization
+($P\times4/8$, converted to GiB). The 3B candidate is already too close to the weight ceiling once quantization
 scales, metadata, runtime workspaces, and the application are included. It should not advance merely because its quality
 score is highest.
 

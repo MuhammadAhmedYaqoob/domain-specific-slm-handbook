@@ -41,12 +41,15 @@ The practical problem is simple to state: given a sequence of tokens, assign it 
 next. The engineering consequences are not simple. Natural language has a vast combinatorial space, long-range
 dependencies, ambiguous references, rare terminology, and knowledge that changes over time.
 
-Let \(x_{1:T}=(x_1,x_2,\ldots,x_T)\), where \(x_t\) is the token at position \(t\) and \(T\) is sequence length. The
+Let $x_{1:T}=(x_1,x_2,\ldots,x_T)$, where $x_t$ is the token at position $t$ and $T$ is sequence length. The
 probability chain rule gives:
 
-<a id="eq-ch01-01"></a> \[ \boxed{P(x_{1:T})=\prod_{t=1}^{T}P(x_t\mid x_{<t})} \tag{EQ-CH01-01} \]
+<a id="eq-ch01-01"></a>
+$$
+\boxed{P(x_{1:T})=\prod_{t=1}^{T}P(x_t\mid x_{<t})} \tag{EQ-CH01-01}
+$$
 
-Here \(x_{<t}\) means all tokens before position \(t\). This identity does not prescribe an architecture. An N-gram
+Here $x_{<t}$ means all tokens before position $t$. This identity does not prescribe an architecture. An N-gram
 table, recurrent network, and decoder-only Transformer can all estimate the conditional term while making very different
 assumptions about context and computation.
 
@@ -60,18 +63,24 @@ Modern neural systems are much larger estimators, but they do not repeal the cha
 
 ### 1.2 Cross-entropy and perplexity
 
-For next-token training, a model with parameters \(\theta\) produces \(p_\theta(v\mid x_{<t})\) for every vocabulary
-token \(v\). The average negative log-likelihood is:
+For next-token training, a model with parameters $\theta$ produces $p_\theta(v\mid x_{<t})$ for every vocabulary
+token $v$. The average negative log-likelihood is:
 
 <!-- markdownlint-disable-next-line MD049 -->
-<a id="eq-ch01-02"></a> \[ \boxed{\mathcal{L}_{\mathrm{NLL}}(\theta) =-\frac{1}{N}\sum_{i=1}^{N}\log p_\theta(x_i\mid
-x_{<i})} \tag{EQ-CH01-02} \]
+<a id="eq-ch01-02"></a>
+$$
+\boxed{\mathcal{L}_{\mathrm{NLL}}(\theta) =-\frac{1}{N}\sum_{i=1}^{N}\log p_\theta(x_i\mid
+x_{<i})} \tag{EQ-CH01-02}
+$$
 
-\(N\) is the number of predicted tokens. With one-hot targets, this is token-level cross-entropy. Perplexity is:
+$N$ is the number of predicted tokens. With one-hot targets, this is token-level cross-entropy. Perplexity is:
 
-<a id="eq-ch01-03"></a> \[ \boxed{\mathrm{PPL}=\exp(\mathcal{L}_{\mathrm{NLL}})} \tag{EQ-CH01-03} \]
+<a id="eq-ch01-03"></a>
+$$
+\boxed{\mathrm{PPL}=\exp(\mathcal{L}_{\mathrm{NLL}})} \tag{EQ-CH01-03}
+$$
 
-when natural logarithms are used. If average loss is \(1.5\) nats/token, perplexity is \(e^{1.5}\approx4.48\). This does
+when natural logarithms are used. If average loss is $1.5$ nats/token, perplexity is $e^{1.5}\approx4.48$. This does
 not mean the model literally considers 4.48 equally likely words; it is an effective-uncertainty intuition.
 
 Perplexities are comparable only when tokenization, test data, preprocessing, and loss accounting are compatible.
@@ -98,15 +107,21 @@ Early practical language models needed to estimate sequence probabilities using 
 Counting was attractive: if “spark plug” is frequently followed by “gap,” empirical frequency is evidence for the next
 word. The difficulty is sparsity. Even a large corpus observes only a minute fraction of possible sentences.
 
-An order-\(n\) N-gram model approximates the full history by the preceding \(n-1\) tokens:
+An order-$n$ N-gram model approximates the full history by the preceding $n-1$ tokens:
 
-<a id="eq-ch01-04"></a> \[ \boxed{P(x_t\mid x_{<t})\approx P(x_t\mid x_{t-n+1:t-1})} \tag{EQ-CH01-04} \]
+<a id="eq-ch01-04"></a>
+$$
+\boxed{P(x_t\mid x_{<t})\approx P(x_t\mid x_{t-n+1:t-1})} \tag{EQ-CH01-04}
+$$
 
 The maximum-likelihood trigram estimate is:
 
-<a id="eq-ch01-05"></a> \[ \boxed{\hat P(x_t=c\mid x_{t-2}=a,x_{t-1}=b)=\frac{C(a,b,c)}{C(a,b)}} \tag{EQ-CH01-05} \]
+<a id="eq-ch01-05"></a>
+$$
+\boxed{\hat P(x_t=c\mid x_{t-2}=a,x_{t-1}=b)=\frac{C(a,b,c)}{C(a,b)}} \tag{EQ-CH01-05}
+$$
 
-\(C(\cdot)\) is a corpus count. If “fuel pressure” occurs 100 times, followed by “test” 35 times and “regulator” 15
+$C(\cdot)$ is a corpus count. If “fuel pressure” occurs 100 times, followed by “test” 35 times and “regulator” 15
 times, the unsmoothed probabilities are 0.35 and 0.15. An unseen continuation receives zero. One zero term makes the
 entire sequence probability zero.
 
@@ -165,17 +180,20 @@ feature learned for one sequence could help another. **Evidence: PAPER-REPORTED.
 
 ### 3.2 Feed-forward neural LM internals
 
-For a fixed context of \(k\) tokens:
+For a fixed context of $k$ tokens:
 
-1. map each token ID \(x_i\) to \(e_i=E[x_i]\), with embedding matrix \(E\in\mathbb{R}^{V\times d}\);
-2. concatenate or combine the \(k\) embeddings;
+1. map each token ID $x_i$ to $e_i=E[x_i]$, with embedding matrix $E\in\mathbb{R}^{V\times d}$;
+2. concatenate or combine the $k$ embeddings;
 3. transform them through nonlinear layers;
-4. project to \(V\) logits;
+4. project to $V$ logits;
 5. apply softmax.
 
-<a id="eq-ch01-06"></a> \[ \boxed{p(x_t=j\mid x_{<t})=\frac{\exp(z_j)}{\sum_{v=1}^{V}\exp(z_v)}} \tag{EQ-CH01-06} \]
+<a id="eq-ch01-06"></a>
+$$
+\boxed{p(x_t=j\mid x_{<t})=\frac{\exp(z_j)}{\sum_{v=1}^{V}\exp(z_v)}} \tag{EQ-CH01-06}
+$$
 
-If logits for three candidates are \([2,1,0]\), softmax probabilities are approximately \([0.665,0.245,0.090]\). Logits
+If logits for three candidates are $[2,1,0]$, softmax probabilities are approximately $[0.665,0.245,0.090]$. Logits
 are unnormalized scores, not probabilities.
 
 Neural models exchange sparse count storage for learned matrices and floating-point operations. Embeddings enable
@@ -194,17 +212,20 @@ compute; historical alternatives include hierarchical softmax and sampled losses
 
 **Intuition:** carry a state forward; each token updates a running summary.
 
-<a id="eq-ch01-07"></a> \[ \boxed{h_t=\phi(W_{xh}e_t+W_{hh}h_{t-1}+b_h),\qquad z_t=W_{hy}h_t+b_y} \tag{EQ-CH01-07} \]
+<a id="eq-ch01-07"></a>
+$$
+\boxed{h_t=\phi(W_{xh}e_t+W_{hh}h_{t-1}+b_h),\qquad z_t=W_{hy}h_t+b_y} \tag{EQ-CH01-07}
+$$
 
-\(e_t\in\mathbb{R}^{d}\) is the current embedding, \(h_t\in\mathbb{R}^{m}\) hidden state, \(W\) learned matrices, \(b\)
-biases, and \(\phi\) a nonlinearity. The same parameters are reused at every position.
+$e_t\in\mathbb{R}^{d}$ is the current embedding, $h_t\in\mathbb{R}^{m}$ hidden state, $W$ learned matrices, $b$
+biases, and $\phi$ a nonlinearity. The same parameters are reused at every position.
 
 Backpropagation through time repeatedly multiplies recurrent Jacobians. Their norms can shrink (vanishing gradients) or
 grow (exploding gradients), making distant dependencies hard to learn. Gradient clipping helps explosions but not the
 short-memory bias. [Elman, 1990](https://doi.org/10.1207/s15516709cog1402_1), *Finding Structure in Time*, demonstrated
 recurrent learning of temporal structure. **Evidence: PAPER-REPORTED.**
 
-The dependency \(h_t\leftarrow h_{t-1}\) limits training parallelism. Inference is streaming and retains fixed-size
+The dependency $h_t\leftarrow h_{t-1}$ limits training parallelism. Inference is streaming and retains fixed-size
 state, a possible edge advantage, but compressing all history into one state impairs precise access to old details.
 
 <a id="ch01-4-2"></a>
@@ -213,12 +234,15 @@ state, a possible edge advantage, but compressing all history into one state imp
 
 LSTM adds a memory cell and learned write, retain, and expose controls:
 
-<a id="eq-ch01-08"></a> \[ \begin{aligned} i_t&=\sigma(W_i[e_t;h_{t-1}]+b_i),& f_t&=\sigma(W_f[e_t;h_{t-1}]+b_f),\\
+<a id="eq-ch01-08"></a>
+$$
+\begin{aligned} i_t&=\sigma(W_i[e_t;h_{t-1}]+b_i),& f_t&=\sigma(W_f[e_t;h_{t-1}]+b_f),\\
 o_t&=\sigma(W_o[e_t;h_{t-1}]+b_o),& \tilde c_t&=\tanh(W_c[e_t;h_{t-1}]+b_c),\\ c_t&=f_t\odot c_{t-1}+i_t\odot\tilde
-c_t,& h_t&=o_t\odot\tanh(c_t). \end{aligned} \tag{EQ-CH01-08} \]
+c_t,& h_t&=o_t\odot\tanh(c_t). \end{aligned} \tag{EQ-CH01-08}
+$$
 
-\(\sigma\) is sigmoid, \(\odot\) elementwise multiplication, and \([a;b]\) concatenation. The input gate \(i_t\)
-controls writing, forget gate \(f_t\) retention, and output gate \(o_t\) exposure. If an element of \(f_t\) stays near
+$\sigma$ is sigmoid, $\odot$ elementwise multiplication, and $[a;b]$ concatenation. The input gate $i_t$
+controls writing, forget gate $f_t$ retention, and output gate $o_t$ exposure. If an element of $f_t$ stays near
 one, that memory component and its gradient can persist.
 
 [Hochreiter and Schmidhuber, 1997](https://doi.org/10.1162/neco.1997.9.8.1735) introduced LSTM in *Neural Computation*.
@@ -230,11 +254,14 @@ Variants differ in gates, peepholes, projections, and normalization. **Evidence:
 
 The GRU combines cell and hidden state:
 
-<a id="eq-ch01-09"></a> \[ \begin{aligned} z_t&=\sigma(W_z[e_t;h_{t-1}]),\quad r_t=\sigma(W_r[e_t;h_{t-1}]),\\ \tilde
+<a id="eq-ch01-09"></a>
+$$
+\begin{aligned} z_t&=\sigma(W_z[e_t;h_{t-1}]),\quad r_t=\sigma(W_r[e_t;h_{t-1}]),\\ \tilde
 h_t&=\tanh(W_h[e_t;r_t\odot h_{t-1}]),\\ h_t&=(1-z_t)\odot h_{t-1}+z_t\odot\tilde h_t . \end{aligned} \tag{EQ-CH01-09}
-\]
 
-\(z_t\) is an update gate and \(r_t\) a reset gate. Some implementations reverse interpolation coefficients, so
+$$
+
+$z_t$ is an update gate and $r_t$ a reset gate. Some implementations reverse interpolation coefficients, so
 documentation matters. The GRU appeared in [Cho et al., 2014](https://aclanthology.org/D14-1179/), EMNLP. **Evidence:
 PAPER-REPORTED.**
 
@@ -252,8 +279,8 @@ streaming tasks with stable recurrent runtime support; modern generative ecosyst
 
 Translation and summarization map one sequence to another. Seq2seq introduced:
 
-1. an encoder that reads \(x_{1:S}\);
-2. a decoder modeling \(P(y_t\mid y_{<t},x_{1:S})\);
+1. an encoder that reads $x_{1:S}$;
+2. a decoder modeling $P(y_t\mid y_{<t},x_{1:S})$;
 3. teacher forcing during training; and
 4. autoregressive feedback during inference.
 
@@ -267,11 +294,14 @@ carry the complete source, creating an information bottleneck. **Evidence: PAPER
 
 Attention lets each decoder step compute a weighted combination of encoder states:
 
-<a id="eq-ch01-10"></a> \[ \boxed{\alpha_{t,s}= \frac{\exp(\operatorname{score}(q_t,k_s))}
-{\sum_{j=1}^{S}\exp(\operatorname{score}(q_t,k_j))}, \qquad c_t=\sum_{s=1}^{S}\alpha_{t,s}v_s} \tag{EQ-CH01-10} \]
+<a id="eq-ch01-10"></a>
+$$
+\boxed{\alpha_{t,s}= \frac{\exp(\operatorname{score}(q_t,k_s))}
+{\sum_{j=1}^{S}\exp(\operatorname{score}(q_t,k_j))}, \qquad c_t=\sum_{s=1}^{S}\alpha_{t,s}v_s} \tag{EQ-CH01-10}
+$$
 
-\(\alpha_{t,s}\) is the weight from output position \(t\) to source position \(s\); \(c_t\) is context. Scores
-\([2,1,0]\) normalize to approximately \([0.665,0.245,0.090]\). With scalar values \([10,4,-2]\), \(c_t\approx7.45\).
+$\alpha_{t,s}$ is the weight from output position $t$ to source position $s$; $c_t$ is context. Scores
+$[2,1,0]$ normalize to approximately $[0.665,0.245,0.090]$. With scalar values $[10,4,-2]$, $c_t\approx7.45$.
 
 [Bahdanau, Cho, and Bengio, 2015](https://arxiv.org/abs/1409.0473), ICLR, showed learned soft alignment;
 [Luong, Pham, and Manning, 2015](https://aclanthology.org/D15-1166/), EMNLP, compared global and local variants.
@@ -295,11 +325,14 @@ sequence processing. Tokens interact through attention; position is represented 
 [Vaswani et al., 2017](https://papers.nips.cc/paper/7181-attention-is-all-you-need), *Attention Is All You Need*
 (NeurIPS), introduced the encoder-decoder Transformer. **Evidence: PAPER-REPORTED.**
 
-<a id="eq-ch01-11"></a> \[ \boxed{\operatorname{Attention}(Q,K,V)
-=\operatorname{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}+M\right)V} \tag{EQ-CH01-11} \]
+<a id="eq-ch01-11"></a>
+$$
+\boxed{\operatorname{Attention}(Q,K,V)
+=\operatorname{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}+M\right)V} \tag{EQ-CH01-11}
+$$
 
-\(Q\in\mathbb{R}^{T_q\times d_k}\), \(K\in\mathbb{R}^{T_k\times d_k}\), and \(V\in\mathbb{R}^{T_k\times d_v}\) are
-queries, keys, and values; \(d_k\) is key width; \(M\) masks forbidden positions. Scaling prevents dot products from
+$Q\in\mathbb{R}^{T_q\times d_k}$, $K\in\mathbb{R}^{T_k\times d_k}$, and $V\in\mathbb{R}^{T_k\times d_v}$ are
+queries, keys, and values; $d_k$ is key width; $M$ masks forbidden positions. Scaling prevents dot products from
 growing with dimension and saturating softmax.
 
 Multi-head attention applies several learned projections, concatenates their outputs, and projects again. Heads create
@@ -331,7 +364,7 @@ position-wise MLP, residual paths, and normalization. Attention mixes token info
 position with shared parameters.
 
 Training can process all positions simultaneously because targets are known and a causal mask prevents leakage. Standard
-dense attention forms a \(T\times T\) score pattern, creating quadratic work in straightforward implementations.
+dense attention forms a $T\times T$ score pattern, creating quadratic work in straightforward implementations.
 Efficient kernels reduce intermediate memory but do not make every attention pattern linear.
 
 Transformers map well to parallel accelerators, but autoregressive decoding remains sequential. Key-value (KV) caching
@@ -358,7 +391,7 @@ These are typical patterns, not universal laws.
 bidirectional Transformer pretraining with masked-language modeling and next-sentence prediction. Contextual
 representations are usually fine-tuned with task heads. **Evidence: PAPER-REPORTED.**
 
-**Decoder-only:** position \(t\) attends only to positions \(\le t\). The causal structure matches
+**Decoder-only:** position $t$ attends only to positions $\le t$. The causal structure matches
 [EQ-CH01-01](#eq-ch01-01). Prompt and continuation use one stack.
 
 **Encoder-decoder:** the encoder sees the source; the decoder uses causal self-attention and cross-attention. T5 cast
@@ -423,10 +456,13 @@ associations in its corpus; it is not given a transactionally consistent symboli
 Generation tokenizes the prompt, runs a **prefill** to create KV state, obtains next-token logits, applies a decoding
 rule, appends one token, and repeats.
 
-<a id="eq-ch01-12"></a> \[ \boxed{x_t\sim\operatorname{softmax}\left(\frac{z_t}{\tau}\right)} \tag{EQ-CH01-12} \]
+<a id="eq-ch01-12"></a>
+$$
+\boxed{x_t\sim\operatorname{softmax}\left(\frac{z_t}{\tau}\right)} \tag{EQ-CH01-12}
+$$
 
-\(\tau>0\) is temperature. Lower values sharpen the distribution; higher values flatten it. Greedy decoding uses
-\(\arg\max_j z_{t,j}\). Top-\(k\) and top-\(p\) restrict candidates. These controls alter generation behavior; they do
+$\tau>0$ is temperature. Lower values sharpen the distribution; higher values flatten it. Greedy decoding uses
+$\arg\max_j z_{t,j}$. Top-$k$ and top-$p$ restrict candidates. These controls alter generation behavior; they do
 not add missing knowledge or guarantee truth.
 
 <a id="fig-ch01-03"></a> **FIG-CH01-03 — ILLUSTRATIVE: training versus inference.**  
@@ -524,13 +560,16 @@ Architecture, precision, vocabulary, context, KV layout, sparsity, runtime, and 
 
 No row is a universal empirical result; each is a tendency to validate.
 
-<a id="eq-ch01-13"></a> \[ \boxed{M_{\mathrm{weights}}\approx N_p\frac{b}{8}} \tag{EQ-CH01-13} \]
+<a id="eq-ch01-13"></a>
+$$
+\boxed{M_{\mathrm{weights}}\approx N_p\frac{b}{8}} \tag{EQ-CH01-13}
+$$
 
-\(N_p\) is parameter count and \(b\) bits per parameter. One billion parameters require ideally 2.0 GB at 16 bits or 0.5
+$N_p$ is parameter count and $b$ bits per parameter. One billion parameters require ideally 2.0 GB at 16 bits or 0.5
 GB at 4 bits. Real files add scales, zero points, metadata, and alignment. Runtime also needs KV cache, workspaces, and
 application memory; training needs activations, gradients, optimizer state, and often master weights.
 
-> Model file size \(\ne\) loaded memory \(\ne\) peak runtime memory \(\ne\) acceptable performance.
+> Model file size $\ne$ loaded memory $\ne$ peak runtime memory $\ne$ acceptable performance.
 
 <a id="ch01-11"></a>
 
@@ -593,10 +632,13 @@ parameter count and argued for scaling parameters and tokens together under fixe
 
 A generic empirical form is:
 
-<a id="eq-ch01-14"></a> \[ \boxed{L(N,D)\approx L_\infty+A N^{-\alpha}+B D^{-\beta}} \tag{EQ-CH01-14} \]
+<a id="eq-ch01-14"></a>
+$$
+\boxed{L(N,D)\approx L_\infty+A N^{-\alpha}+B D^{-\beta}} \tag{EQ-CH01-14}
+$$
 
-\(L\) is validation loss, \(N\) parameter count, \(D\) training tokens, \(L_\infty\) an asymptotic term, and
-\(A,B,\alpha,\beta\) fitted constants. This is descriptive over measured regimes, not a universal law.
+$L$ is validation loss, $N$ parameter count, $D$ training tokens, $L_\infty$ an asymptotic term, and
+$A,B,\alpha,\beta$ fitted constants. This is descriptive over measured regimes, not a universal law.
 
 The defensible conclusions are limited:
 
@@ -608,13 +650,16 @@ The defensible conclusions are limited:
 
 For a dense decoder-only Transformer, a common first-order training estimate is:
 
-<a id="eq-ch01-15"></a> \[ \boxed{C_{\mathrm{train}}\approx 6N_pD} \tag{EQ-CH01-15} \]
+<a id="eq-ch01-15"></a>
+$$
+\boxed{C_{\mathrm{train}}\approx 6N_pD} \tag{EQ-CH01-15}
+$$
 
-\(N_p\) is an approximately compatible non-embedding parameter count and \(D\) token count. The coefficient roughly
+$N_p$ is an approximately compatible non-embedding parameter count and $D$ token count. The coefficient roughly
 covers forward and backward matrix operations. Attention, embeddings, sparsity, recomputation, optimizer operations, and
 utilization alter realized compute.
 
-**ILLUSTRATIVE estimate:** \(N_p=10^9\), \(D=2\times10^{10}\) gives \(1.2\times10^{20}\) FLOPs. This is not a runtime,
+**ILLUSTRATIVE estimate:** $N_p=10^9$, $D=2\times10^{10}$ gives $1.2\times10^{20}$ FLOPs. This is not a runtime,
 cost, or executed run.
 
 Data quality constrains data scaling. Repeating one manual 100 times increases tokens but not independent coverage. For
@@ -633,7 +678,7 @@ Inference is forward-only but repeated for every request. Decoder inference has 
 - **prefill:** process prompt tokens and construct KV cache;
 - **decode:** generate one token at a time while reading weights and cached state.
 
-A rough dense forward estimate is often proportional to \(2N_p\) operations per generated token for weight
+A rough dense forward estimate is often proportional to $2N_p$ operations per generated token for weight
 multiplications, but attention, vocabulary projection, batching, quantization, and utilization matter. It is not a
 latency prediction.
 

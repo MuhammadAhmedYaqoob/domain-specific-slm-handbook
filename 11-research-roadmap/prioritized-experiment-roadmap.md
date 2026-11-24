@@ -48,10 +48,12 @@ A full Cartesian benchmark grows too quickly. `ILLUSTRATIVE`: four base models,
 three adaptation methods, four quantizers, three pruning choices, three
 distillation choices, four runtimes, and six devices would create
 
-\[
+$$
+
 4 \times 3 \times 4 \times 3 \times 3 \times 4 \times 6
 = 10{,}368
-\]
+
+$$
 
 tuples before seeds, workloads, and repetitions. At three seeds and ten device
 trials, that becomes 311,040 trial instances. Most would test broken,

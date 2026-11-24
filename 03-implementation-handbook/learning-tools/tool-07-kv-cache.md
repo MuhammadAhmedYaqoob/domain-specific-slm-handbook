@@ -15,7 +15,7 @@ and V each store one element per layer, batch item, token, KV head, and head dim
 
 Required positive values: `--layers`, `--query-heads`, `--kv-heads`, `--head-dim`, `--tokens`, `--batch`,
 `--bytes-per-element`; KV heads must not exceed query heads and query heads must divide evenly by KV heads.
-\(B=2LBSH_{kv}D_hE\). Output identifies attention mode (`MHA`, `GQA`, `MQA`), grouping ratio, bytes, MiB, and bytes per
+$B=2LBSH_{kv}D_hE$. Output identifies attention mode (`MHA`, `GQA`, `MQA`), grouping ratio, bytes, MiB, and bytes per
 added token. Sliding windows, cache quantization metadata, alignment, cross-attention, prefix sharing, and temporary
 attention workspace are not included.
 
@@ -58,7 +58,7 @@ if __name__=="__main__": main()
 
 ## Fixtures, commands, interpretation, and limitations
 
-Fixture: \(2·2·1·10·2·8·2=1,280\) bytes; one extra token costs 128 bytes. Run
+Fixture: $2·2·1·10·2·8·2=1,280$ bytes; one extra token costs 128 bytes. Run
 `python tools/kv_cache.py --self-test`. Confirm architecture config and runtime cache layout; measured peak memory can
 be materially larger and context acceptance does not prove long-context quality.
 

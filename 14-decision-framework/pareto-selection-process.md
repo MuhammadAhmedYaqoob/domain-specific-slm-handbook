@@ -45,16 +45,20 @@ For A and B, normalize with frozen bounds: quality 75–90, memory 2–3 GiB, la
 
 With weights quality 0.50, memory 0.20, latency 0.20, energy 0.10:
 
-\[
-U(A)=0.50(0.467)+0.20(0.800)+0.20(0.467)+0.10(0.600)=0.547,
-\]
+$$
 
-\[
+U(A)=0.50(0.467)+0.20(0.800)+0.20(0.467)+0.10(0.600)=0.547,
+
+$$
+
+$$
+
 U(B)=0.50(0.667)+0.20(0.200)+0.20(0.333)+0.10(0.300)=0.470.
-\]
+
+$$
 
 A is preferred under those values. If quality weight rises to 0.80 and the other three weights become 0.08, 0.08,
-and 0.04, \(U(A)=0.494\) and \(U(B)=0.584\); B is preferred. The recommendation is therefore
+and 0.04, $U(A)=0.494$ and $U(B)=0.584$; B is preferred. The recommendation is therefore
 **preference-sensitive**. This is useful information: stakeholders must choose whether seven-tenths of a GiB and
 additional latency/energy are worth three quality points.
 

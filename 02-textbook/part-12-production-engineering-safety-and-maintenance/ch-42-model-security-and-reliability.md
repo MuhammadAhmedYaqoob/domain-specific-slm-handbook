@@ -30,8 +30,10 @@ After this chapter, the reader should be able to:
    and
 6. distinguish model integrity, confidentiality, behavioral safety, reliability, privacy, and legal authorization.
 
-\[ \boxed{ \text{acceptable release} = \text{authenticated lineage} \land \text{qualified behavior} \land
-\text{compatible runtime} \land \text{enforced policy} \land \text{recoverability} } \tag{EQ-CH42-01} \]
+$$
+\boxed{ \text{acceptable release} = \text{authenticated lineage} \land \text{qualified behavior} \land
+\text{compatible runtime} \land \text{enforced policy} \land \text{recoverability} } \tag{EQ-CH42-01}
+$$
 
 A failure in any term blocks release. Authenticity does not prove behavioral safety; benchmark quality does not prove
 provenance; encryption does not prove integrity; and a refusal prompt does not prove adversarial robustness.
@@ -267,11 +269,13 @@ nominally medium path to signing credentials may be release-critical.
 poisoning** retains plausible labels. A **backdoor** activates behavior on a trigger—text, spelling, formatting,
 metadata, rare tokens, or a semantic concept—while ordinary tests pass.
 
-For clean records \(D_c\) and poisoned records \(D_p\):
+For clean records $D_c$ and poisoned records $D_p$:
 
-\[ \rho=\frac{|D_p|}{|D_c|+|D_p|}. \tag{EQ-CH42-02} \]
+$$
+\rho=\frac{|D_p|}{|D_c|+|D_p|}. \tag{EQ-CH42-02}
+$$
 
-`ILLUSTRATIVE`: 20,000 malicious records among 10,000,000 total records gives \(\rho=0.2\%\). Even a small fraction can
+`ILLUSTRATIVE`: 20,000 malicious records among 10,000,000 total records gives $\rho=0.2\%$. Even a small fraction can
 dominate a rare safety topic when duplicated or up-weighted. Fraction alone is not a risk score.
 
 Attack paths include upstream corpora, malicious forum posts, synthetic-teacher contamination, labeler manipulation,
@@ -370,8 +374,8 @@ Mitigations:
 - evaluate differential privacy where its measured privacy/utility trade-off fits.
 
 Exposure metrics are experiment-specific and cannot certify absence of memorization. Differential privacy supplies a
-formal training guarantee only when clipping, noise, sampling assumptions, accountant, and \((\varepsilon,\delta)\) are
-correctly implemented and reported. Lower \(\varepsilon\) generally represents a stronger bound under declared
+formal training guarantee only when clipping, noise, sampling assumptions, accountant, and $(\varepsilon,\delta)$ are
+correctly implemented and reported. Lower $\varepsilon$ generally represents a stronger bound under declared
 assumptions, but there is no universal acceptable value.
 
 ### Model extraction

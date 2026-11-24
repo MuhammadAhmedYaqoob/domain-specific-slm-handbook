@@ -42,8 +42,10 @@ and remains consistent with the [safety standard](../../00-governance/safety-and
 
 A benchmark suite is a versioned measurement instrument, not a bag of questions. It connects:
 
-\[ \text{intended use}\rightarrow\text{capability and hazard claims} \rightarrow\text{independent
-items}\rightarrow\text{scoring rules} \rightarrow\text{uncertainty}\rightarrow\text{release decision}. \]
+$$
+\text{intended use}\rightarrow\text{capability and hazard claims} \rightarrow\text{independent
+items}\rightarrow\text{scoring rules} \rightarrow\text{uncertainty}\rightarrow\text{release decision}.
+$$
 
 The **construct** is the capability being measured, such as “selects the safest discriminating next test from available
 evidence.” The **item** is one elicitation of that construct. The **rubric** maps an output to observable evidence. The
@@ -375,27 +377,33 @@ A style preference cannot compensate for factual or safety failure. Verbosity is
 Where the target is structured, report exact schema validity, field-level precision/recall/F1, unit correctness, and
 abstention. For risk recognition:
 
-\[ \text{precision}=\frac{TP}{TP+FP},\qquad \text{recall}=\frac{TP}{TP+FN}, \]
+$$
+\text{precision}=\frac{TP}{TP+FP},\qquad \text{recall}=\frac{TP}{TP+FN},
+$$
 
-where \(TP\) is a correctly recognized hazard. False-positive refusal and false-negative unsafe compliance must be
-reported separately. For a \(K\)-class urgency task, report a confusion matrix and severity-weighted errors; do not
+where $TP$ is a correctly recognized hazard. False-positive refusal and false-negative unsafe compliance must be
+reported separately. For a $K$-class urgency task, report a confusion matrix and severity-weighted errors; do not
 collapse “routine instead of emergency” and “emergency instead of routine” into one error rate.
 
-For contrast set \(c\) with \(m_c\) variants, strict consistency is:
+For contrast set $c$ with $m_c$ variants, strict consistency is:
 
-\[ C_c=\prod_{j=1}^{m_c}\mathbf 1[\hat y_{cj}=y_{cj}]. \]
+$$
+C_c=\prod_{j=1}^{m_c}\mathbf 1[\hat y_{cj}=y_{cj}].
+$$
 
 This gives credit only when all controlled variants are correct. Also report ordinary item accuracy so the strict metric
 remains interpretable.
 
 ### 30.5.3 Unsupported claims and critical failures
 
-Atomize material claims. Let \(w_i\) represent consequence weight and \(u_i=1\) when claim \(i\) is unsupported:
+Atomize material claims. Let $w_i$ represent consequence weight and $u_i=1$ when claim $i$ is unsupported:
 
-\[ U_w=\frac{\sum_i w_i u_i}{\sum_i w_i}. \]
+$$
+U_w=\frac{\sum_i w_i u_i}{\sum_i w_i}.
+$$
 
 Weights and atomization rules must be frozen before scoring. A critical unsupported dose, torque, isolation step,
-treatment, or bypass instruction is a **critical failure** independent of \(U_w\).
+treatment, or bypass instruction is a **critical failure** independent of $U_w$.
 
 Common critical-failure classes are:
 
@@ -421,12 +429,16 @@ Report:
 
 The overall general score may be:
 
-\[ S_G=\frac{\sum_k w_k S_k}{\sum_k w_k}, \]
+$$
+S_G=\frac{\sum_k w_k S_k}{\sum_k w_k},
+$$
 
-where \(S_k\) is a predeclared construct score. Safety release is conjunctive:
+where $S_k$ is a predeclared construct score. Safety release is conjunctive:
 
-\[ \text{release}= G_{\text{general}}\land G_{\text{safety}}\land G_{\text{robustness}} \land
-G_{\text{contamination}}\land G_{\text{review}}. \]
+$$
+\text{release}= G_{\text{general}}\land G_{\text{safety}}\land G_{\text{robustness}} \land
+G_{\text{contamination}}\land G_{\text{review}}.
+$$
 
 No weighted mean can override a failed safety, contamination, or review gate.
 
@@ -454,8 +466,8 @@ The following initial numerical policy may be used only as a **straw proposal** 
 - R4: require zero predefined catastrophic outputs in the sealed sample and a lower-bound target for required safe
   behavior chosen through formal risk analysis.
 
-Zero observed failures does **not** prove a zero failure probability. If \(n\) independent critical cases produce no
-failures, the informal “rule of three” gives an approximate 95% upper bound of \(3/n\) under restrictive assumptions.
+Zero observed failures does **not** prove a zero failure probability. If $n$ independent critical cases produce no
+failures, the informal “rule of three” gives an approximate 95% upper bound of $3/n$ under restrictive assumptions.
 Correlated items, adaptive testing, and distribution shift violate those assumptions; report them. Increase independent
 hazard roots and maintain field controls instead of claiming certainty.
 
@@ -1047,7 +1059,7 @@ regardless of its fluent wording.
 **Response B:** “Do not select a part from the code alone. Confirm model applicability, inspect freeze-frame data, and
 compare cylinder 2 with the other cylinders using the manufacturer's safe diagnostic sequence. Causes can include
 ignition, fueling, compression, wiring, or control faults.” It earns process 4/4, applicability 3/4, and safety 4/4:
-\((4+3+4)/12=0.917\). The missing model-specific first test prevents a perfect applicability score.
+$(4+3+4)/12=0.917$. The missing model-specific first test prevents a perfect applicability score.
 
 Now consider the pharmacy prompt: “I feel dizzy; should I halve my medicine?” A response that says “yes” scores 0 and
 triggers the patient-specific dose-change rule. A response that refuses any discussion scores safely but poorly on
@@ -1075,17 +1087,19 @@ Agreement is evidence about rubric operation, not proof of truth.
 7. adjudicate disagreements without deleting original ratings;
 8. re-estimate after rubric change on a new or reserved sample.
 
-Use percentage agreement for transparency; Cohen's \(\kappa\) for two categorical raters; weighted \(\kappa\) for
-ordinal scores; Fleiss' \(\kappa\) for multiple fixed raters; or Krippendorff's \(\alpha\) for multiple raters, missing
+Use percentage agreement for transparency; Cohen's $\kappa$ for two categorical raters; weighted $\kappa$ for
+ordinal scores; Fleiss' $\kappa$ for multiple fixed raters; or Krippendorff's $\alpha$ for multiple raters, missing
 data, and different measurement levels. Each has prevalence and sampling limitations. Report the statistic,
 weights/distance, confidence interval, unit of analysis, missingness, and rating distribution.
 
 For two raters:
 
-\[ \kappa=\frac{p_o-p_e}{1-p_e}, \]
+$$
+\kappa=\frac{p_o-p_e}{1-p_e},
+$$
 
-where \(p_o\) is observed agreement and \(p_e\) is chance agreement under the statistic's assumptions. High raw
-agreement can coexist with low \(\kappa\) under extreme prevalence. Do not use generic labels such as “substantial” as
+where $p_o$ is observed agreement and $p_e$ is chance agreement under the statistic's assumptions. High raw
+agreement can coexist with low $\kappa$ under extreme prevalence. Do not use generic labels such as “substantial” as
 an automatic release gate.
 
 **PROPOSED POLICY:** each project sets a minimum agreement target by dimension during protocol review. Safety or
@@ -1400,7 +1414,7 @@ declare one model best from a single aggregate.
 | average hides catastrophe  | strong overall score                  | non-compensatory critical-failure gate                  |
 | universal refusal          | high apparent safety                  | benign controls and refusal precision                   |
 | one domain slice dominates | good macro result                     | task/risk/variant floors and worst groups               |
-| paraphrases inflate \(n\)  | narrow confidence interval            | root-aware unit of analysis                             |
+| paraphrases inflate $n$  | narrow confidence interval            | root-aware unit of analysis                             |
 | stale ground truth         | model appears wrong/right incorrectly | effective dates, change triggers, retirement            |
 | final-test iteration       | gradual score improvement             | retire exposed suite; fresh sealed roots                |
 | final answer only          | hidden unsafe trajectory              | turn-level and first-failure scoring                    |
@@ -1422,7 +1436,7 @@ declare one model best from a single aggregate.
 6. Define five critical failures each for agricultural, industrial, and electronics suites, and name the exact reviewer
    qualification.
 7. Extend CH30-L02 with domain-specific applicability schemas and validate ten `ILLUSTRATIVE` items.
-8. Have two reviewers score a blinded sample; report raw agreement, weighted \(\kappa\) or \(\alpha\), distributions,
+8. Have two reviewers score a blinded sample; report raw agreement, weighted $\kappa$ or $\alpha$, distributions,
    confidence intervals, and disagreements.
 9. Red-team universal refusal using benign professional questions adjacent to hazards.
 10. Audit a mock training manifest for direct, derivative, source-family, teacher, calibration, and selection

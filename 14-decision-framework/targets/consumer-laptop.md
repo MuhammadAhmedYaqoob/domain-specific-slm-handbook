@@ -36,13 +36,17 @@ quality, resource, and latency utilities of 0.250, 0.867, 0.250 and 0.667, 0.400
 
 With weights quality 0.50, resource 0.25, and latency 0.25:
 
-\[
-U(A)=0.50(0.250)+0.25(0.867)+0.25(0.250)=0.404,
-\]
+$$
 
-\[
+U(A)=0.50(0.250)+0.25(0.867)+0.25(0.250)=0.404,
+
+$$
+
+$$
+
 U(B)=0.50(0.667)+0.25(0.400)+0.25(0.580)=0.579.
-\]
+
+$$
 
 B leads for this plugged-capable balanced profile. C demonstrates that a faster, higher-quality model can still fail portable-resource gates.
 
@@ -54,7 +58,7 @@ acceptable-use restrictions, and downstream terms. Separately estimate maintenan
 kernels, conversion steps, security response, device or instance coverage, observability, and rollback drills.
 
 For example, if A requires 2 engineer-days per quarterly update and B requires 5, annual maintenance is illustratively
-\(2\times4=8\) versus \(5\times4=20\) engineer-days. This may influence preference only after both options pass rights
+$2\times4=8$ versus $5\times4=20$ engineer-days. This may influence preference only after both options pass rights
 and ownership gates.
 
 ## Interpretation and next decision

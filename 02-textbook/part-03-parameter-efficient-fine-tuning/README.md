@@ -33,7 +33,7 @@ evaluated artifact form. Benchmark merged and unmerged forms separately when the
 
 ### Practice before continuing
 
-For one \(4096\times4096\) projection, calculate LoRA trainable elements at ranks 8, 16, and 32. Then list what the
+For one $4096\times4096$ projection, calculate LoRA trainable elements at ranks 8, 16, and 32. Then list what the
 calculation omits: number of targeted projections, optimizer state, activations, frozen-base storage, and runtime merge
 behavior.
 

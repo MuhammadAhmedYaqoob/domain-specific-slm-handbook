@@ -40,12 +40,14 @@ natively pretrained student of similar deployment cost.
 
 ## Core objectives
 
-For teacher logits \(z_t\), student logits \(z_s\), and temperature \(T\):
+For teacher logits $z_t$, student logits $z_s$, and temperature $T$:
 
-\[ p_t^{(T)}=\operatorname{softmax}(z_t/T),\qquad p_s^{(T)}=\operatorname{softmax}(z_s/T) \]
+$$
+p_t^{(T)}=\operatorname{softmax}(z_t/T),\qquad p_s^{(T)}=\operatorname{softmax}(z_s/T)
+$$
 
-A common logit loss is \(T^2 D_{KL}(p_t^{(T)}\|p_s^{(T)})\), mixed with hard-label cross-entropy. The direction of KL,
-sampled context, vocabulary alignment, and reduction all matter. The \(T^2\) factor is a conventional gradient-scale
+A common logit loss is $T^2 D_{KL}(p_t^{(T)}\|p_s^{(T)})$, mixed with hard-label cross-entropy. The direction of KL,
+sampled context, vocabulary alignment, and reduction all matter. The $T^2$ factor is a conventional gradient-scale
 correction, not a universal requirement.
 
 <!-- markdownlint-disable MD013 -->

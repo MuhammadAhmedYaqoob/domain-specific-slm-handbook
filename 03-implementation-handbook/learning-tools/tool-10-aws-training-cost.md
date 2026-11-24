@@ -16,7 +16,7 @@ currency per that unit, and currency. **Assumptions:** supplied meters are non-o
 Input JSON requires nonblank `estimate_id`, `region`, ISO `price_as_of_utc` with timezone, `currency`, and nonempty
 `lines`. Every line requires unique `meter_id`, nonnegative finite `quantity`, positive finite `unit_price`, and matching
 nonblank `unit`, `price_source`, `price_record_id`; all line currencies must equal the document currency.
-\(C=\sum_i q_ip_i\). `--max-price-age-days` is required and positive; stale or future prices fail. Output reports each
+$C=\sum_i q_ip_i$. `--max-price-age-days` is required and positive; stale or future prices fail. Output reports each
 subtotal and total, but remains an estimate. Taxes, tiers, minimums, Spot interruptions, storage, transfer, logs,
 failed/recovery work, and support must each be explicit lines when applicable.
 

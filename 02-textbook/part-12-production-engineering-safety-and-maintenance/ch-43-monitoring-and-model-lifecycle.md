@@ -34,11 +34,13 @@ After this chapter, the reader should be able to:
 
 The core identity invariant is:
 
-\[ \boxed{R=(D,C,B,A,T,G,O,E,P)} \tag{EQ-CH43-01} \]
+$$
+\boxed{R=(D,C,B,A,T,G,O,E,P)} \tag{EQ-CH43-01}
+$$
 
-where \(D\)=dataset graph, \(C\)=training code/configuration, \(B\)=base checkpoint, \(A\)=adapter or merged weights,
-\(T\)=tokenizer and chat template, \(G\)=generation/safety policy, \(O\)=runtime/container/app, \(E\)=execution
-environment and compatibility cohort, and \(P\)=provenance, evaluations, approvals, and package manifest. Changing any
+where $D$=dataset graph, $C$=training code/configuration, $B$=base checkpoint, $A$=adapter or merged weights,
+$T$=tokenizer and chat template, $G$=generation/safety policy, $O$=runtime/container/app, $E$=execution
+environment and compatibility cohort, and $P$=provenance, evaluations, approvals, and package manifest. Changing any
 member creates a new release identity or separately controlled configuration revision. “The weights did not change” does
 not prove behavior did not change.
 
@@ -245,9 +247,11 @@ queue plus prefill-to-first-token time, so phase events identify the responsible
    file paths, or memory contents.
 5. Fleet aggregation calculates 18 crash sessions among 1,240 eligible sessions:
 
-\[
+$$
+
 \mathrm{CrashSessionRate}=\frac{18}{1240}=0.0145=1.45\%.
-\]
+
+$$
 
 1. The cohort-specific rollout stops while other unaffected cohorts remain unchanged. A lab reproduction compares peak
    memory for `r11` and `r12`; only that controlled test supports a memory-regression diagnosis.
@@ -384,29 +388,33 @@ stack.
 
 ## 43.7 Drift detection
 
-Let reference data follow \(P_0(X,Y)\) and current data \(P_t(X,Y)\), where \(X\) is observable input/metadata and \(Y\)
+Let reference data follow $P_0(X,Y)$ and current data $P_t(X,Y)$, where $X$ is observable input/metadata and $Y$
 is desired outcome.
 
-- **Covariate drift:** \(P_t(X)\ne P_0(X)\).
-- **Label/prior drift:** \(P_t(Y)\ne P_0(Y)\).
-- **Concept drift:** \(P_t(Y\mid X)\ne P_0(Y\mid X)\).
+- **Covariate drift:** $P_t(X)\ne P_0(X)$.
+- **Label/prior drift:** $P_t(Y)\ne P_0(Y)$.
+- **Concept drift:** $P_t(Y\mid X)\ne P_0(Y\mid X)$.
 - **Prediction drift:** output, refusal, length, or score distribution changes.
 - **Operational drift:** runtime, hardware, OS, policy, or traffic conditions change.
 - **Data-quality drift:** missingness, parse failure, duplication, schema, language, or unit distribution changes.
 
-Telemetry normally observes privacy-minimized features of \(X\), not \(Y\). It can detect a changed distribution but
+Telemetry normally observes privacy-minimized features of $X$, not $Y$. It can detect a changed distribution but
 cannot prove concept drift or degradation. More long prompts may explain slower TTFT without a runtime regression.
 
 For categorical distributions, Population Stability Index is:
 
-\[ \mathrm{PSI}=\sum_{i=1}^{k}(p_i-q_i)\ln\frac{p_i}{q_i}, \tag{EQ-CH43-02} \]
+$$
+\mathrm{PSI}=\sum_{i=1}^{k}(p_i-q_i)\ln\frac{p_i}{q_i}, \tag{EQ-CH43-02}
+$$
 
-where \(p_i,q_i\) are reference/current proportions. Zero bins require declared smoothing. PSI thresholds are
+where $p_i,q_i$ are reference/current proportions. Zero bins require declared smoothing. PSI thresholds are
 conventions, not universal guarantees.
 
-For empirical one-dimensional distributions \(F_0,F_t\), the Kolmogorov–Smirnov statistic is:
+For empirical one-dimensional distributions $F_0,F_t$, the Kolmogorov–Smirnov statistic is:
 
-\[ D_{KS}=\sup_x|F_0(x)-F_t(x)|. \tag{EQ-CH43-03} \]
+$$
+D_{KS}=\sup_x|F_0(x)-F_t(x)|. \tag{EQ-CH43-03}
+$$
 
 Large samples flag negligible change; repeated tests inflate false alarms; dependent observations violate simple
 assumptions. Report effect, uncertainty, sample size, window, and multiplicity. Classifier two-sample or representation
@@ -441,10 +449,12 @@ Use:
 
 For higher-is-better quality:
 
-\[ \Delta q=q_c-q_b. \tag{EQ-CH43-04} \]
+$$
+\Delta q=q_c-q_b. \tag{EQ-CH43-04}
+$$
 
-Use paired cases and intervals. A non-inferiority gate requires the lower confidence bound of \(\Delta q\) to exceed
-predeclared \(-\delta\). A safety-critical failure is non-compensatory.
+Use paired cases and intervals. A non-inferiority gate requires the lower confidence bound of $\Delta q$ to exceed
+predeclared $-\delta$. A safety-critical failure is non-compensatory.
 
 Online “hallucination rate” is unavailable without ground truth. Do not relabel heuristic disagreement or a model-judge
 score as factual error unless validated for that domain and severity.
@@ -471,8 +481,10 @@ Android vitals and `ApplicationExitInfo` and Apple MetricKit provide documented 
 Third-party crash SDKs add processors, identifiers, and transfer paths requiring separate review. Documentation does not
 prove a particular integration compliant.
 
-\[ \mathrm{CrashFreeSessionRate} =1-\frac{N_{\text{sessions with crash}}}{N_{\text{eligible sessions}}}.
-\tag{EQ-CH43-05} \]
+$$
+\mathrm{CrashFreeSessionRate} =1-\frac{N_{\text{sessions with crash}}}{N_{\text{eligible sessions}}}.
+\tag{EQ-CH43-05}
+$$
 
 Define session, eligibility, deduplication, delayed upload, and offline missingness. Unuploaded crashes make estimates
 incomplete. A crash loop must trigger local safe start or a qualified predecessor without waiting for telemetry.
@@ -494,9 +506,11 @@ Follow
 
 For a lower-is-better metric:
 
-\[ \rho_m=\frac{m_c}{m_b}. \tag{EQ-CH43-06} \]
+$$
+\rho_m=\frac{m_c}{m_b}. \tag{EQ-CH43-06}
+$$
 
-`ILLUSTRATIVE`: controlled median TTFT changing from 420 ms to 470 ms yields \(\rho=1.119\), an 11.9% increase. This is
+`ILLUSTRATIVE`: controlled median TTFT changing from 420 ms to 470 ms yields $\rho=1.119$, an 11.9% increase. This is
 not a project result and is insufficient without uncertainty, tails, workload, and failures.
 
 Fleet events should be sampled and bucketed. Continuous profiling drains battery and changes what is measured. Bound
@@ -643,11 +657,13 @@ fundamentals may not. No universal cadence is established.
 Continual learning updates a model over sequential tasks/distributions while retaining earlier capability. Naive
 sequential fine-tuning can cause catastrophic forgetting.
 
-Let \(a_{i,j}\) be performance on task \(j\) after learning through task \(i\). After \(T\) tasks:
+Let $a_{i,j}$ be performance on task $j$ after learning through task $i$. After $T$ tasks:
 
-\[ F_j=\max_{i<T}a_{i,j}-a_{T,j},\qquad \bar F=\frac{1}{T-1}\sum_{j=1}^{T-1}F_j. \tag{EQ-CH43-07} \]
+$$
+F_j=\max_{i<T}a_{i,j}-a_{T,j},\qquad \bar F=\frac{1}{T-1}\sum_{j=1}^{T-1}F_j. \tag{EQ-CH43-07}
+$$
 
-Higher \(F_j\) means more loss. Results depend on task order, metric direction, checkpoint, and suite; report per-task
+Higher $F_j$ means more loss. Results depend on task order, metric direction, checkpoint, and suite; report per-task
 and safety failures.
 
 Mitigations:

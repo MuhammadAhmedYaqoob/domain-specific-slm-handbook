@@ -40,29 +40,33 @@ excess memory with lower latency. Only Cedar-1 Q4 proceeds to preference analysi
 
 ## Normalization without result-dependent bounds
 
-For a maximize objective with policy bounds \(L\) and \(U\),
+For a maximize objective with policy bounds $L$ and $U$,
 
-\[
+$$
+
 u_{\max}(x)=\operatorname{clip}\left(\frac{x-L}{U-L},0,1\right).
-\]
+
+$$
 
 For a minimize objective,
 
-\[
-u_{\min}(x)=\operatorname{clip}\left(\frac{U-x}{U-L},0,1\right).
-\]
+$$
 
-The utility is \(U(x)=\sum_j w_j u_j(x)\), with non-negative weights summing to one. Bounds are frozen from target
+u_{\min}(x)=\operatorname{clip}\left(\frac{U-x}{U-L},0,1\right).
+
+$$
+
+The utility is $U(x)=\sum_j w_j u_j(x)$, with non-negative weights summing to one. Bounds are frozen from target
 policy, not selected from observed minima and maxima.
 
 For illustrative Cedar-1 Q4, use accuracy bounds 75–90, memory bounds 2.0–3.0 GiB, and latency bounds 1.0–2.5 s:
 
-- accuracy utility: \((80-75)/(90-75)=5/15=0.333\);
-- memory utility: \((3.0-2.3)/(3.0-2.0)=0.700\);
-- latency utility: \((2.5-1.8)/(2.5-1.0)=0.467\).
+- accuracy utility: $(80-75)/(90-75)=5/15=0.333$;
+- memory utility: $(3.0-2.3)/(3.0-2.0)=0.700$;
+- latency utility: $(2.5-1.8)/(2.5-1.0)=0.467$.
 
 With weights 0.50, 0.30, and 0.20, the score is
-\(0.50(0.333)+0.30(0.700)+0.20(0.467)=0.470\). The result is a preference score, not a probability, safety rating, or
+$0.50(0.333)+0.30(0.700)+0.20(0.467)=0.470$. The result is a preference score, not a probability, safety rating, or
 universal quality measure.
 
 ## Evidence confidence
@@ -94,7 +98,7 @@ observability, rollback drills, and support horizon.
 
 Illustratively, option L costs 4 engineer-days per quarterly update and has approved redistribution; option M costs
 1 day but its redistribution terms are unresolved. M is rejected, not rewarded for lower maintenance. If both licenses
-pass, annual effort could be compared as \(4\times4=16\) versus \(1\times4=4\) engineer-days, with uncertainty stated.
+pass, annual effort could be compared as $4\times4=16$ versus $1\times4=4$ engineer-days, with uncertainty stated.
 
 ## Measurement discipline
 

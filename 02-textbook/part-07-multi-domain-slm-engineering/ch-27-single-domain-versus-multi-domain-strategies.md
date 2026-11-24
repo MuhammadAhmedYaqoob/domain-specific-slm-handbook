@@ -75,24 +75,30 @@ an AWS multi-task teacher. Treat the ten strategies as design primitives, not mu
 
 ### 27.1.1 Accuracy, forgetting, and interference
 
-For domains \(d\in\{1,\ldots,K\}\), let \(Q_d(\theta)\) be a domain evaluation score where larger is better. A weighted
+For domains $d\in\{1,\ldots,K\}$, let $Q_d(\theta)$ be a domain evaluation score where larger is better. A weighted
 aggregate is
 
-\[ Q_{\mathrm{macro}}=\sum_{d=1}^{K}w_dQ_d,\qquad w_d\ge 0,\quad \sum_dw_d=1. \]
+$$
+Q_{\mathrm{macro}}=\sum_{d=1}^{K}w_dQ_d,\qquad w_d\ge 0,\quad \sum_dw_d=1.
+$$
 
 The weights must be declared. Equal-domain macro averaging prevents a large automotive test from silently dominating a
 small pharmacy test, but safety cannot be compensated by an average.
 
-For a sequentially trained model, forgetting on earlier domain \(i\) after learning through domain \(t\) can be reported
+For a sequentially trained model, forgetting on earlier domain $i$ after learning through domain $t$ can be reported
 as
 
-\[ F_{i,t}=\max_{s\in\{i,\ldots,t-1\}}Q_i(\theta_s)-Q_i(\theta_t). \]
+$$
+F_{i,t}=\max_{s\in\{i,\ldots,t-1\}}Q_i(\theta_s)-Q_i(\theta_t).
+$$
 
 This measures loss relative to the best earlier checkpoint. It does not say why performance changed. **Interference** is
 broader: gradients or representations useful for one domain harm another during joint or composed training. One
 diagnostic is cosine similarity between per-domain gradients:
 
-\[ \cos(g_i,g_j)=\frac{g_i^\top g_j}{\|g_i\|_2\|g_j\|_2}. \]
+$$
+\cos(g_i,g_j)=\frac{g_i^\top g_j}{\|g_i\|_2\|g_j\|_2}.
+$$
 
 A negative value identifies a local gradient conflict at the sampled batch; it does not prove that joint training will
 reduce held-out quality. PCGrad projects conflicting task gradients in multi-task optimization [R9] (`PAPER-REPORTED`),
@@ -100,14 +106,18 @@ but its reported results do not establish a universal remedy for generative SLMs
 
 ### 27.1.2 Storage is not mobile RAM
 
-For \(P\) stored parameters at \(b\) bits, ideal weight storage is
+For $P$ stored parameters at $b$ bits, ideal weight storage is
 
-\[ S_{\mathrm{weights}}=\frac{Pb}{8}. \]
+$$
+S_{\mathrm{weights}}=\frac{Pb}{8}.
+$$
 
 Peak inference memory is instead approximately
 
-\[ M_{\mathrm{peak}} = M_{\mathrm{resident\ weights}}+M_{\mathrm{KV}}+M_{\mathrm{activations}}
-+M_{\mathrm{runtime}}+M_{\mathrm{temporary}}+M_{\mathrm{loaded\ alternatives}}. \]
+$$
+M_{\mathrm{peak}} = M_{\mathrm{resident\ weights}}+M_{\mathrm{KV}}+M_{\mathrm{activations}}
++M_{\mathrm{runtime}}+M_{\mathrm{temporary}}+M_{\mathrm{loaded\ alternatives}}.
+$$
 
 File metadata, quantization scales, alignment, tokenizer assets, dequantized buffers, and allocator behavior make real
 values differ. A checkpoint that fits in storage may not fit in RAM; two checkpoints stored on a phone need not be
@@ -118,9 +128,11 @@ warm-up, tokenizer/chat template changes, and lost caches. It must be measured, 
 
 ### Independent-model mechanism
 
-Choose a base checkpoint \(\theta_0\), make a distinct trainable copy for each domain, and optimize
+Choose a base checkpoint $\theta_0$, make a distinct trainable copy for each domain, and optimize
 
-\[ \theta_d^\_=\arg\min_{\theta_d} \mathbb{E}_{(x,y)\sim D_d}\mathcal{L}(y\mid x;\theta_d). \]
+$$
+\theta_d^\_=\arg\min_{\theta_d} \mathbb{E}_{(x,y)\sim D_d}\mathcal{L}(y\mid x;\theta_d).
+$$
 
 Each released checkpoint has its own tokenizer/template compatibility record, training lineage, safety policy,
 evaluation suite, and version. The models may share an ancestor but do not share trainable state after branching.
@@ -131,7 +143,7 @@ evaluation suite, and version. The models may share an ancestor but do not share
   Each domain still depends on data, optimization, and evaluation.
 - **Forgetting/interference:** no cross-domain gradient interference after the branch. Within-domain fine-tuning can
   still forget general capabilities.
-- **Storage/training/update:** storage grows approximately with \(K P\). Full fine-tuning is repeated; a domain update
+- **Storage/training/update:** storage grows approximately with $K P$. Full fine-tuning is repeated; a domain update
   affects one artifact but requires its own train/evaluate/export/release cycle.
 - **Device/RAM/switching:** one model can be resident at a time under a tight RAM budget. Switching whole models is
   generally a larger operation than changing a small adapter, but actual latency is runtime- and device-specific.
@@ -150,11 +162,13 @@ automatically produces the highest accuracy.
 
 ### LoRA-adapter mechanism
 
-Freeze a common base matrix \(W_0\) and train a low-rank update per domain:
+Freeze a common base matrix $W_0$ and train a low-rank update per domain:
 
-\[ W_d = W_0+s_dB_dA_d, \]
+$$
+W_d = W_0+s_dB_dA_d,
+$$
 
-where \(A_d\in\mathbb{R}^{r\times k}\), \(B_d\in\mathbb{R}^{m\times r}\), rank \(r\ll\min(k,m)\), and \(s_d\) is a
+where $A_d\in\mathbb{R}^{r\times k}$, $B_d\in\mathbb{R}^{m\times r}$, rank $r\ll\min(k,m)$, and $s_d$ is a
 scaling factor. LoRA was introduced by Hu et al. [R1] (`PAPER-REPORTED`). At inference, the runtime applies one adapter
 dynamically or uses an offline merged domain checkpoint.
 
@@ -203,10 +217,12 @@ backend supports dynamic LoRA.
 
 Train one parameter set on a mixture
 
-\[ D_{\mathrm{mix}}=\sum_{d=1}^{K}\pi_dD_d,\qquad \mathcal{L}_{\mathrm{mix}}(\theta)= \sum_{d=1}^{K}\lambda_d\, <!-- markdownlint-disable-line MD013 MD049 -->
-\mathbb{E}_{D_d}\mathcal{L}_d(\theta), \]
+$$
+D_{\mathrm{mix}}=\sum_{d=1}^{K}\pi_dD_d,\qquad \mathcal{L}_{\mathrm{mix}}(\theta)= \sum_{d=1}^{K}\lambda_d\, <!-- markdownlint-disable-line MD013 MD049 -->
+\mathbb{E}_{D_d}\mathcal{L}_d(\theta),
+$$
 
-where \(\pi_d\) is the sampling share and \(\lambda_d\) the loss weight. They need not be equal. Domain tags may be
+where $\pi_d$ is the sampling share and $\lambda_d$ the loss weight. They need not be equal. Domain tags may be
 supplied, but one dense set of weights answers every domain.
 
 ### Joint-model engineering assessment
@@ -234,11 +250,13 @@ joint retraining and full regression.
 
 ### Continual-training mechanism
 
-Start with \(\theta_0\), then update sequentially:
+Start with $\theta_0$, then update sequentially:
 
-\[ \theta_t=\operatorname{Train}(\theta_{t-1},D_t\cup R_t; \mathcal{L}_t+\beta\Omega_t). \]
+$$
+\theta_t=\operatorname{Train}(\theta_{t-1},D_t\cup R_t; \mathcal{L}_t+\beta\Omega_t).
+$$
 
-\(R_t\) is optional replay from prior domains and \(\Omega_t\) is an optional retention regularizer. Replay,
+$R_t$ is optional replay from prior domains and $\Omega_t$ is an optional retention regularizer. Replay,
 regularization such as Elastic Weight Consolidation (EWC) [R4], parameter isolation, and rehearsal through generated
 examples are continual-learning families. EWC's reported classification results do not establish effectiveness for this
 SLM setting.
@@ -270,9 +288,9 @@ affordable. **Do not use as a shortcut** for “keep fine-tuning the same checkp
 
 Composition uses two or more trained adapters in one forward path. Common forms include:
 
-- **stacking:** \(h'=f_{a_2}(f_{a_1}(h))\);
-- **parallel weighted sum:** \(h'=h+\sum_j\alpha_j\Delta h_j\);
-- **learned fusion:** attention or gates learn \(\alpha_j(x,\ell)\) by input \(x\) and layer \(\ell\); and
+- **stacking:** $h'=f_{a_2}(f_{a_1}(h))$;
+- **parallel weighted sum:** $h'=h+\sum_j\alpha_j\Delta h_j$;
+- **learned fusion:** attention or gates learn $\alpha_j(x,\ell)$ by input $x$ and layer $\ell$; and
 - **task/domain plus safety adapter:** a domain delta is combined with a separately trained behavioral delta.
 
 AdapterFusion learns to combine frozen task adapters [R2] (`PAPER-REPORTED`). Its NLU results neither guarantee
@@ -304,11 +322,15 @@ independently good adapters compose well.
 
 Model merging creates a new checkpoint without ordinary joint retraining. Simple interpolation is
 
-\[ \theta_{\mathrm{merge}}=\sum_{j=1}^{J}\alpha_j\theta_j,\qquad \sum_j\alpha_j=1. \]
+$$
+\theta_{\mathrm{merge}}=\sum_{j=1}^{J}\alpha_j\theta_j,\qquad \sum_j\alpha_j=1.
+$$
 
-When all models descend from the same base \(\theta_0\), task vectors \(\tau_j=\theta_j-\theta_0\) can be combined:
+When all models descend from the same base $\theta_0$, task vectors $\tau_j=\theta_j-\theta_0$ can be combined:
 
-\[ \theta_{\mathrm{merge}}=\theta_0+\sum_j\alpha_j\tau_j. \]
+$$
+\theta_{\mathrm{merge}}=\theta_0+\sum_j\alpha_j\tau_j.
+$$
 
 Model soups average fine-tuned models in a common basin [R5]; task arithmetic studies vector operations on fine-tuned
 models [R6]; TIES-Merging trims small changes, resolves sign conflicts, and merges aligned updates [R7]
@@ -370,9 +392,11 @@ confuse:** instruction tuning with complete acquisition or exact recall of domai
 
 ### MoE mechanism
 
-A Mixture-of-Experts (MoE) layer contains experts \(E_j\) and a learned router. For token representation \(h\),
+A Mixture-of-Experts (MoE) layer contains experts $E_j$ and a learned router. For token representation $h$,
 
-\[ p=\operatorname{softmax}(W_gh),\qquad y=\sum_{j\in\operatorname{TopK}(p)}p_jE_j(h). \]
+$$
+p=\operatorname{softmax}(W_gh),\qquad y=\sum_{j\in\operatorname{TopK}(p)}p_jE_j(h).
+$$
 
 Only selected experts execute per token, while all expert weights normally remain stored and available. A load-balancing
 objective discourages collapse onto a few experts. Sparsely-Gated MoE [R12], GShard [R13], and Switch Transformer [R14]
@@ -409,10 +433,12 @@ role rather than “pharmacy expert.”
 
 A request-level router predicts a domain or set of candidate models:
 
-\[ \hat d=\arg\max_d p_\phi(d\mid x,c,u), \]
+$$
+\hat d=\arg\max_d p_\phi(d\mid x,c,u),
+$$
 
-where \(x\) is the request, \(c\) conversation state, and \(u\) authorized domains. A policy then selects model
-\(M_{\hat d}\), asks for clarification, uses a permitted general fallback, or refuses. Unlike MoE, this gate usually
+where $x$ is the request, $c$ conversation state, and $u$ authorized domains. A policy then selects model
+$M_{\hat d}$, asks for clarification, uses a permitted general fallback, or refuses. Unlike MoE, this gate usually
 runs once per request or turn and selects whole already-trained models.
 
 **FIG-CH27-03 — Entitlement- and uncertainty-aware request routing (`ILLUSTRATIVE`).** Alt text: an input passes
@@ -470,7 +496,7 @@ flowchart TD
 | telemetry blind spot      | only final answer logged                 | route defects look like model defects     | privacy-aware route/model/version metadata                |
 <!-- markdownlint-restore -->
 
-Report a confusion matrix, per-class precision/recall, top-\(k\) recall, coverage-versus-selective-risk curve,
+Report a confusion matrix, per-class precision/recall, top-$k$ recall, coverage-versus-selective-risk curve,
 calibration error, OOD performance, mixed-domain behavior, end-to-end task quality, safety failures, and switch latency.
 Router accuracy alone is insufficient: a 1% error rate concentrated in pharmacy emergencies can be unacceptable.
 
@@ -478,14 +504,16 @@ Router accuracy alone is insufficient: a 1% error rate concentrated in pharmacy 
 
 ### Distillation mechanism
 
-Train one or more smaller students from domain teachers. For student logits \(z_s\), teacher logits \(z_t\), temperature
-\(T\), and supervised target \(y\), a common objective is
+Train one or more smaller students from domain teachers. For student logits $z_s$, teacher logits $z_t$, temperature
+$T$, and supervised target $y$, a common objective is
 
-\[ \mathcal{L} = \alpha T^2\operatorname{KL}
+$$
+\mathcal{L} = \alpha T^2\operatorname{KL}
 \left(\operatorname{softmax}(z_t/T)\,\|\,\operatorname{softmax}(z_s/T)\right)
-+(1-\alpha)\operatorname{CE}(y,\operatorname{softmax}(z_s)). \]
++(1-\alpha)\operatorname{CE}(y,\operatorname{softmax}(z_s)).
+$$
 
-Domain-aware variants can use teacher \(T_d\), domain-conditioned losses, domain-balanced batches, intermediate-feature
+Domain-aware variants can use teacher $T_d$, domain-conditioned losses, domain-balanced batches, intermediate-feature
 matching, or separate students. Hinton et al. [R15], DistilBERT [R16], and MiniLM [R17] provide foundational
 distillation mechanisms and reported results. They do not establish results for this project's decoder-only specialist
 models.
@@ -522,15 +550,15 @@ engineering priors, not a measured ranking).**
 <!-- markdownlint-disable MD013 -->
 |   # | Strategy                      | Knowledge accuracy                     | Forgetting / interference                              | Storage                               | Training cost                                          | Update complexity                            | Isolation, licensing, access                            |
 | --: | ----------------------------- | -------------------------------------- | ------------------------------------------------------ | ------------------------------------- | ------------------------------------------------------ | -------------------------------------------- | ------------------------------------------------------- |
-|   1 | Independent models            | dedicated specialization potential     | no cross-model interference; within-model forgetting   | \(K\) full artifacts                  | repeated adaptation, potentially full FT               | isolated release, repeated export/test       | direct per-domain boundary; repeated base terms         |
-|   2 | Base + independent LoRA       | strong if base/rank fit                | adapters isolated; composition can conflict            | one base + \(K\) deltas               | low trainable-parameter count; still needs data/eval   | easy per adapter; strict base compatibility  | separable deltas, shared-base dependency                |
+|   1 | Independent models            | dedicated specialization potential     | no cross-model interference; within-model forgetting   | $K$ full artifacts                  | repeated adaptation, potentially full FT               | isolated release, repeated export/test       | direct per-domain boundary; repeated base terms         |
+|   2 | Base + independent LoRA       | strong if base/rank fit                | adapters isolated; composition can conflict            | one base + $K$ deltas               | low trainable-parameter count; still needs data/eval   | easy per adapter; strict base compatibility  | separable deltas, shared-base dependency                |
 |   3 | One multi-domain model        | transfer or capacity competition       | joint interference                                     | one full artifact                     | joint training and balancing                           | every update triggers all-domain tests       | weak domain removal/access boundary                     |
 |   4 | Continual FT                  | newest-domain emphasis                 | explicit sequential-forgetting concern                 | latest artifact plus rollback history | incremental run plus replay/regression                 | order-dependent; old domains retested        | knowledge entangled; deletion difficult                 |
 |   5 | Adapter composition           | complementary or conflicting           | components preserved; combined path interferes         | base + adapters + fusion              | adapters plus optional fusion training                 | composition matrix expands                   | all component rights/entitlements apply                 |
 |   6 | Model merging                 | candidate-dependent                    | weight/task-vector conflict                            | one serving artifact; many dev inputs | little/no gradient training; evaluation search remains | re-merge and requalify                       | source influence inseparable after merge                |
 |   7 | Multi-task instruction tuning | transfer with explicit task contracts  | task gradient and format conflict                      | one full artifact                     | joint curation/training                                | broad regression and prompt-contract updates | task tags are not access control                        |
 |   8 | MoE                           | high total-capacity potential          | shared router/weights and expert imbalance             | often many expert weights             | high systems/training complexity                       | expert and router coupling                   | learned gate is not a hard boundary                     |
-|   9 | Router among models           | specialist quality times route quality | models isolated; router can regress                    | router + \(K\) artifacts              | specialist training plus router data                   | independent models plus routing manifest     | strong if authorization precedes routing                |
+|   9 | Router among models           | specialist quality times route quality | models isolated; router can regress                    | router + $K$ artifacts              | specialist training plus router data                   | independent models plus routing manifest     | strong if authorization precedes routing                |
 |  10 | Domain-aware distillation     | capacity- and teacher-dependent        | joint student can interfere; separate students isolate | one/some smaller students             | teacher generation/logits + student training           | teacher change can require redistillation    | depends on joint vs separate students and teacher terms |
 <!-- markdownlint-restore -->
 
@@ -563,18 +591,20 @@ runtime buffers, alignment, and temporary allocations. It predicts neither speed
 
 ### 27.13.1 Eight domains around a 1.5B-parameter base
 
-Assume \(K=8\), \(P=1.5\times10^9\), and ideal 4-bit weight storage:
+Assume $K=8$, $P=1.5\times10^9$, and ideal 4-bit weight storage:
 
-\[ S_{\mathrm{base}}=1.5\times10^9\times4/8=0.75\text{ GB}. \]
+$$
+S_{\mathrm{base}}=1.5\times10^9\times4/8=0.75\text{ GB}.
+$$
 
 <!-- markdownlint-disable MD013 -->
 | Design                      |                          Ideal stored weight payload | What must be resident for one request             |
 | --------------------------- | ---------------------------------------------------: | ------------------------------------------------- |
-| 8 independent 1.5B models   |                                  \(8(0.75)=6.00\) GB | typically one 0.75 GB payload plus runtime memory |
+| 8 independent 1.5B models   |                                  $8(0.75)=6.00$ GB | typically one 0.75 GB payload plus runtime memory |
 | 1 multi-domain 1.5B model   |                                              0.75 GB | one 0.75 GB payload plus runtime memory           |
 | latest continual 1.5B model |               0.75 GB serving; rollback copies extra | one 0.75 GB payload plus runtime memory           |
 | 1 merged 1.5B model         | 0.75 GB serving; source candidates extra in registry | one 0.75 GB payload plus runtime memory           |
-| 8 separate 0.4B students    |                \(8(0.4\times10^9\times4/8)=1.60\) GB | typically one 0.20 GB payload plus runtime memory |
+| 8 separate 0.4B students    |                $8(0.4\times10^9\times4/8)=1.60$ GB | typically one 0.20 GB payload plus runtime memory |
 <!-- markdownlint-restore -->
 
 The table does not establish quality equivalence. A 0.4B student and a 1.5B quantized model have different architecture,
@@ -582,27 +612,33 @@ capacity, kernels, KV-cache geometry, and training history.
 
 ### 27.13.2 LoRA parameter calculation
 
-Assume 24 layers, hidden width 2,048, rank \(r=16\), and LoRA on square query and value projections only. Each adapted
+Assume 24 layers, hidden width 2,048, rank $r=16$, and LoRA on square query and value projections only. Each adapted
 matrix has
 
-\[ r(k+m)=16(2048+2048)=65{,}536 \]
+$$
+r(k+m)=16(2048+2048)=65{,}536
+$$
 
 trainable parameters. Two matrices across 24 layers give
 
-\[ P_{\mathrm{LoRA}}=2\times24\times65{,}536=3{,}145{,}728. \]
+$$
+P_{\mathrm{LoRA}}=2\times24\times65{,}536=3{,}145{,}728.
+$$
 
-At FP16, the ideal adapter payload is \(3{,}145{,}728\times2=6{,}291{,}456\) bytes, about 6.0 MiB. Eight adapters are
+At FP16, the ideal adapter payload is $3{,}145{,}728\times2=6{,}291{,}456$ bytes, about 6.0 MiB. Eight adapters are
 about 48 MiB, plus the shared base. Targeting key/output/MLP projections, adding biases, using another rank, or storing
 optimizer/checkpoint metadata changes this value.
 
 ### 27.13.3 KV cache can dominate the strategy delta
 
-For a simplified decoder cache with \(L\) layers, sequence length \(n\), \(h_{\mathrm{kv}}\) key/value heads, head
-dimension \(d_h\), and \(b_{\mathrm{kv}}\) bytes per element:
+For a simplified decoder cache with $L$ layers, sequence length $n$, $h_{\mathrm{kv}}$ key/value heads, head
+dimension $d_h$, and $b_{\mathrm{kv}}$ bytes per element:
 
-\[ M_{\mathrm{KV}}=2Lnh_{\mathrm{kv}}d_hb_{\mathrm{kv}}. \]
+$$
+M_{\mathrm{KV}}=2Lnh_{\mathrm{kv}}d_hb_{\mathrm{kv}}.
+$$
 
-With \(L=24\), \(n=4096\), \(h_{\mathrm{kv}}=8\), \(d_h=128\), and FP16 (\(b_{\mathrm{kv}}=2\)), the ideal
+With $L=24$, $n=4096$, $h_{\mathrm{kv}}=8$, $d_h=128$, and FP16 ($b_{\mathrm{kv}}=2$), the ideal
 single-sequence cache is 402,653,184 bytes, or 384 MiB. Thus a 6 MiB adapter difference may be minor beside context
 memory. Exact cache layout, batching, padding, quantization, and runtime allocation must be measured.
 
@@ -753,16 +789,20 @@ user who explicitly opens an authorized domain package.
 
 For two 1.5B models at ideal 4-bit weight payload:
 
-\[
+$$
+
 2\times1.5\times10^9\times4/8=1.5\text{ GB}.
-\]
+
+$$
 
 Only one 0.75 GB payload need be resident at a time, but peak RAM must add KV cache, activations, runtime buffers, and
 temporary allocations. If two 0.4B students are feasible, ideal stored weight payload becomes:
 
-\[
+$$
+
 2\times0.4\times10^9\times4/8=0.4\text{ GB}.
-\]
+
+$$
 
 This does not establish equivalent quality. It defines what the device experiment must compare.
 
@@ -771,19 +811,23 @@ This does not establish equivalent quality. It defines what the device experimen
 For each domain and candidate, measure domain score, unsupported claims, critical safety failures, peak RAM, cold load,
 TTFT, sustained decode, energy, and update effort. For the two-specialist design, also measure:
 
-\[
+$$
+
 T_{\mathrm{switch}}=T_{\mathrm{unload}}+T_{\mathrm{map/load}}+
 T_{\mathrm{initialize}}+T_{\mathrm{warmup}}.
-\]
+
+$$
 
 Each term is observed separately. File size alone cannot predict it.
 
 For any routed cloud deployment, estimate end-to-end correctness rather than router accuracy:
 
-\[
+$$
+
 P(\text{correct})=\sum_d P(\hat d=d\mid d)\,
 P(\text{specialist correct}\mid \hat d=d,d),
-\]
+
+$$
 
 with explicit terms for abstention and wrong-domain safety failures. If the pharmacy router recall is 99% overall but
 misses emergency-language cases, the system fails its safety gate.
@@ -859,7 +903,7 @@ it.
 rate, calibration, abstention, multi-turn consistency, general-retention score, and expert ratings with confidence
 intervals.
 
-**Forgetting/interference:** \(F_{i,t}\), per-domain learning curves, joint versus independent deltas,
+**Forgetting/interference:** $F_{i,t}$, per-domain learning curves, joint versus independent deltas,
 gradient-conflict diagnostics on a fixed probe set, and domain confusion tests.
 
 **Resources:** stored bytes for serving and rollback, trainable/total/active parameters, accelerator-hours, peak
@@ -982,7 +1026,7 @@ weights choose one. Retain a fallback and rollback path.
 2. Calculate ideal storage for six 2B-parameter INT4 specialists and explain why it is not peak RAM.
 3. Derive LoRA parameters for query/key/value/output projections at a declared layer count, width, and rank.
 4. Explain catastrophic forgetting versus joint-domain interference.
-5. Design a replay ablation for three sequential domains using \(F_{i,t}\).
+5. Design a replay ablation for three sequential domains using $F_{i,t}$.
 6. Give two cases where independent models are legally preferable but operationally expensive.
 7. Specify the base/adapter compatibility manifest required for rollback.
 8. Compare adapter stacking, weighted parallel composition, and learned fusion.

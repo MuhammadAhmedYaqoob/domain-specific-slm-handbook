@@ -15,7 +15,7 @@ activation, temporary, and reserve bytes; no hidden optimizer or sharding defaul
 
 Required nonnegative inputs describe local `--resident-parameters`, `--trainable-parameters`, weight/gradient/optimizer
 bytes per parameter, activation, temporary, and reserve bytes. At least one resident parameter is required.
-\(M=N_rw+N_t(g+o)+A+T+R\). Output reports each component, total bytes/GiB, and optional headroom against
+$M=N_rw+N_t(g+o)+A+T+R$. Output reports each component, total bytes/GiB, and optional headroom against
 `--device-bytes`. Negative values and nonpositive byte rates fail; a device budget below total is reported, not called
 an OOM prediction. Shared pages, fragmentation, communication buffers, offload, recomputation, and allocator behavior
 must be represented explicitly.
@@ -67,7 +67,7 @@ if __name__=="__main__": main()
 
 ## Fixtures, commands, interpretation, and limitations
 
-Fixture: \(100·2+20·2+20·8+100+50+10=560\) bytes; against 1,000 bytes, arithmetic headroom is 440 bytes. Run
+Fixture: $100·2+20·2+20·8+100+50+10=560$ bytes; against 1,000 bytes, arithmetic headroom is 440 bytes. Run
 `python tools/gpu_training_memory.py --self-test`; for real work derive local counts after sharding and measure peak
 allocated/reserved memory. `arithmetic_fits` is not a training-success, speed, or hardware claim.
 

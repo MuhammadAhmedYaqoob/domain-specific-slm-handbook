@@ -391,8 +391,8 @@ operating-system build, available memory, charge/power/background/display/radio 
 
 ### Timing formulas
 
-For prompt tokens \(N_p\), generated tokens \(N_g\), prefill start/end \(t_{ps},t_{pe}\), first token \(t_1\), and
-final generated token \(t_g\):
+For prompt tokens $N_p$, generated tokens $N_g$, prefill start/end $t_{ps},t_{pe}$, first token $t_1$, and
+final generated token $t_g$:
 
 ```text
 prefill_tokens_s = N_p / (t_pe - t_ps)

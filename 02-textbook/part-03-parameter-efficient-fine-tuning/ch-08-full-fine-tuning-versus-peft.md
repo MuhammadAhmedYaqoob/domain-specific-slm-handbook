@@ -58,29 +58,40 @@ flowchart LR
 
 ## 8.3 Common mathematics and accounting
 
-For pretrained parameters \(\theta_0\), total count \(N\), task data \(D\), and loss \(\mathcal L\), full tuning solves:
+For pretrained parameters $\theta_0$, total count $N$, task data $D$, and loss $\mathcal L$, full tuning solves:
 
-<a id="eq-ch08-01"></a> \[ \boxed{\theta^\star=\arg\min_\theta\mathcal L(D;\theta),\quad N_{\rm train}=N}
-\tag{EQ-CH08-01} \]
+<a id="eq-ch08-01"></a>
+$$
+\boxed{\theta^\star=\arg\min_\theta\mathcal L(D;\theta),\quad N_{\rm train}=N}
+\tag{EQ-CH08-01}
+$$
 
-PEFT introduces or selects \(\phi\):
+PEFT introduces or selects $\phi$:
 
-<a id="eq-ch08-02"></a> \[ \boxed{\phi^\star=\arg\min_\phi\mathcal L(D;f(x;\theta_0,\phi)),
-\quad\nabla_{\theta_0}\mathcal L=0,\quad|\phi|\ll N} \tag{EQ-CH08-02} \]
+<a id="eq-ch08-02"></a>
+$$
+\boxed{\phi^\star=\arg\min_\phi\mathcal L(D;f(x;\theta_0,\phi)),
+\quad\nabla_{\theta_0}\mathcal L=0,\quad|\phi|\ll N} \tag{EQ-CH08-02}
+$$
 
-Frozen means no optimizer update to \(\theta_0\). Derivatives may still propagate through operations using \(\theta_0\)
-to reach \(\phi\).
+Frozen means no optimizer update to $\theta_0$. Derivatives may still propagate through operations using $\theta_0$
+to reach $\phi$.
 
-With bytes \(b_w\) for a frozen weight and \(b_t\) for each trainable parameter plus gradient/master/moments:
+With bytes $b_w$ for a frozen weight and $b_t$ for each trainable parameter plus gradient/master/moments:
 
-<a id="eq-ch08-03"></a> \[ \boxed{M_{\rm full}\approx Nb_t,\qquad M_{\rm PEFT}\approx(N-|\phi|)b_w+|\phi|b_t}
-\tag{EQ-CH08-03} \]
+<a id="eq-ch08-03"></a>
+$$
+\boxed{M_{\rm full}\approx Nb_t,\qquad M_{\rm PEFT}\approx(N-|\phi|)b_w+|\phi|b_t}
+\tag{EQ-CH08-03}
+$$
 
 A simplified mixed-precision Adam layout may use about 16 bytes/trainable parameter, while a frozen BF16 weight uses 2.
-For \(N=1\) billion, full trainable state is about 14.90 GiB; frozen weights are 1.86 GiB; one million trainable adapter
+For $N=1$ billion, full trainable state is about 14.90 GiB; frozen weights are 1.86 GiB; one million trainable adapter
 parameters add about 15.26 MiB of 16-byte state (`ESTIMATE`). Peak memory is larger:
 
-\[ M_{\rm peak}=M_{\rm state}+M_{\rm activations}+M_{\rm temporary} +M_{\rm communication}+M_{\rm allocator}. \]
+$$
+M_{\rm peak}=M_{\rm state}+M_{\rm activations}+M_{\rm temporary} +M_{\rm communication}+M_{\rm allocator}.
+$$
 
 Freezing removes most weight-gradient and optimizer state, not backbone forward FLOPs or all activations.
 
@@ -133,7 +144,7 @@ layers, normalization, and output projection. Let every intended weight move.
 
 **Definition and mechanism.** Set all intended parameters trainable, forward, compute the Chapter 5–7 objective,
 backpropagate every parameter gradient, and update all parameter groups. The update
-\(\Delta\theta=\theta^\star-\theta_0\) has no adapter-imposed structure.
+$\Delta\theta=\theta^\star-\theta_0$ has no adapter-imposed structure.
 
 **Example and resources.** A 500M-parameter BF16 checkpoint is about 0.93 GiB in weights; ten independent domains
 require about 9.31 GiB before metadata and optimizer checkpoints (`ILLUSTRATIVE`). Training state can be many times
@@ -178,11 +189,14 @@ backward through that representation; this is an additional technique, not a pro
 **Problem and intuition.** Avoid full task copies by giving every layer a small residual detour: compress, transform,
 expand, and add back.
 
-**Definition and mechanism.** For \(h\in\mathbb R^d\) and bottleneck \(m\ll d\):
+**Definition and mechanism.** For $h\in\mathbb R^d$ and bottleneck $m\ll d$:
 
-<a id="eq-ch08-04"></a> \[ \boxed{A(h)=h+W_{\rm up}\sigma(W_{\rm down}h+b_d)+b_u} \tag{EQ-CH08-04} \]
+<a id="eq-ch08-04"></a>
+$$
+\boxed{A(h)=h+W_{\rm up}\sigma(W_{\rm down}h+b_d)+b_u} \tag{EQ-CH08-04}
+$$
 
-\(W_{\rm down}\in\mathbb R^{m\times d}\), \(W_{\rm up}\in\mathbb R^{d\times m}\). Near-identity initialization preserves
+$W_{\rm down}\in\mathbb R^{m\times d}$, $W_{\rm up}\in\mathbb R^{d\times m}$. Near-identity initialization preserves
 initial base behavior. Houlsby adapters used two modules/layer and task-specific normalization/head parameters [R1];
 other layouts differ.
 
@@ -191,7 +205,7 @@ residual h ─────────────────┐
        └→ down d→m → σ → up m→d ─┴→ output
 ```
 
-**Example.** One adapter has \(2dm+d+m\) parameters. For \(L=24,d=2048,m=64\), one/layer has 6,342,144 parameters (about
+**Example.** One adapter has $2dm+d+m$ parameters. For $L=24,d=2048,m=64$, one/layer has 6,342,144 parameters (about
 12.10 MiB at two bytes); two/layer have about 12.68M (24.19 MiB) (`ILLUSTRATIVE`).
 
 **Implementation/trade-offs.** Insert at documented positions, freeze the base, train adapters plus required
@@ -210,15 +224,18 @@ studied tasks [R1], not decoder-only SLM product evidence.
 
 **Problem and intuition.** Replace brittle human-written prompts with learned continuous “virtual token” embeddings.
 
-**Definition/mechanism.** For input embeddings \(X\in\mathbb R^{S\times d}\), learn \(P\in\mathbb R^{p\times d}\):
+**Definition/mechanism.** For input embeddings $X\in\mathbb R^{S\times d}$, learn $P\in\mathbb R^{p\times d}$:
 
-<a id="eq-ch08-05"></a> \[ \boxed{H_0=[P;X],\qquad P^\star=\arg\min_P\mathcal L(f_{\theta_0}([P;X]),y)} \tag{EQ-CH08-05}
-\]
+<a id="eq-ch08-05"></a>
+$$
+\boxed{H_0=[P;X],\qquad P^\star=\arg\min_P\mathcal L(f_{\theta_0}([P;X]),y)} \tag{EQ-CH08-05}
+
+$$
 
 Only the first layer directly receives these virtual embeddings.
 
-**Example/resources.** \(N_P=pd\). For \(p=64,d=2048\), \(N_P=131{,}072\), about 0.25 MiB at two bytes. Effective input
-length becomes \(S+p\), so attention/prefill cost is not represented by parameter count.
+**Example/resources.** $N_P=pd$. For $p=64,d=2048$, $N_P=131{,}072$, about 0.25 MiB at two bytes. Effective input
+length becomes $S+p$, so attention/prefill cost is not represented by parameter count.
 
 **Implementation/trade-offs.** Choose length and initialization, prepend embeddings, freeze the base, and optimize the
 normal task loss. Official PEFT docs expose `PromptTuningConfig` and random, vocabulary-sampled, or text initialization
@@ -239,11 +256,14 @@ decoders.
 
 **Definition/mechanism.**
 
-<a id="eq-ch08-06"></a> \[ \boxed{\operatorname{Attn}(Q_\ell,[P^K_\ell;K_\ell],[P^V_\ell;V_\ell])} \tag{EQ-CH08-06} \]
+<a id="eq-ch08-06"></a>
+$$
+\boxed{\operatorname{Attn}(Q_\ell,[P^K_\ell;K_\ell],[P^V_\ell;V_\ell])} \tag{EQ-CH08-06}
+$$
 
 A training-time reparameterization network may generate prefixes and be discarded after materialization.
 
-**Example/resources.** A full-width decoder approximation is \(N_{\rm prefix}\approx2Lpd\). For \(L=24,p=64,d=2048\):
+**Example/resources.** A full-width decoder approximation is $N_{\rm prefix}\approx2Lpd$. For $L=24,p=64,d=2048$:
 6,291,456 values, about 12 MiB at two bytes (`ILLUSTRATIVE`). GQA/MQA, encoder-decoder placement, and projection change
 this. Prefix positions add per-layer KV residency and attention work.
 
@@ -267,14 +287,17 @@ Original **P-Tuning** learns prompt embeddings through an encoder and can interl
 
 **Definition/mechanism.**
 
-<a id="eq-ch08-07"></a> \[ \boxed{H_P=g_\psi(E_P),\qquad H_0=\operatorname{Interleave}(H_P,E(x))} \tag{EQ-CH08-07} \]
+<a id="eq-ch08-07"></a>
+$$
+\boxed{H_P=g_\psi(E_P),\qquad H_0=\operatorname{Interleave}(H_P,E(x))} \tag{EQ-CH08-07}
+$$
 
-\(g_\psi\) is commonly an MLP or LSTM. Original P-Tuning studied frozen and jointly tuned language models; only the
+$g_\psi$ is commonly an MLP or LSTM. Original P-Tuning studied frozen and jointly tuned language models; only the
 frozen case is strictly PEFT [R4]. V2 uses deep layer prompts and task-dependent choices including prompt length,
 optional reparameterization, multi-task initialization, and heads [R5].
 
-**Example/resources.** Input P-Tuning uses \(pd\) embeddings plus encoder weights. A two-layer \(d\to h\to d\) MLP adds
-approximately \(2dh+h+d\). For \(p=32,d=1024,h=128\), the total is about 294,912 parameters (`ILLUSTRATIVE`). Deep
+**Example/resources.** Input P-Tuning uses $pd$ embeddings plus encoder weights. A two-layer $d\to h\to d$ MLP adds
+approximately $2dh+h+d$. For $p=32,d=1024,h=128$, the total is about 294,912 parameters (`ILLUSTRATIVE`). Deep
 P-Tuning scales with layer layout.
 
 **Implementation/trade-offs.** PEFT exposes `PromptEncoderConfig`, MLP/LSTM type, encoder depth, hidden size, and
@@ -294,11 +317,15 @@ inhibit existing features.
 
 **Definition/mechanism.**
 
-<a id="eq-ch08-08"></a> \[ \boxed{K'_\ell=l^K_\ell\odot K_\ell,\quad V'_\ell=l^V_\ell\odot V_\ell,\quad H'_{\rm <!-- markdownlint-disable-line MD013 MD049 -->
-ff,\ell}=l^{\rm ff}_\ell\odot H_{\rm ff,\ell}} \tag{EQ-CH08-08} \] <!-- markdownlint-disable-line MD013 MD049 -->
+<a id="eq-ch08-08"></a>
+$$
+\boxed{K'_\ell=l^K_\ell\odot K_\ell,\quad V'_\ell=l^V_\ell\odot V_\ell,\quad H'_{\rm <!-- markdownlint-disable-line MD013 MD049 -->
+ff,\ell}=l^{\rm ff}_\ell\odot H_{\rm ff,\ell}} \tag{EQ-CH08-08}
+$$
+<!-- markdownlint-disable-line MD013 MD049 -->
 
-**Example/resources.** For full-width KV and feed-forward width \(d_{\rm ff}\), \(N_{\rm IA3}\approx L(2d+d_{\rm ff})\).
-With \(L=24,d=2048,d_{\rm ff}=8192\): 294,912 values, about 0.56 MiB at two bytes (`ILLUSTRATIVE`). GQA/MQA changes
+**Example/resources.** For full-width KV and feed-forward width $d_{\rm ff}$, $N_{\rm IA3}\approx L(2d+d_{\rm ff})$.
+With $L=24,d=2048,d_{\rm ff}=8192$: 294,912 values, about 0.56 MiB at two bytes (`ILLUSTRATIVE`). GQA/MQA changes
 this.
 
 **Implementation/trade-offs.** PEFT documents `IA3Config`, target modules, feed-forward identification, and weighted
@@ -316,12 +343,15 @@ a general domain-SLM guarantee.
 
 **Problem and intuition.** Adapt by shifting affine operating points while retaining learned matrix transformations.
 
-**Definition/mechanism.** For \(z=Wx+b\), freeze \(W\) and optimize:
+**Definition/mechanism.** For $z=Wx+b$, freeze $W$ and optimize:
 
-<a id="eq-ch08-09"></a> \[ \boxed{b^\star=\arg\min_b\mathcal L(f(x;W_0,b),y)} \tag{EQ-CH08-09} \]
+<a id="eq-ch08-09"></a>
+$$
+\boxed{b^\star=\arg\min_b\mathcal L(f(x;W_0,b),y)} \tag{EQ-CH08-09}
+$$
 
 **Example/resources.** If a hypothetical 24-layer decoder has six selected width-2048 biases/layer, it trains
-\(24\cdot6\cdot2048=294{,}912\) values. Real modern decoders may omit biases, so BitFit can have little capacity or be
+$24\cdot6\cdot2048=294{,}912$ values. Real modern decoders may omit biases, so BitFit can have little capacity or be
 inapplicable.
 
 **Implementation/trade-offs.** Freeze all parameters; enable an audited bias set and required head; assert exact
@@ -431,7 +461,11 @@ energy.
 
 ### Stacking
 
-**Problem/mechanism:** apply independently trained transformations sequentially: \[ h_1=A_1(h),\qquad h_2=A_2(h_1). \]
+**Problem/mechanism:** apply independently trained transformations sequentially:
+$$
+h_1=A_1(h),\qquad h_2=A_2(h_1).
+$$
+
 Order matters: nonlinear adapters generally do not commute. Stacking retains all components and adds runtime work.
 AdapterHub documents `Stack` with method/model compatibility limits [D8]. A language→task or domain→safety stack is a
 `PLANNED EXPERIMENT`, not guaranteed modularity.
@@ -446,7 +480,10 @@ averaging.
 
 For aligned compatible tensors:
 
-<a id="eq-ch08-10"></a> \[ \boxed{\phi_{\rm merge}=\sum_{i=1}^{K}\alpha_i\phi_i} \tag{EQ-CH08-10} \]
+<a id="eq-ch08-10"></a>
+$$
+\boxed{\phi_{\rm merge}=\sum_{i=1}^{K}\alpha_i\phi_i} \tag{EQ-CH08-10}
+$$
 
 Same shape is insufficient: adapters need the same exact base, tokenizer, method, insertion points, and tensor
 semantics. Independent nonlinear hidden units may be misaligned; conflicting deltas can cancel. PEFT documents weighted
@@ -454,8 +491,8 @@ LoRA/IA3 combinations and supported merge methods [D7]. An interface is not evid
 
 ### Merging into the base
 
-Foldable methods produce \(\theta_{\rm deploy}=\theta_0+\Delta\theta(\phi)\). The standalone artifact has approximately
-\(N\) base-shaped parameters, **not** \(|\phi|\). Merging may remove dispatch but loses cheap switching and creates a
+Foldable methods produce $\theta_{\rm deploy}=\theta_0+\Delta\theta(\phi)$. The standalone artifact has approximately
+$N$ base-shaped parameters, **not** $|\phi|$. Merging may remove dispatch but loses cheap switching and creates a
 full artifact/domain. Quantized merges can be non-invertible; preserve source adapter, manifest, and rollback.
 
 Prompt/prefix states generally remain conditioning state. Nonlinear bottleneck adapters generally cannot collapse into
@@ -531,17 +568,24 @@ base capability cannot reliably be prompted into existence.
 **VRAM.** PEFT primarily saves gradients and optimizer moments. Long-sequence activations can dominate. Compare
 identical batch, length, precision, checkpointing, kernels, and hardware.
 
-**Storage.** For \(K\) tasks:
+**Storage.** For $K$ tasks:
 
-<a id="eq-ch08-11"></a> \[ \boxed{S_{\rm full}\approx KNb,\qquad S_{\rm shared}\approx Nb+\sum_k|\phi_k|b_k}
-\tag{EQ-CH08-11} \]
+<a id="eq-ch08-11"></a>
+$$
+\boxed{S_{\rm full}\approx KNb,\qquad S_{\rm shared}\approx Nb+\sum_k|\phi_k|b_k}
+\tag{EQ-CH08-11}
+$$
 
 For a 1B-parameter two-byte base, 20 tasks, and 10M two-byte parameters/adapter: full task weights are about 37.25 GiB;
 shared base plus adapters about 2.24 GiB (`ILLUSTRATIVE`). Distribute 20 merged bases and the saving disappears.
 
 **Time.** PEFT can reduce optimizer work, gradient communication, and checkpoint I/O. The backbone forward remains;
-extra operators, inefficient small kernels, loading, recomputation, and data bottlenecks can erase wall-time gains: \[
-T=T_{\rm data}+T_{\rm fwd}+T_{\rm bwd}+T_{\rm opt} +T_{\rm comm}+T_{\rm checkpoint}+T_{\rm eval}. \] Training
+extra operators, inefficient small kernels, loading, recomputation, and data bottlenecks can erase wall-time gains:
+$$
+
+T=T_{\rm data}+T_{\rm fwd}+T_{\rm bwd}+T_{\rm opt} +T_{\rm comm}+T_{\rm checkpoint}+T_{\rm eval}.
+$$
+Training
 throughput is not inference throughput.
 
 <a id="ch08-distributed"></a>

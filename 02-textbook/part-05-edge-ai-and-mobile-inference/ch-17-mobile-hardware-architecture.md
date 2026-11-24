@@ -328,46 +328,56 @@ For autoregressive SLMs:
 
 ### 17.8.1 Peak memory
 
-\[ M_{\text{peak}} \approx M_{\text{weights}} + M_{\text{KV}} + M_{\text{activations}} + M_{\text{workspace}} +
-M_{\text{compiled}} + M_{\text{runtime}} + M_{\text{app}} + M_{\text{headroom}}. \]
+$$
+M_{\text{peak}} \approx M_{\text{weights}} + M_{\text{KV}} + M_{\text{activations}} + M_{\text{workspace}} +
+M_{\text{compiled}} + M_{\text{runtime}} + M_{\text{app}} + M_{\text{headroom}}.
+$$
 
 All terms are bytes. Model-file size is absent because a file may be mapped, copied, decompressed, repacked, or
 compiled.
 
-For \(P\) parameters at \(b\) bits, ideal raw weight storage is:
+For $P$ parameters at $b$ bits, ideal raw weight storage is:
 
-\[ M_W = \frac{Pb}{8}. \]
+$$
+M_W = \frac{Pb}{8}.
+$$
 
-**Example (`ILLUSTRATIVE`).** A 1.5B-parameter model at ideal 4-bit storage uses \(1.5\times10^9\times4/8=0.75\) GB
+**Example (`ILLUSTRATIVE`).** A 1.5B-parameter model at ideal 4-bit storage uses $1.5\times10^9\times4/8=0.75$ GB
 before scales, zero points, alignment, metadata, mixed-precision tensors, repacking, or duplicate buffers. It is a
 component lower bound, not “RAM required.”
 
 A conventional decoder KV cache is:
 
-\[ M_{\text{KV}} = L \times T \times 2 \times H_{\text{kv}} \times D_h \times B \times S, \]
+$$
+M_{\text{KV}} = L \times T \times 2 \times H_{\text{kv}} \times D_h \times B \times S,
+$$
 
-where \(L\)=layers, \(T\)=cached tokens, 2=keys plus values, \(H_{\text{kv}}\)=KV heads, \(D_h\)=head dimension,
-\(B\)=bytes per cache element, and \(S\)=sequences.
+where $L$=layers, $T$=cached tokens, 2=keys plus values, $H_{\text{kv}}$=KV heads, $D_h$=head dimension,
+$B$=bytes per cache element, and $S$=sequences.
 
-**Example (`ILLUSTRATIVE`).** With 24 layers, 4 KV heads, dimension 128, FP16 (\(B=2\)), 4,096 tokens and one sequence:
+**Example (`ILLUSTRATIVE`).** With 24 layers, 4 KV heads, dimension 128, FP16 ($B=2$), 4,096 tokens and one sequence:
 
-\[ 24\times4096\times2\times4\times128\times2 =201{,}326{,}592\text{ bytes}\approx192\text{ MiB}. \]
+$$
+24\times4096\times2\times4\times128\times2 =201{,}326{,}592\text{ bytes}\approx192\text{ MiB}.
+$$
 
 Doubling context doubles this cache. Verified 8-bit KV ideally halves payload, but scales, conversion, quality, and
 backend support still matter.
 
 ### 17.8.2 Bandwidth
 
-Arithmetic intensity is \(I=\text{operations}/\text{bytes moved}\). If decode streams \(M_W\) bytes through effective
-bandwidth \(BW_{\text{eff}}\):
+Arithmetic intensity is $I=\text{operations}/\text{bytes moved}$. If decode streams $M_W$ bytes through effective
+bandwidth $BW_{\text{eff}}$:
 
-\[ t_{\text{decode}} \gtrsim \frac{M_W}{BW_{\text{eff}}}. \]
+$$
+t_{\text{decode}} \gtrsim \frac{M_W}{BW_{\text{eff}}}.
+$$
 
 With the illustrative 0.75 GB payload and **illustrative effective** 30 GB/s, traffic alone takes at least 25 ms. This
 is not a phone prediction: caches, metadata, repeated reads, activations, contention, fusion, and achieved bandwidth
 alter it. It explains why low-bit weights can help decode even when compute is plentiful.
 
-Never substitute peak vendor bandwidth for \(BW_{\text{eff}}\); measure the complete runtime at sustained conditions.
+Never substitute peak vendor bandwidth for $BW_{\text{eff}}$; measure the complete runtime at sustained conditions.
 
 ### 17.8.3 Unified memory and pressure
 
@@ -415,9 +425,11 @@ temperature, charging, and competing work. A burst benchmark may use an unsustai
 
 Energy per output token can be estimated:
 
-\[ E_{\text{token}} = \frac{\int_{t_0}^{t_1}(P(t)-P_{\text{idle}})\,dt}{N_{\text{generated}}}, \]
+$$
+E_{\text{token}} = \frac{\int_{t_0}^{t_1}(P(t)-P_{\text{idle}})\,dt}{N_{\text{generated}}},
+$$
 
-where \(P(t)\)=device power, \(P_{\text{idle}}\)=declared baseline, and \(N_{\text{generated}}\)=generated tokens. Label
+where $P(t)$=device power, $P_{\text{idle}}$=declared baseline, and $N_{\text{generated}}$=generated tokens. Label
 OS-counter measurements and uncertainty when external instrumentation is unavailable.
 
 Benchmark at declared ambient/start temperature, case, charge, charging state, and background load. Run to steady state;
@@ -510,7 +522,9 @@ memory/storage headroom, quality parity, sustained latency/energy/thermal behavi
 
 **Example (`ESTIMATE`).** If measured peak is 1.45 GiB, reserve 0.55 GiB for UI/runtime variation and 25% uncertainty:
 
-\[ M_{\text{admission}}=(1.45+0.55)\times1.25=2.50\text{ GiB}. \]
+$$
+M_{\text{admission}}=(1.45+0.55)\times1.25=2.50\text{ GiB}.
+$$
 
 Require 2.50 GiB of tested allocatable headroom under the scenario—not “a 4 GB phone.” Total RAM does not prove
 headroom.
@@ -655,7 +669,7 @@ source model
 6. Why is NNAPI not the recommended foundation for a new Android design?
 7. Give three ways partial NPU delegation can lose to CPU.
 8. Calculate ideal weight sizes for 0.5B, 1.5B, and 3B parameters at 16, 8, 6, and 4 bits; list omitted overheads.
-9. For \(L=28\), \(H_{\text{kv}}=4\), \(D_h=128\), FP16, one sequence, calculate KV at 2,048 and 8,192 tokens;
+9. For $L=28$, $H_{\text{kv}}=4$, $D_h=128$, FP16, one sequence, calculate KV at 2,048 and 8,192 tokens;
    recalculate ideal 8-bit payload.
 10. A path reads 1.1 GB/token at 22 GB/s effective bandwidth. Compute the traffic-only lower bound and explain why it is
     not a performance prediction.

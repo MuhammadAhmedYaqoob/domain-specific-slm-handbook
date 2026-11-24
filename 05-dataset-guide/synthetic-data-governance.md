@@ -230,7 +230,7 @@ agreement triggers evidence/rubric revision, not majority-vote release.
 ## Diversity, novelty, and coverage
 
 Report accepted roots by domain, task, risk, language, source, generator, template, difficulty, and rare stratum.
-Distinct-\(n\), Self-BLEU, embedding dispersion, cluster entropy, or MAUVE are descriptive proxies; none verifies truth.
+Distinct-$n$, Self-BLEU, embedding dispersion, cluster entropy, or MAUVE are descriptive proxies; none verifies truth.
 High novelty can mean unsupported text. Measure lexical/semantic duplication and human coverage together.
 
 Track:

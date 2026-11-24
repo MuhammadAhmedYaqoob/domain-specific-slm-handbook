@@ -36,9 +36,11 @@ were tested.
 
 Four independent 2-billion-parameter models stored at 4 bits need approximately:
 
-\[
+$$
+
 4 \times 2{,}000{,}000{,}000 \times 4 / 8 = 4.0\text{ GB}.
-\]
+
+$$
 
 One shared 1.0 GB base plus four 80 MB adapters needs about 1.32 GB, a 67% storage reduction. This is not a 67% RAM
 reduction: the runtime still needs the base, one active adapter, the KV cache, activations, and temporary buffers.
@@ -144,10 +146,12 @@ flowchart LR
 
 ## Identities and release equation
 
-\[ R_t=F(D,E,C,B,H,K,I,P,Q_t,A_t) \]
+$$
+R_t=F(D,E,C,B,H,K,I,P,Q_t,A_t)
+$$
 
-For target \(t\), release \(R_t\) binds dataset \(D\), evaluation \(E\), domain contract \(C\), base/tokenizer \(B\),
-hyperparameters \(H\), code \(K\), environment \(I\), policy \(P\), target qualification \(Q_t\), and approvals \(A_t\).
+For target $t$, release $R_t$ binds dataset $D$, evaluation $E$, domain contract $C$, base/tokenizer $B$,
+hyperparameters $H$, code $K$, environment $I$, policy $P$, target qualification $Q_t$, and approvals $A_t$.
 Every term MUST resolve to immutable bytes or an immutable decision.
 
 Canonical identifiers are `domain_id`, `source_snapshot_id`, `dataset_id`, `base_model_id`, `run_id`, `attempt_id`,

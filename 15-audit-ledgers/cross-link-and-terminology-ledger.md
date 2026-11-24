@@ -29,7 +29,7 @@ line length is excluded because commands, URLs, hashes, JSONL records, and wide 
 | Repository Markdown lint | Configured rules report zero errors across all Markdown | 302 files checked; 0 errors | Pass |
 | Links, anchors, path case, and navigation | Every Markdown target and fragment resolves with exact case; every file is reachable from the root learning map | 1,887 unique internal edges; 0 actionable failures; 302/302 reachable | Pass |
 | Tables | Every detected table has a separator, consistent columns, and no unexplained empty result cell | 448 tables; 0 empty cells | Pass |
-| Fences, headings, and equations | Fences balance, heading levels do not skip, and `\(...\)`/`\[...\]` delimiters balance | 302 files; 0 failures | Pass |
+| Fences, headings, and equations | Fences balance, heading levels do not skip, inline math uses `$...$`, and display math uses standalone `$$` delimiters | 302 files; 525 display pairs and 1,657 inline pairs normalized; 0 failures | Pass |
 | Structured listings | JSON, JSONL, YAML, and Python fences parse with their language parser | 317 listings: 116 JSON, 16 JSONL, 68 YAML, and 117 Python; 0 failures | Pass for syntax, not execution |
 | Unfinished and replacement markers | No unresolved content/deployment token remains; literal HTML/prompt tags and language interpolation remain identifiable | 511 replacement tokens resolved; 0 unresolved markers | Pass |
 | External links | Each unique HTTP(S) target receives a bounded HEAD/GET check | 1,016 unique URLs; 931 accessible; access-limited, local, illustrative, endpoint-only, and timeout cases separated | Pass with external access limits |

@@ -172,8 +172,10 @@ Any release needs qualified automotive safety review.
 
 ### Success is a vector, not one score
 
-\[ \mathbf{q}=(q_\text{domain},q_\text{diagnosis},q_\text{safety},
-q_\text{uncertainty},q_\text{retention},q_\text{format}) \]
+$$
+\mathbf{q}=(q_\text{domain},q_\text{diagnosis},q_\text{safety},
+q_\text{uncertainty},q_\text{retention},q_\text{format})
+$$
 
 A candidate must also satisfy storage, peak memory, time to first token (TTFT), inter-token latency, reliability,
 energy/thermal, license, and maintenance gates. A critical safety failure cannot be averaged away.
@@ -835,7 +837,7 @@ Use the same model parent, SFT snapshot, supervised-token budget, sequence cap, 
 | QLoRA  | 4-bit frozen base + LoRA         | lower base residency during training            | still merge/export and benchmark final artifact     |
 <!-- markdownlint-restore -->
 
-LoRA uses \(\Delta W=BA\), where rank \(r\) controls adapter capacity. The nominal trainable count is not enough; log
+LoRA uses $\Delta W=BA$, where rank $r$ controls adapter capacity. The nominal trainable count is not enough; log
 selected modules and exact trainable parameters. QLoRA's NF4 training representation is not automatically the final
 mobile format.
 
@@ -1374,7 +1376,7 @@ archived.
 First apply hard gates: rights, critical safety, tokenizer/template parity, quality floor, reliability, target
 memory/storage, and exact runtime compatibility. A failing candidate is ineligible regardless of speed.
 
-Then compute target-specific Pareto fronts. Candidate \(a\) dominates \(b\) only if \(a\) is no worse on every required
+Then compute target-specific Pareto fronts. Candidate $a$ dominates $b$ only if $a$ is no worse on every required
 objective and better on at least one, under comparable conditions.
 
 **Listing CH37-L15 — `src/automotive_slm/select.py` (`UNVERIFIED IMPLEMENTATION`).**
@@ -1498,7 +1500,7 @@ a single “answer quality” score would.
 
 **Phase 6 — CPT decision.** Compare no-CPT, automotive CPT, and automotive CPT plus general replay with the same later
 SFT. For example, if a development calculation changed domain perplexity from 8.4 to 7.9, the relative change would be
-\((8.4-7.9)/8.4=5.95\%\). That number alone cannot promote CPT: the arm must also improve held-out case behavior without
+$(8.4-7.9)/8.4=5.95\%$. That number alone cannot promote CPT: the arm must also improve held-out case behavior without
 material retention or safety loss. The gate matters because extra domain prose can make the model sound more technical
 while making its conclusions less disciplined.
 
@@ -1508,8 +1510,8 @@ Assistant-only loss teaches the response turns; inspecting the rendered labels p
 assistant target were not accidentally masked or truncated.
 
 **Phase 8 — full, LoRA, and QLoRA.** Hold the accepted assistant-token budget and evaluation fixed. A worked LoRA
-calculation for one \(2048\times2048\) projection at rank 16 is
-\(16(2048+2048)=65{,}536\) trainable parameters. That explains why LoRA reduces trainable state; it does not predict
+calculation for one $2048\times2048$ projection at rank 16 is
+$16(2048+2048)=65{,}536$ trainable parameters. That explains why LoRA reduces trainable state; it does not predict
 quality or release RAM. QLoRA reduces training residency, but its NF4 base is not the Android artifact. The gate rejects
 an apparently efficient arm if merging changes the answer or the target runtime cannot load it.
 

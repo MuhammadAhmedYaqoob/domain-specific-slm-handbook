@@ -18,11 +18,13 @@ The governing invariant is:
 > A release is determined by pinned data, evaluation, domain policy, base model, hyperparameters, code, environment, and
 > approvals—not mutable paths or notebook state.
 
-\[ R=F(D_d,E_d,C_d,B,H,K,I,A) \]
+$$
+R=F(D_d,E_d,C_d,B,H,K,I,A)
+$$
 
-Here \(R\) is a release; \(D_d\) and \(E_d\) are domain dataset and evaluation snapshots; \(C_d\) is the domain
-contract; \(B\) is the base-model snapshot; \(H\) is resolved hyperparameters; \(K\) is code; \(I\) is the
-environment/container; and \(A\) is approval evidence. Every input requires an immutable version and preferably a
+Here $R$ is a release; $D_d$ and $E_d$ are domain dataset and evaluation snapshots; $C_d$ is the domain
+contract; $B$ is the base-model snapshot; $H$ is resolved hyperparameters; $K$ is code; $I$ is the
+environment/container; and $A$ is approval evidence. Every input requires an immutable version and preferably a
 digest.
 
 Training does not guarantee exact recall. Learned knowledge can be stale, conflicting, or hallucinated. Pharmacy and
@@ -218,7 +220,7 @@ and outputs.
 
 The **evaluation report** records suite/candidate digests, environment, prompts and decoding where permitted, item
 results, aggregates, uncertainty, subgroups, evaluator versions, failures, and gate decisions. A conservative metric
-gate may require confidence lower bound \(L(m)\ge\tau\), but thresholds are domain policy. Critical subgroup failures
+gate may require confidence lower bound $L(m)\ge\tau$, but thresholds are domain policy. Critical subgroup failures
 cannot be hidden by an average.
 
 The **release manifest** binds candidate lineage, weights/adapter, tokenizer, template, runtime, generation policy,

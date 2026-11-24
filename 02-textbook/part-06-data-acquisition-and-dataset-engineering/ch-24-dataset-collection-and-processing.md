@@ -148,7 +148,7 @@ Unit normalization is parsing plus dimensional validation, not replacement. Stor
 }
 ```
 
-For affine conversion \(y=ax+b\), \(x\) is source value, \(a\) scale, \(b\) offset, and \(y\) canonical value.
+For affine conversion $y=ax+b$, $x$ is source value, $a$ scale, $b$ offset, and $y$ canonical value.
 Temperature needs offsets; pressure generally does not. Preserve precision, locale, inequalities, ranges, and
 uncertainty. Leave `ton`, `gal`, `oz`, decimal comma, and other ambiguities unresolved until context establishes
 convention. Safety-critical conversions need tested definitions and expert review.
@@ -160,12 +160,14 @@ be explicit, never inferred from filenames.
 
 ## 24.5 Quality, language, PII, and filtering
 
-Quality is a vector. Let \(q_i\in[0,1]\) represent provenance, rights clarity, extraction integrity, coherence,
+Quality is a vector. Let $q_i\in[0,1]$ represent provenance, rights clarity, extraction integrity, coherence,
 relevance, attribution, and review confidence. A ranking score is
 
-\[ Q=\prod_i\max(\epsilon,q_i)^{w_i},\quad \sum_iw_i=1. \]
+$$
+Q=\prod_i\max(\epsilon,q_i)^{w_i},\quad \sum_iw_i=1.
+$$
 
-For `0.9, 0.8, 0.7` with equal weights, \(Q\approx0.796\). The geometric mean penalizes weak components, but hard gates
+For `0.9, 0.8, 0.7` with equal weights, $Q\approx0.796$. The geometric mean penalizes weak components, but hard gates
 override it: forbidden rights, malware, prohibited PII, failed safety review, or missing lineage always
 reject/quarantine. Record every component, threshold, rule/model version, and reason. Calibrate scores against experts
 and audit retention by source, language, demographic/geographic coverage, and risk so “cleaning” does not erase minority
@@ -194,9 +196,11 @@ crashes, unknown licenses, OCR/model outages, and empty extraction never become 
 ## 24.6 Duplicates, contradictions, and versions
 
 SHA-256 raw bytes identify artifacts; SHA-256 of documented match text identifies equivalent extraction. Near duplicates
-use word/character shingles. For sets \(A,B\),
+use word/character shingles. For sets $A,B$,
 
-\[ J(A,B)=\frac{|A\cap B|}{|A\cup B|}. \]
+$$
+J(A,B)=\frac{|A\cap B|}{|A\cup B|}.
+$$
 
 MinHash estimates Jaccard and locality-sensitive hashing (LSH) retrieves candidates without quadratic all-pairs
 comparison; SimHash is an alternative. Candidate similarity is not truth. Cluster accepted edges, select a canonical
@@ -219,9 +223,12 @@ rebuild snapshots without a withdrawn source, preserving restricted audit eviden
 Random rows leak correlated chunks. Assign an entire source family, document, edition/translation, duplicate cluster,
 synthetic family, entity, author, or event to one split. A deterministic assignment uses
 
-\[ u=\operatorname{int}(\operatorname{HMAC}_k(group)_{0:8})/2^{64}, \] <!-- markdownlint-disable-line MD013 MD049 -->
+$$
+u=\operatorname{int}(\operatorname{HMAC}_k(group)_{0:8})/2^{64},
+$$
+<!-- markdownlint-disable-line MD013 MD049 -->
 
-then maps \(u\) to configured intervals. Protect the key. Freeze test IDs before generation; never expose test content
+then maps $u$ to configured intervals. Protect the key. Freeze test IDs before generation; never expose test content
 to teachers or judges.
 
 Audit exact/near matches, shared ancestors/clusters, copied answer strings, temporal cutoff violations, entity/event
@@ -501,14 +508,16 @@ duplicated and essential; deduplication controls exposure without erasing its me
 
 Assume the normalized 2024 sentence has word 3-shingles:
 
-\[
+$$
+
 A=\{\text{warning isolate stored},\text{isolate stored energy},\text{stored energy normal},
 \text{energy normal test},\text{normal test pressure},\text{test pressure 35},
 \text{pressure 35 psi}\}.
-\]
+
+$$
 
 The mirror has the same seven content shingles plus three navigation shingles. Its Jaccard similarity is
-\(7/(7+3)=0.70\). If a calibrated candidate threshold is 0.65, it is reviewed as a near duplicate. The 2025 revision
+$7/(7+3)=0.70$. If a calibrated candidate threshold is 0.65, it is reviewed as a near duplicate. The 2025 revision
 has changed quantity tokens, so similarity alone must not collapse it into 2024; revisions remain linked but distinct.
 
 **Anti-example:** hashing whole HTML pages only. Navigation changes defeat exact matching, leaving duplicated content in

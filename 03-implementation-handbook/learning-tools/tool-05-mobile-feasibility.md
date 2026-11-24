@@ -14,8 +14,8 @@ budget lines.
 
 ## Contract, equation, and edge cases
 
-All byte inputs are explicit and nonnegative; capacities are positive; `--safety-fraction` is in \([0,1)\).
-Installed bytes \(I=M+R+A+U\); active bytes \(X=W+K+S+O\); usable RAM \(C(1-f)\). Output schema includes component
+All byte inputs are explicit and nonnegative; capacities are positive; `--safety-fraction` is in $[0,1)$.
+Installed bytes $I=M+R+A+U$; active bytes $X=W+K+S+O$; usable RAM $C(1-f)$. Output schema includes component
 totals, headroom, `storage_budget_pass`, `ram_budget_pass`, and `budget_pass`. A pass means only these arithmetic
 budgets fit. Double-counted shared memory, load peaks, compressed downloads, lifecycle pressure, and backend support
 remain outside this calculation.
@@ -63,8 +63,8 @@ if __name__=="__main__": main()
 
 ## Fixtures, commands, interpretation, and limitations
 
-Fixture: installed \(400+100+50+200=750\) of 1,000 bytes; usable RAM \(800(1-.25)=600\), active
-\(300+100+50+50=500\), so both arithmetic gates pass. Run `python tools/mobile_feasibility.py --self-test`.
+Fixture: installed $400+100+50+200=750$ of 1,000 bytes; usable RAM $800(1-.25)=600$, active
+$300+100+50+50=500$, so both arithmetic gates pass. Run `python tools/mobile_feasibility.py --self-test`.
 A result cannot establish load success, sustained generation, device support, battery use, or thermal behavior; those
 require the exact runtime/artifact/device workload and physical measurement.
 

@@ -9,15 +9,15 @@
 **Canonical listing:** `LST-TOOL-0001` · **Verification note:** validate with the commands below before operational use.  
 **Purpose:** sum explicitly supplied tensor element counts and estimate packed weight bytes. It does not inspect a
 checkpoint, detect tied aliases, or predict resident memory. **Units:** parameter count; bits/parameter; bytes and MiB
-(\(2^{20}\) bytes). **Assumptions:** each named shape is unique; dimensions are positive integers; one global bit width;
+($2^{20}$ bytes). **Assumptions:** each named shape is unique; dimensions are positive integers; one global bit width;
 metadata bytes are supplied separately.
 
 ## Contract, equation, and edge cases
 
 Input is one or more `--shape NAME:DIMxDIM...`, required `--bits`, and optional nonnegative `--overhead-bytes`.
 Output schema is `{"tool_id","listing_id","parameter_count","payload_bytes","overhead_bytes","total_bytes","total_mib"}`.
-For unique tensors \(i\), \(N=\sum_i\prod_jd_{ij}\) and
-\(B=\lceil N b/8\rceil+B_\text{overhead}\). Empty/zero/negative dimensions, duplicate names, nonpositive bit widths,
+For unique tensors $i$, $N=\sum_i\prod_jd_{ij}$ and
+$B=\lceil N b/8\rceil+B_\text{overhead}$. Empty/zero/negative dimensions, duplicate names, nonpositive bit widths,
 and negative overhead fail. Tied tensors must be listed once; padding, scales, tokenizer, runtime, and sparse encoding
 must be entered as overhead or measured separately.
 
@@ -73,7 +73,7 @@ if __name__ == "__main__": main()
 
 ## Fixtures, commands, interpretation, and limitations
 
-Hand fixture: \(2\times3+4=10\) parameters; at 16 bits, payload \(=20\) bytes; plus 8 bytes gives 28 bytes.
+Hand fixture: $2\times3+4=10$ parameters; at 16 bits, payload $=20$ bytes; plus 8 bytes gives 28 bytes.
 Run `python tools/parameter_model_size.py --self-test` and
 `python tools/parameter_model_size.py --shape a:2x3 --shape b:4 --bits 16 --overhead-bytes 8`.
 `total_mib` is an arithmetic storage estimate, not an artifact or RAM measurement. Compare the result to serialized

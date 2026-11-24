@@ -59,9 +59,11 @@ quality, memory, streaming, cancellation, and malformed requests.
 
 Serving memory includes weights, KV cache, runtime state, workspaces, and fragmentation:
 
-\[
+$$
+
 M \approx M_{weights}+M_{KV}+M_{workspace}+M_{runtime}+M_{margin}
-\]
+
+$$
 
 Measure time to first token (TTFT), queue time, prefill tokens/second, inter-token latency, decode tokens/second,
 request throughput, errors, and peak host/GPU memory. Report prompt length, output length, concurrency, sampling,

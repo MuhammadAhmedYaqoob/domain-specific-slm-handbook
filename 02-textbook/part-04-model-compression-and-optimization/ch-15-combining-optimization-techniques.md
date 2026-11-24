@@ -26,9 +26,11 @@ The governing rule is:
 
 ## 15.2 Noncommutativity: why order changes the result
 
-Let \(F,P,D,Q,E\) denote fine-tuning, pruning, distillation, quantization, and export. In general,
+Let $F,P,D,Q,E$ denote fine-tuning, pruning, distillation, quantization, and export. In general,
 
-\[ Q(F(W))\ne F(Q(W)),\qquad P(D(W))\ne D(P(W)),\qquad E(Q(P(W)))\ne Q(E(P(W))). \]
+$$
+Q(F(W))\ne F(Q(W)),\qquad P(D(W))\ne D(P(W)),\qquad E(Q(P(W)))\ne Q(E(P(W))).
+$$
 
 Each operation changes what the next operation sees:
 
@@ -38,8 +40,8 @@ Each operation changes what the next operation sees:
 - quantization changes the numerical lattice, grouping, packing, and operators;
 - export constrains layouts, shapes, data types, and graph operations.
 
-**Toy example (`ILLUSTRATIVE`).** With weight \(w=0.44\), update \(\Delta=0.04\), and rounding to 0.1,
-\(Q(w+\Delta)=0.5\), while \(Q(w)+Q(\Delta)=0.4\). Groupwise quantization makes the interaction stronger: one changed
+**Toy example (`ILLUSTRATIVE`).** With weight $w=0.44$, update $\Delta=0.04$, and rounding to 0.1,
+$Q(w+\Delta)=0.5$, while $Q(w)+Q(\Delta)=0.4$. Groupwise quantization makes the interaction stronger: one changed
 weight can change the scale shared by many weights.
 
 Pruning scores computed from quantized weights may reorder candidates. Distillation can remove redundancy that later
@@ -55,12 +57,14 @@ match another runtime's packing. Therefore blindly stacking techniques fails thr
 
 ## 15.3 Constrained optimization and stage gates
 
-For candidate \(a\), let \(q,s,m,l,e,c\) be domain quality, safety, peak memory, latency, energy, and total cost:
+For candidate $a$, let $q,s,m,l,e,c$ be domain quality, safety, peak memory, latency, energy, and total cost:
 
-\[ \min_a[m(a),l(a),e(a),c(a)] \quad\text{subject to}\quad q(a)\ge q_{\min},\ s(a)\ge s_{\min},\
-a\in\mathcal C(H,R), \]
+$$
+\min_a[m(a),l(a),e(a),c(a)] \quad\text{subject to}\quad q(a)\ge q_{\min},\ s(a)\ge s_{\min},\
+a\in\mathcal C(H,R),
+$$
 
-where \(\mathcal C(H,R)\) is compatibility with hardware \(H\) and runtime \(R\). Safety is a hard constraint, not a
+where $\mathcal C(H,R)$ is compatibility with hardware $H$ and runtime $R$. Safety is a hard constraint, not a
 compensating score.
 
 Before any sequence, freeze model/tokenizer/template/license revisions and hashes;
@@ -446,7 +450,7 @@ load/peak memory and KV growth; cold/warm startup, TTFT, prefill, sustained deco
 energy where instrumented, thermals, failures, and placement; plus teacher tokens, expert hours, accelerator-hours,
 conversion/device-test time, dependencies, custom operators, reproducibility, and rollback time.
 
-Candidate \(a\) dominates \(b\) when it is no worse on every selected objective and better on at least one, after hard
+Candidate $a$ dominates $b$ when it is no worse on every selected objective and better on at least one, after hard
 gates. Build separate fronts per hardware/workload. Use confidence intervals; if results overlap, prefer the simpler
 candidate unless a pre-registered practical threshold says otherwise. Never draw an empirical frontier from invented
 values.

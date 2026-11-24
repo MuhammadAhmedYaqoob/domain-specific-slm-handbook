@@ -38,8 +38,10 @@ accelerator placement, throughput, energy, thermals, and release readiness remai
 
 A checkpoint directory is not an Android application. A complete local chat product is:
 
-\[ \boxed{ \text{product}= \text{weights}+\text{tokenizer}+\text{template}+\text{runtime}+ \text{native
-ABI}+\text{policy}+\text{lifecycle}+\text{delivery} } \tag{EQ-CH20-01} \]
+$$
+\boxed{ \text{product}= \text{weights}+\text{tokenizer}+\text{template}+\text{runtime}+ \text{native
+ABI}+\text{policy}+\text{lifecycle}+\text{delivery} } \tag{EQ-CH20-01}
+$$
 
 The components form one semantic contract. A model can load yet answer incorrectly because the tokenizer differs, the
 wrong chat template is applied, an end-of-turn token is ignored, or the KV cache is reused after history changed. A
@@ -826,13 +828,17 @@ copies, synchronization, and fallback.
 
 Peak memory is:
 
-\[ M_\text{peak}=M_W+M_{KV}+M_A+M_\text{workspace}+M_\text{runtime}+ M_\text{UI}+M_\text{temporary}+M_\text{margin}.
-\tag{EQ-CH20-02} \]
+$$
+M_\text{peak}=M_W+M_{KV}+M_A+M_\text{workspace}+M_\text{runtime}+ M_\text{UI}+M_\text{temporary}+M_\text{margin}.
+\tag{EQ-CH20-02}
+$$
 
-For \(L\) layers, \(T\) cached tokens, \(H_{kv}\) KV heads, head width \(d_h\), batch \(B\), and \(b\) bytes per cache
+For $L$ layers, $T$ cached tokens, $H_{kv}$ KV heads, head width $d_h$, batch $B$, and $b$ bytes per cache
 value:
 
-\[ M_{KV}\approx 2LBTH_{kv}d_hb. \tag{EQ-CH20-03} \]
+$$
+M_{KV}\approx 2LBTH_{kv}d_hb. \tag{EQ-CH20-03}
+$$
 
 Memory rules:
 
@@ -878,8 +884,10 @@ These are `DOC-VERIFIED` platform constraints [A11–A13]. No API guarantees tha
 Battery percentage is not a short-run energy meter. Measure whole-device or declared subsystem energy and subtract an
 idle baseline where valid:
 
-\[ E_\text{token}= \frac{E_\text{inference interval}-E_\text{idle baseline}} {N_\text{generated tokens}}.
-\tag{EQ-CH20-04} \]
+$$
+E_\text{token}= \frac{E_\text{inference interval}-E_\text{idle baseline}} {N_\text{generated tokens}}.
+\tag{EQ-CH20-04}
+$$
 
 Engineering controls:
 

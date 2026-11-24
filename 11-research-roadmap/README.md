@@ -84,11 +84,13 @@ confidence interval of `[-0.015, -0.001]`. The registered non-inferiority
 margin is `-0.020`, so the lower bound clears the quality gate. Peak memory
 falls from 3,000 MiB to 2,150 MiB:
 
-\[
+$$
+
 \Delta M = 3000 - 2150 = 850\ \text{MiB},
 \qquad
 \text{reduction} = 850/3000 = 28.3\%.
-\]
+
+$$
 
 If the memory MID is 500 MiB, the example clears quality and memory. It still
 does **not** qualify if one prohibited high-voltage instruction is answered

@@ -56,10 +56,12 @@ Gates: tokenizer • logits • quality • operator placement • memory
 **Prefill** processes the input and creates cache state; **decode** repeatedly processes a new token while reading that
 state. A planning estimate for a conventional dense KV cache is
 
-\[ M_{\mathrm{KV}}\approx L\,T\,2\,H_{\mathrm{KV}}\,D\,B, \]
+$$
+M_{\mathrm{KV}}\approx L\,T\,2\,H_{\mathrm{KV}}\,D\,B,
+$$
 
-where \(L\) is layer count, \(T\) cached tokens, \(H_{\mathrm{KV}}\) KV heads, \(D\) head dimension, \(B\) bytes per
-element, and 2 represents keys and values. For \(L=24,T=4096,H_{\mathrm{KV}}=8,D=128,B=2\), this is about 384 MiB. This
+where $L$ is layer count, $T$ cached tokens, $H_{\mathrm{KV}}$ KV heads, $D$ head dimension, $B$ bytes per
+element, and 2 represents keys and values. For $L=24,T=4096,H_{\mathrm{KV}}=8,D=128,B=2$, this is about 384 MiB. This
 `ESTIMATE` excludes weights, activations, temporary buffers, padding, backend copies, tokenizer, and app memory. File
 size is therefore not peak resident memory.
 
@@ -103,7 +105,9 @@ First reject any candidate that cannot prove exact architecture/tokenizer repres
 licensing, required context without termination, offline streaming/cancellation, quality parity, and safe
 unsupported-device behavior. Then score only measured criteria:
 
-\[ S_r=\sum_j w_j s_{rj},\quad \sum_jw_j=1. \]
+$$
+S_r=\sum_j w_j s_{rj},\quad \sum_jw_j=1.
+$$
 
 Illustrative weights are quality .25, memory .20, energy/thermals .15, TTFT/prefill .10, decode .10, device coverage
 .08, lifecycle .05, maintenance .04, and legal fit .03. Keep raw results and a Pareto frontier; safety and quality
@@ -435,7 +439,7 @@ path, explicit Android vendor cohorts, and browser/laptop path if needed—not a
 2. Explain why valid ONNX is insufficient evidence for efficient ORT GenAI.
 3. Explain TensorFlow Lite, LiteRT, and LiteRT-LM without treating them as synonyms.
 4. Why is Core ML not a complete chat stack? Why is MLX not an ANE claim?
-5. Compute KV memory for \(L=28,H_{\mathrm{KV}}=4,D=128,T=8192,B=2\); list four excluded allocations.
+5. Compute KV memory for $L=28,H_{\mathrm{KV}}=4,D=128,T=8192,B=2$; list four excluded allocations.
 6. Build tokenizer golden vectors for part numbers, units, drug names, Unicode, code, and chat specials.
 7. Design a test distinguishing NPU gains from CPU fallback/transfer overhead.
 8. Define hard gates and weighted criteria for a low-end Android product.

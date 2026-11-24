@@ -59,14 +59,18 @@ device cohort at a 2,048-token context.”
 Assume a 1-billion-parameter dense decoder, 4.5 effective bits per weight after scales, 24 layers, 8 KV heads,
 64 values per head, FP16 cache, batch one, and a 4,096-token context.
 
-\[
-M_W = 10^9 \times 4.5 / 8 = 562.5\ \text{MB}
-\]
+$$
 
-\[
+M_W = 10^9 \times 4.5 / 8 = 562.5\ \text{MB}
+
+$$
+
+$$
+
 M_{KV}=2 \times 24 \times 1 \times 4096 \times 8 \times 64 \times 2
 =192\ \text{MiB}
-\]
+
+$$
 
 If measurement later shows 180 MiB for runtime/UI and 320 MiB for peak workspace, an illustrative peak is about
 1.25 GiB before safety margin. Applying 25% headroom gives about 1.56 GiB. These are transparent planning calculations,

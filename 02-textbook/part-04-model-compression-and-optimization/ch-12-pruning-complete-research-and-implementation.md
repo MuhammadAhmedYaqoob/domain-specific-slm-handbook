@@ -59,22 +59,26 @@ generic compressor while leaving its dense tensor shape, allocated memory, and d
 (GEMM) unchanged. Conversely, deleting four Transformer blocks reduces dense parameters, layer execution, and per-layer
 KV-cache storage without requiring a sparse kernel.
 
-For an original parameter tensor \(W\), a binary mask \(M\) gives:
+For an original parameter tensor $W$, a binary mask $M$ gives:
 
-\[ W' = W \odot M,\qquad M_{ij}\in\{0,1\} \]
+$$
+W' = W \odot M,\qquad M_{ij}\in\{0,1\}
+$$
 
-where \(\odot\) is element-wise multiplication. The pruned fraction, or sparsity, is:
+where $\odot$ is element-wise multiplication. The pruned fraction, or sparsity, is:
 
-\[ s = 1-\frac{\lVert M\rVert_0}{|M|} \]
+$$
+s = 1-\frac{\lVert M\rVert_0}{|M|}
+$$
 
-where \(\lVert M\rVert_0\) counts retained entries and \(|M|\) is the number of mask entries. This definition applies to
+where $\lVert M\rVert_0$ counts retained entries and $|M|$ is the number of mask entries. This definition applies to
 individual weights. For layers or heads, always report a separate structural removal ratio because “30% pruning” could
 otherwise mean 30% of blocks, heads, MLP channels, or scalar weights.
 
-**Numerical example (`ILLUSTRATIVE`).** A \(4096\times4096\) FP16 matrix contains 16,777,216 weights and occupies 32 MiB
+**Numerical example (`ILLUSTRATIVE`).** A $4096\times4096$ FP16 matrix contains 16,777,216 weights and occupies 32 MiB
 as a dense payload. Setting 50% to zero still occupies 32 MiB when saved and loaded densely. An ideal value-only sparse
 payload would use 16 MiB, but a real format also stores positions or metadata, requires alignment, and may be converted
-back to dense by the runtime. Deleting 25% of its input and output dimensions instead produces a \(3072\times3072\)
+back to dense by the runtime. Deleting 25% of its input and output dimensions instead produces a $3072\times3072$
 dense matrix with 9,437,184 weights—43.75% fewer than the original—and ordinary dense kernels can execute it. Whether it
 is faster still depends on kernel shape efficiency.
 
@@ -150,14 +154,16 @@ multiplication (SpMM) kernel. It is not a default mobile optimization.
 
 ### 12.3.2 Semi-structured N:M pruning
 
-N:M sparsity constrains each contiguous group of \(M\) values. Unfortunately, literature and software use conflicting
+N:M sparsity constrains each contiguous group of $M$ values. Unfortunately, literature and software use conflicting
 language: some say “N:M” means **N nonzeros in every M values**; others describe N removed. This chapter always states
 the convention.
 
 Here, **2:4 means exactly two retained nonzero positions among each group of four eligible weights**, hence 50% scalar
 sparsity. Example:
 
-\[ [0.8,-0.1,0.4,0.02]\rightarrow[0.8,0,0.4,0] \]
+$$
+[0.8,-0.1,0.4,0.02]\rightarrow[0.8,0,0.4,0]
+$$
 
 if magnitude selects the two retained entries. This regularity reduces metadata and permits accelerator-specific data
 paths.
@@ -183,17 +189,22 @@ multiple heterogeneous backends.
 
 Pruning is an optimization problem:
 
-\[ \min_{M}\;\mathcal{L}(W\odot M;\mathcal{D}_{cal})+\lambda C(M)+\mu R_{\text{target}}(M)+\nu A(M) \] <!-- markdownlint-disable-line MD013 MD049 -->
+$$
+\min_{M}\;\mathcal{L}(W\odot M;\mathcal{D}_{cal})+\lambda C(M)+\mu R_{\text{target}}(M)+\nu A(M)
+$$
+<!-- markdownlint-disable-line MD013 MD049 -->
 
-where \(\mathcal{L}\) is calibration or recovery loss, \(C\) penalizes retained capacity, \(R_{\text{target}}\)
-approximates measured target-runtime cost, and \(A\) penalizes invalid or poorly aligned shapes. \(\lambda,\mu,\nu\)
+where $\mathcal{L}$ is calibration or recovery loss, $C$ penalizes retained capacity, $R_{\text{target}}$
+approximates measured target-runtime cost, and $A$ penalizes invalid or poorly aligned shapes. $\lambda,\mu,\nu$
 control trade-offs. In practice, exact combinatorial optimization is infeasible, so methods use scores and schedules.
 
 ### 12.4.1 Magnitude-based pruning
 
 The simplest score is:
 
-\[ I_{ij}=|W_{ij}| \]
+$$
+I_{ij}=|W_{ij}|
+$$
 
 and the lowest-scoring weights are removed. **Global magnitude pruning** ranks weights across eligible tensors; **local
 magnitude pruning** applies a fixed ratio within each tensor, row, or group.
@@ -202,28 +213,35 @@ Global selection can preserve sensitive matrices but may catastrophically empty 
 selection prevents this but spends the same sparsity budget on both sensitive and redundant tensors. Never prune
 normalization parameters, biases, embeddings, or the output head implicitly; eligibility must be explicit.
 
-For a head, neuron, or channel group \(g\), magnitude can be aggregated as:
+For a head, neuron, or channel group $g$, magnitude can be aggregated as:
 
-\[ I_g=\lVert W_g\rVert_1,\quad \lVert W_g\rVert_2,\quad\text{or}\quad \frac{\lVert W_g\rVert_2}{\sqrt{|g|}} \]
+$$
+I_g=\lVert W_g\rVert_1,\quad \lVert W_g\rVert_2,\quad\text{or}\quad \frac{\lVert W_g\rVert_2}{\sqrt{|g|}}
+$$
 
 The normalization matters when group sizes differ.
 
 ### 12.4.2 Activation- and gradient-aware importance
 
 Magnitude does not account for how often a weight’s input is active. A first-order Taylor approximation for removing
-group \(g\) is:
+group $g$ is:
 
-\[ \Delta\mathcal{L}_g \approx \left|\sum_{i\in g}W_i\frac{\partial\mathcal{L}}{\partial W_i}\right| \] <!-- markdownlint-disable-line MD013 MD049 -->
+$$
+\Delta\mathcal{L}_g \approx \left|\sum_{i\in g}W_i\frac{\partial\mathcal{L}}{\partial W_i}\right|
+$$
+<!-- markdownlint-disable-line MD013 MD049 -->
 
 This motivates gradient-weight products. Second-order approaches approximate curvature:
 
-\[ \Delta\mathcal{L}\approx \nabla\mathcal{L}^{\top}\Delta W+ \frac{1}{2}\Delta W^{\top}H\Delta W \]
+$$
+\Delta\mathcal{L}\approx \nabla\mathcal{L}^{\top}\Delta W+ \frac{1}{2}\Delta W^{\top}H\Delta W
+$$
 
-where \(H\) is a Hessian or an approximation derived from layer inputs. Curvature-aware reconstruction can compensate
+where $H$ is a Hessian or an approximation derived from layer inputs. Curvature-aware reconstruction can compensate
 retained weights after pruning but costs calibration memory and computation.
 
-Activation-aware scores include \(|W_{ij}|\lVert X_j\rVert_2\), the criterion used by Wanda, where \(X_j\) is the
-calibration activation entering input channel \(j\). This highlights a crucial domain implication: scores computed on
+Activation-aware scores include $|W_{ij}|\lVert X_j\rVert_2$, the criterion used by Wanda, where $X_j$ is the
+calibration activation entering input channel $j$. This highlights a crucial domain implication: scores computed on
 general web text may differ from scores computed on automotive fault descriptions, pharmaceutical terminology, or
 beekeeping procedures.
 
@@ -238,7 +256,9 @@ encoder models. For decoder-only SLMs, generation quality and runtime sparse sup
 
 Some methods minimize layer-output error:
 
-\[ \min_{\widehat{W}}\lVert WX-\widehat{W}X\rVert_F^2 \quad\text{subject to a sparsity/structure constraint.} \]
+$$
+\min_{\widehat{W}}\lVert WX-\widehat{W}X\rVert_F^2 \quad\text{subject to a sparsity/structure constraint.}
+$$
 
 Others score how predictable or recoverable a channel’s output is. FLAP, for example, uses fluctuation-based structured
 importance, adaptive allocation, and bias compensation; its reported retraining-free results are `PAPER-REPORTED`
@@ -261,21 +281,23 @@ calibration-unstable and should receive additional recovery and safety scrutiny.
 
 ## 12.5 What can be pruned inside a decoder-only Transformer
 
-Consider a layer with hidden width \(d\), \(h_q\) query heads, \(h_{kv}\) key/value heads, per-head dimension \(d_h\),
-and MLP width \(d_{ff}\). A common gated MLP is:
+Consider a layer with hidden width $d$, $h_q$ query heads, $h_{kv}$ key/value heads, per-head dimension $d_h$,
+and MLP width $d_{ff}$. A common gated MLP is:
 
-\[ \operatorname{MLP}(x)=W_{\text{down}} \left[\phi(W_{\text{gate}}x)\odot(W_{\text{up}}x)\right]. \]
+$$
+\operatorname{MLP}(x)=W_{\text{down}} \left[\phi(W_{\text{gate}}x)\odot(W_{\text{up}}x)\right].
+$$
 
 ### 12.5.1 Attention-head pruning
 
-In standard multi-head attention, removing query head \(k\) requires removing the corresponding blocks from \(W_Q\) and
-from the input dimension of \(W_O\). If key and value heads are also removed, matching blocks in \(W_K\), \(W_V\), cache
+In standard multi-head attention, removing query head $k$ requires removing the corresponding blocks from $W_Q$ and
+from the input dimension of $W_O$. If key and value heads are also removed, matching blocks in $W_K$, $W_V$, cache
 layout, and runtime configuration must change.
 
 Grouped-query attention (GQA) and multi-query attention (MQA) complicate this:
 
 - several query heads share one key/value head;
-- \(h_q\) must generally remain divisible by \(h_{kv}\);
+- $h_q$ must generally remain divisible by $h_{kv}$;
 - removing a KV head may require removing its associated query group;
 - head ordering can interact with rotary positional embedding (RoPE) layouts;
 - fused QKV projections must be sliced by semantic offsets, not as an undifferentiated matrix.
@@ -287,12 +309,14 @@ KV channels.
 
 ### 12.5.2 Layer or block pruning
 
-Layer pruning removes complete Transformer blocks. For \(L\) layers, retaining \(L'\) changes approximate dense block
-work by \(L'/L\), though embeddings, language head, sampling, and other fixed costs remain. KV cache is approximately:
+Layer pruning removes complete Transformer blocks. For $L$ layers, retaining $L'$ changes approximate dense block
+work by $L'/L$, though embeddings, language head, sampling, and other fixed costs remain. KV cache is approximately:
 
-\[ B_{\text{KV}} = 2\,L\,T\,h_{kv}\,d_h\,b \]
+$$
+B_{\text{KV}} = 2\,L\,T\,h_{kv}\,d_h\,b
+$$
 
-bytes for one sequence, where 2 represents keys and values, \(T\) is cached tokens, and \(b\) is bytes per cache
+bytes for one sequence, where 2 represents keys and values, $T$ is cached tokens, and $b$ is bytes per cache
 element. Therefore, reducing layers from 24 to 18 reduces this layer-proportional cache component by 25%
 (`ILLUSTRATIVE`), while MLP-only pruning does not.
 
@@ -301,19 +325,19 @@ long-range behavior, and reasoning. Perplexity alone can miss degraded instructi
 
 ### 12.5.3 MLP neuron and intermediate-channel pruning
 
-For a gated MLP, one intermediate neuron \(j\) is represented by:
+For a gated MLP, one intermediate neuron $j$ is represented by:
 
-- row \(j\) of \(W_{\text{gate}}\);
-- row \(j\) of \(W_{\text{up}}\);
-- column \(j\) of \(W_{\text{down}}\).
+- row $j$ of $W_{\text{gate}}$;
+- row $j$ of $W_{\text{up}}$;
+- column $j$ of $W_{\text{down}}$.
 
-All three must be removed together. Pruning only one tensor breaks semantics or dimensions. Reducing \(d_{ff}\) is
+All three must be removed together. Pruning only one tensor breaks semantics or dimensions. Reducing $d_{ff}$ is
 usually portable because it creates smaller dense GEMMs. Keep widths aligned to backend-friendly multiples and benchmark
 candidate alignments rather than maximizing nominal parameter reduction.
 
 ### 12.5.4 Hidden/residual-channel pruning
 
-Reducing \(d\) has broad impact: embeddings, attention projections, MLP input/output dimensions, normalization vectors,
+Reducing $d$ has broad impact: embeddings, attention projections, MLP input/output dimensions, normalization vectors,
 residual streams, and often the language-model head must all agree. Tied input/output embeddings must remain tied after
 slicing. A local hidden-channel decision therefore becomes a graph-wide dependency problem.
 
@@ -347,14 +371,18 @@ Architecture-aware pruning begins with a dependency graph and exporter constrain
 
 ### 12.6.1 Representation costs
 
-For \(n\) values, nonzero fraction \(\rho=1-s\), value width \(b_v\) bits, and index width \(b_i\) bits, a simplified
+For $n$ values, nonzero fraction $\rho=1-s$, value width $b_v$ bits, and index width $b_i$ bits, a simplified
 coordinate sparse payload is:
 
-\[ B_{\text{sparse}}\approx n\rho(b_v+b_i)+B_{\text{metadata}}. \]
+$$
+B_{\text{sparse}}\approx n\rho(b_v+b_i)+B_{\text{metadata}}.
+$$
 
-Dense storage is \(B_{\text{dense}}=nb_v\). Ignoring metadata, sparse storage wins only when:
+Dense storage is $B_{\text{dense}}=nb_v$. Ignoring metadata, sparse storage wins only when:
 
-\[ \rho < \frac{b_v}{b_v+b_i}. \]
+$$
+\rho < \frac{b_v}{b_v+b_i}.
+$$
 
 If values and indices are both 16 bits, the break-even is more than 50% sparsity—and row pointers, alignment, and
 runtime work push the real break-even higher. N:M formats use much less positional metadata because only local patterns
@@ -446,9 +474,11 @@ Iterative pruning alternates:
 3. re-estimate scores;
 4. repeat until target or gate failure.
 
-A cubic gradual schedule from initial sparsity \(s_i\) to final \(s_f\) can be written:
+A cubic gradual schedule from initial sparsity $s_i$ to final $s_f$ can be written:
 
-\[ s(t)=s_f+(s_i-s_f) \left(1-\frac{t-t_0}{t_1-t_0}\right)^3,\quad t_0\le t\le t_1. \]
+$$
+s(t)=s_f+(s_i-s_f) \left(1-\frac{t-t_0}{t_1-t_0}\right)^3,\quad t_0\le t\le t_1.
+$$
 
 Gradual pruning gives optimization time to adapt, but it costs more and can overfit the recovery set. Compare it against
 a compute-matched one-shot baseline.
@@ -480,8 +510,10 @@ Recovery can use:
 
 The recovery objective should prevent domain and general forgetting:
 
-\[ \mathcal{L}_{rec}= \alpha\mathcal{L}_{domain}+\beta\mathcal{L}_{general}+\gamma\mathcal{L}_{KD} <!-- markdownlint-disable-line MD013 MD049 -->
-+\delta\mathcal{L}_{safety}. \]
+$$
+\mathcal{L}_{rec}= \alpha\mathcal{L}_{domain}+\beta\mathcal{L}_{general}+\gamma\mathcal{L}_{KD} <!-- markdownlint-disable-line MD013 MD049 -->
++\delta\mathcal{L}_{safety}.
+$$
 
 Report training tokens, optimizer, steps, wall time, GPU-hours, peak VRAM, energy if measurable, and teacher-inference
 cost. A pruned artifact that needs more recovery compute than training a competitive native small model is not
@@ -489,12 +521,14 @@ automatically the best engineering choice.
 
 ### 12.7.5 Pruning-aware distillation
 
-With dense teacher logits \(z_T\), pruned student logits \(z_S\), and temperature \(\tau\):
+With dense teacher logits $z_T$, pruned student logits $z_S$, and temperature $\tau$:
 
-\[ \mathcal{L}_{KD}= \tau^2\,\mathrm{KL} \left( \operatorname{softmax}(z_T/\tau) \;\middle\|\;
-\operatorname{softmax}(z_S/\tau) \right). \]
+$$
+\mathcal{L}_{KD}= \tau^2\,\mathrm{KL} \left( \operatorname{softmax}(z_T/\tau) \;\middle\|\;
+\operatorname{softmax}(z_S/\tau) \right).
+$$
 
-The \(\tau^2\) factor preserves gradient scale under temperature. Feature or attention matching can be added when
+The $\tau^2$ factor preserves gradient scale under temperature. Feature or attention matching can be added when
 dimensions can be mapped. Layer-pruned students need an explicit teacher-to-student layer map; hidden-width-pruned
 students may need learned projections.
 
@@ -536,7 +570,9 @@ arbitrary sparsity still requires a deployable sparse backend. Paper quality res
 
 Wanda scores a weight by:
 
-\[ I_{ij}=|W_{ij}|\;\lVert X_j\rVert_2 \]
+$$
+I_{ij}=|W_{ij}|\;\lVert X_j\rVert_2
+$$
 
 and prunes within each output row without a weight update. The approach is simpler than second-order reconstruction and
 supports unstructured and N:M experiments. The ICLR 2024 paper and official repository establish it as a practical
@@ -636,7 +672,7 @@ already-selected project baseline rather than silently changing architecture.
 | U-SGPT    | SparseGPT unstructured                       | 20, 30, 40, 50, 60%          |
 | NM        | magnitude, Wanda, SparseGPT 2-retained-of-4  | fixed 50% eligible weights   |
 | LAYER     | static magnitude/influence block removal     | 10, 20, 30% layers           |
-| MLP       | coupled gate/up/down channel pruning         | 10, 20, 30, 40% \(d_{ff}\)  |
+| MLP       | coupled gate/up/down channel pruning         | 10, 20, 30, 40% $d_{ff}$  |
 | HEAD      | architecture-valid head/KV-group pruning     | 10, 20, 30% eligible groups  |
 | WIDTH     | SliceGPT or target-shape hidden slicing      | 10, 20, 30% hidden width     |
 | STRUCT    | LLM-Pruner/FLAP where supported              | 10, 20, 30% dense parameters |
@@ -697,9 +733,11 @@ Report:
 - generation degeneration: repetition, empty output, stop failure, and invalid structured output;
 - paired bootstrap confidence intervals and per-item deltas.
 
-Quality retention for a “higher is better” metric \(Q\) is:
+Quality retention for a “higher is better” metric $Q$ is:
 
-\[ R_Q = \frac{Q_{\text{pruned}}}{Q_{\text{dense}}}\times100\%. \]
+$$
+R_Q = \frac{Q_{\text{pruned}}}{Q_{\text{dense}}}\times100\%.
+$$
 
 For error metrics, report absolute and relative increase instead; do not invert without explanation.
 
@@ -884,15 +922,12 @@ from pathlib import Path
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-
 EXCLUDED = ("embed_tokens", "lm_head", "norm")
-
 
 def eligible_linears(model):
     for name, module in model.named_modules():
         if isinstance(module, torch.nn.Linear) and not any(x in name for x in EXCLUDED):
             yield name, module
-
 
 @torch.no_grad()
 def local_unstructured_magnitude(model, ratio: float) -> dict:
@@ -913,7 +948,6 @@ def local_unstructured_magnitude(model, ratio: float) -> dict:
             "elements": w.numel(),
         }
     return audit
-
 
 @torch.no_grad()
 def slice_llama_like_mlp(model, ratio: float, multiple: int) -> dict:
@@ -973,7 +1007,6 @@ def slice_llama_like_mlp(model, ratio: float, multiple: int) -> dict:
     model.config.intermediate_size = target_width
     return audit
 
-
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True, help="Local path or pinned trusted revision")
@@ -1021,7 +1054,6 @@ def main():
         encoding="utf-8",
     )
 
-
 if __name__ == "__main__":
     main()
 ```
@@ -1050,7 +1082,6 @@ shape/alignment mismatch, wrong grouping orientation, or pattern violation.
 # validate_2of4.py — UNVERIFIED IMPLEMENTATION
 import torch
 
-
 def assert_two_retained_of_four(weight: torch.Tensor) -> None:
     if weight.ndim != 2 or weight.shape[1] % 4:
         raise ValueError("Expected 2D weight with grouped dimension divisible by four")
@@ -1059,7 +1090,6 @@ def assert_two_retained_of_four(weight: torch.Tensor) -> None:
     if not torch.all(retained == 2):
         bad = int((retained != 2).sum().item())
         raise ValueError(f"{bad} groups violate exactly-two-retained-of-four")
-
 
 def to_packed_cuda_2of4(weight: torch.Tensor):
     assert_two_retained_of_four(weight)
@@ -1081,7 +1111,6 @@ Purpose: refuse incomplete benchmark records before analysis.
 # result_schema.py — UNVERIFIED IMPLEMENTATION
 from pydantic import BaseModel, Field
 from typing import Literal
-
 
 class PruningResult(BaseModel):
     evidence: Literal["EXECUTED", "REPRODUCED"]

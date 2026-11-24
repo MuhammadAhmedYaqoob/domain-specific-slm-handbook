@@ -7,13 +7,15 @@ winner. All numbers in worked examples are invented for instruction and must nev
 
 A model name is not a deployable option. Treat each option as
 
-\[
-D=(W,T,A,Q,R,H,O,C,P,E),
-\]
+$$
 
-where \(W\) is the weight and adapter lineage, \(T\) the tokenizer and chat template, \(A\) the exported artifact,
-\(Q\) the weight, activation, and KV-cache precision, \(R\) the runtime build, \(H\) the hardware, \(O\) the operating
-environment, \(C\) the context and generation policy, \(P\) the intended-use and safety policy, and \(E\) the evidence
+D=(W,T,A,Q,R,H,O,C,P,E),
+
+$$
+
+where $W$ is the weight and adapter lineage, $T$ the tokenizer and chat template, $A$ the exported artifact,
+$Q$ the weight, activation, and KV-cache precision, $R$ the runtime build, $H$ the hardware, $O$ the operating
+environment, $C$ the context and generation policy, $P$ the intended-use and safety policy, and $E$ the evidence
 snapshot. Changing one element creates a different option because it can change outputs, memory, latency, rights, or
 failure behavior.
 

@@ -67,7 +67,7 @@ checkpoint-specific. An inference engine must reproduce the trained graph exactl
 ### 2.3.1 Why tokenization exists
 
 The output projection needs a finite number of rows, yet text contains arbitrary words, identifiers, Unicode characters,
-and even malformed byte sequences. A tokenizer maps text to identifiers from vocabulary \(\mathcal{V}\), and a decoder
+and even malformed byte sequences. A tokenizer maps text to identifiers from vocabulary $\mathcal{V}$, and a decoder
 maps identifiers back to text. The model sees identifiers, not words.
 
 A tokenizer includes normalization, pre-tokenization, segmentation, special-token handling, and deterministic decoding.
@@ -90,9 +90,11 @@ raw-frequency pair. Implementations differ, so “WordPiece” is not one univer
 with displayed continuation markers such as `##` [R5]; greedy longest-match encoding is common.
 
 **Unigram language-model tokenization.** Unigram starts with a large candidate inventory and removes pieces whose
-absence least harms a probabilistic segmentation model. For segmentation \(z=(z_1,\ldots,z_m)\),
+absence least harms a probabilistic segmentation model. For segmentation $z=(z_1,\ldots,z_m)$,
 
-\[ P(z)=\prod_{i=1}^{m}p(z_i). \]
+$$
+P(z)=\prod_{i=1}^{m}p(z_i).
+$$
 
 Encoding can use Viterbi search for a high-probability segmentation. Kudo also proposed sampling plausible segmentations
 during training as subword regularization [R6]. SentencePiece implements BPE and Unigram directly over raw text and
@@ -117,8 +119,8 @@ otherwise unknown characters become byte tokens. These are related, not identica
 
 ### 2.3.3 Vocabulary size and fertility
 
-Let \(V=|\mathcal{V}|\) and model width be \(d\). An untied input embedding contains \(Vd\) parameters; an untied output
-matrix contains another \(Vd\). For \(V=32{,}000\) and \(d=2{,}048\), each has \(65{,}536{,}000\) parameters. At two
+Let $V=|\mathcal{V}|$ and model width be $d$. An untied input embedding contains $Vd$ parameters; an untied output
+matrix contains another $Vd$. For $V=32{,}000$ and $d=2{,}048$, each has $65{,}536{,}000$ parameters. At two
 bytes per parameter, its raw payload is 125 MiB; two untied matrices are 250 MiB. This `ILLUSTRATIVE` calculation
 excludes alignment, quantization metadata, and runtime buffers.
 
@@ -140,31 +142,43 @@ baseline; modification should be justified by measured coverage or fertility pro
 
 ## 2.4 Embeddings and position
 
-For token IDs \(t_1,\ldots,t_S\), matrix \(E\in\mathbb{R}^{V\times d}\) supplies
+For token IDs $t_1,\ldots,t_S$, matrix $E\in\mathbb{R}^{V\times d}$ supplies
 
-\[ X_i=E[t_i]\in\mathbb{R}^{d}. \]
+$$
+X_i=E[t_i]\in\mathbb{R}^{d}.
+$$
 
-With batch \(B\), \(X\) has shape \((B,S,d)\). Practical kernels gather rows rather than materializing one-hot vectors.
-Some models **tie** output and input embeddings by using \(E^\top\) for the output projection, reducing parameters [R9].
+With batch $B$, $X$ has shape $(B,S,d)$. Practical kernels gather rows rather than materializing one-hot vectors.
+Some models **tie** output and input embeddings by using $E^\top$ for the output projection, reducing parameters [R9].
 Tying is a training-time architecture choice, not an inference toggle.
 
 Attention without position information has no intrinsic way to distinguish reordered inputs. Major approaches include:
 
 - **learned absolute embeddings**, which add a learned vector for each position;
-- **sinusoidal encodings** [R1], \[ PE_{(p,2j)}=\sin(p/10000^{2j/d}),\quad PE_{(p,2j+1)}=\cos(p/10000^{2j/d}); \]
+- **sinusoidal encodings** [R1],
+
+$$
+PE_{(p,2j)}=\sin(p/10000^{2j/d}),\quad PE_{(p,2j+1)}=\cos(p/10000^{2j/d});
+$$
+
 - **relative representations**, which alter attention using relative distance [R10];
 - **ALiBi**, which adds head-specific linear distance biases [R11]; and
 - **rotary position embedding (RoPE)**, which rotates query/key coordinates [R12].
 
-Here \(p\) is position, \(j\) indexes a coordinate pair, and \(d\) is width. For one RoPE pair and \(\theta_p=p\omega\),
+Here $p$ is position, $j$ indexes a coordinate pair, and $d$ is width. For one RoPE pair and $\theta_p=p\omega$,
 
-\[ R_{\theta_p}= \begin{bmatrix} \cos\theta_p&-\sin\theta_p\\ \sin\theta_p&\cos\theta_p \end{bmatrix}. \]
+$$
+R_{\theta_p}= \begin{bmatrix} \cos\theta_p&-\sin\theta_p\\ \sin\theta_p&\cos\theta_p \end{bmatrix}.
+$$
 
-If \(q'_p=R_{\theta_p}q\) and \(k'_r=R_{\theta_r}k\), then <!-- markdownlint-disable-line MD013 MD049 -->
+If $q'_p=R_{\theta_p}q$ and $k'_r=R_{\theta_r}k$, then <!-- markdownlint-disable-line MD013 MD049 -->
 
-\[ (q'_p)^\top k'_r=q^\top R_{\theta_r-\theta_p}k, \] <!-- markdownlint-disable-line MD013 MD049 -->
+$$
+(q'_p)^\top k'_r=q^\top R_{\theta_r-\theta_p}k,
+$$
+<!-- markdownlint-disable-line MD013 MD049 -->
 
-so their dot product contains relative displacement. RoPE normally rotates \(Q\) and \(K\), not \(V\). Frequency base,
+so their dot product contains relative displacement. RoPE normally rotates $Q$ and $K$, not $V$. Frequency base,
 rotary dimensions, scaling, and position indexing belong to the checkpoint contract.
 
 No position technique makes context unlimited. Extrapolation can degrade because training distribution, attention
@@ -199,76 +213,92 @@ flowchart LR
 
 ### 2.5.1 Equations and shapes
 
-Given \(X\in\mathbb{R}^{B\times S\times d}\), one head forms
+Given $X\in\mathbb{R}^{B\times S\times d}$, one head forms
 
-\[ Q=XW_Q,\quad K=XW_K,\quad V_a=XW_V, \]
+$$
+Q=XW_Q,\quad K=XW_K,\quad V_a=XW_V,
+$$
 
-where \(W_Q,W_K\in\mathbb{R}^{d\times d_k}\), \(W_V\in\mathbb{R}^{d\times d_v}\), and \(V_a\) distinguishes the value
-tensor from vocabulary size \(V\). Scaled dot-product attention is
+where $W_Q,W_K\in\mathbb{R}^{d\times d_k}$, $W_V\in\mathbb{R}^{d\times d_v}$, and $V_a$ distinguishes the value
+tensor from vocabulary size $V$. Scaled dot-product attention is
 
-\[ \operatorname{Attention}(Q,K,V_a)= \operatorname{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}+M\right)V_a. \]
+$$
+\operatorname{Attention}(Q,K,V_a)= \operatorname{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}+M\right)V_a.
+$$
 
-\(M\in\mathbb{R}^{S\times S}\) is an additive mask. Scores have shape \((B,S,S)\) per head. For autoregressive
+$M\in\mathbb{R}^{S\times S}$ is an additive mask. Scores have shape $(B,S,S)$ per head. For autoregressive
 attention,
 
-\[ M_{ij}= \begin{cases} 0,&j\le i,\\ -\infty,&j>i. \end{cases} \]
+$$
+M_{ij}= \begin{cases} 0,&j\le i,\\ -\infty,&j>i. \end{cases}
+$$
 
-Thus position \(i\) cannot read a future key \(j>i\). Implementations use a representable negative value or fused causal
+Thus position $i$ cannot read a future key $j>i$. Implementations use a representable negative value or fused causal
 kernel; negative infinity is conceptual. Padding masks are separate. A mask-orientation error can leak targets during
 training.
 
 ### 2.5.2 Numerical example
 
-For \(S=3,d_k=2\), let
+For $S=3,d_k=2$, let
 
-\[ Q=K=\begin{bmatrix}1&0\\0&1\\1&1\end{bmatrix},\quad V_a=\begin{bmatrix}1&0\\0&2\\3&1\end{bmatrix}. \]
+$$
+Q=K=\begin{bmatrix}1&0\\0&1\\1&1\end{bmatrix},\quad V_a=\begin{bmatrix}1&0\\0&2\\3&1\end{bmatrix}.
+$$
 
 At the third position all keys are visible. Its scaled scores are
 
-\[ \frac{[1,1]K^\top}{\sqrt2}\approx[0.707,0.707,1.414]. \]
+$$
+\frac{[1,1]K^\top}{\sqrt2}\approx[0.707,0.707,1.414].
+$$
 
-Softmax is approximately \([0.248,0.248,0.503]\), yielding
+Softmax is approximately $[0.248,0.248,0.503]$, yielding
 
-\[ 0.248[1,0]+0.248[0,2]+0.503[3,1]\approx[1.757,0.999]. \]
+$$
+0.248[1,0]+0.248[0,2]+0.503[3,1]\approx[1.757,0.999].
+$$
 
-At the first position, the mask hides positions two and three, so its output is \([1,0]\). Values are `ILLUSTRATIVE`;
+At the first position, the mask hides positions two and three, so its output is $[1,0]$. Values are `ILLUSTRATIVE`;
 displayed rounding is approximate.
 
 ### 2.5.3 MHA, MQA, and GQA
 
-MHA runs \(H_q\) learned heads, concatenates their outputs, and projects:
+MHA runs $H_q$ learned heads, concatenates their outputs, and projects:
 
-\[ \operatorname{MHA}(X)=\operatorname{Concat}(O_1,\ldots,O_{H_q})W_O. \]
+$$
+\operatorname{MHA}(X)=\operatorname{Concat}(O_1,\ldots,O_{H_q})W_O.
+$$
 
-If \(d=H_qd_h\), each head usually has width \(d_h\). Heads may learn different patterns, but no semantic role is
+If $d=H_qd_h$, each head usually has width $d_h$. Heads may learn different patterns, but no semantic role is
 guaranteed.
 
-MQA retains \(H_q\) query heads while sharing one key and one value head [R14]. GQA uses \(H_{kv}\) KV heads and maps
-groups of query heads to each [R15]. MHA is the \(H_{kv}=H_q\) endpoint; MQA is \(H_{kv}=1\).
+MQA retains $H_q$ query heads while sharing one key and one value head [R14]. GQA uses $H_{kv}$ KV heads and maps
+groups of query heads to each [R15]. MHA is the $H_{kv}=H_q$ endpoint; MQA is $H_{kv}=1$.
 
 <!-- markdownlint-disable MD013 -->
 | Design | Query heads |          KV heads | Cache implication               | Trade-off                                  |
 | ------ | ----------: | ----------------: | ------------------------------- | ------------------------------------------ |
-| MHA    |     \(H_q\) |           \(H_q\) | Largest under equal dimensions  | Independent KV representations             |
-| GQA    |     \(H_q\) | \(1<H_{kv}<H_q\) | Reduced by about \(H_q/H_{kv}\) | Middle ground; quality depends on training |
-| MQA    |     \(H_q\) |                 1 | Smallest                        | Maximum KV sharing                         |
+| MHA    |     $H_q$ |           $H_q$ | Largest under equal dimensions  | Independent KV representations             |
+| GQA    |     $H_q$ | $1<H_{kv}<H_q$ | Reduced by about $H_q/H_{kv}$ | Middle ground; quality depends on training |
+| MQA    |     $H_q$ |                 1 | Smallest                        | Maximum KV sharing                         |
 <!-- markdownlint-restore -->
 
 **TBL-CH02-02 — Head sharing (`ILLUSTRATIVE`).** Ratios assume equal layers, dimensions, precision, and context and do
 not predict latency.
 
-For layers \(L\), batch \(B\), cached length \(S\), KV heads \(H_{kv}\), head width \(d_h\), and bytes per element
-\(b\),
+For layers $L$, batch $B$, cached length $S$, KV heads $H_{kv}$, head width $d_h$, and bytes per element
+$b$,
 
-\[ \text{KV bytes}\approx2LBSH_{kv}d_hb. \]
+$$
+\text{KV bytes}\approx2LBSH_{kv}d_hb.
+$$
 
-The factor 2 stores keys and values. For \(L=24,B=1,S=4096,H_{kv}=8,d_h=64,b=2\), payload is \(201{,}326{,}592\) bytes,
+The factor 2 stores keys and values. For $L=24,B=1,S=4096,H_{kv}=8,d_h=64,b=2$, payload is $201{,}326{,}592$ bytes,
 or 192 MiB. With 32 KV heads and all else equal, it is 768 MiB. Real allocations can include padding, metadata,
 alignment, and additional buffers.
 
 ### 2.5.4 Prefill and decode
 
-During **prefill**, prompt positions are processed and cached. Dense attention has \(S^2\) logical query-key
+During **prefill**, prompt positions are processed and cached. Dense attention has $S^2$ logical query-key
 interactions. Fused exact kernels can avoid storing the full score matrix in high-bandwidth memory; FlashAttention is an
 IO-aware exact algorithm, not sparse attention [R16].
 
@@ -282,35 +312,49 @@ workload. Architecture alone cannot justify a tokens-per-second claim.
 
 Attention communicates across positions. The feed-forward network transforms each position independently:
 
-\[ \operatorname{FFN}(x)=W_2\phi(W_1x+b_1)+b_2, \]
+$$
+\operatorname{FFN}(x)=W_2\phi(W_1x+b_1)+b_2,
+$$
 
-where \(x\in\mathbb{R}^{d}\), \(W_1\in\mathbb{R}^{d_{ff}\times d}\), \(W_2\in\mathbb{R}^{d\times d_{ff}}\), and \(\phi\)
-may be ReLU or GELU. Ignoring bias, it uses \(2dd_{ff}\) weights.
+where $x\in\mathbb{R}^{d}$, $W_1\in\mathbb{R}^{d_{ff}\times d}$, $W_2\in\mathbb{R}^{d\times d_{ff}}$, and $\phi$
+may be ReLU or GELU. Ignoring bias, it uses $2dd_{ff}$ weights.
 
 SwiGLU is a gated variant [R17]:
 
-\[ \operatorname{SwiGLU}(x)=W_o[\operatorname{SiLU}(W_gx)\odot(W_ux)], \qquad \operatorname{SiLU}(z)=z\sigma(z). \]
+$$
+\operatorname{SwiGLU}(x)=W_o[\operatorname{SiLU}(W_gx)\odot(W_ux)], \qquad \operatorname{SiLU}(z)=z\sigma(z).
+$$
 
-\(W_g,W_u,W_o\) are gate, up, and output projections; \(\odot\) is element-wise multiplication. It has roughly
-\(3dd_{ff}\) weights, so gated models often choose a different intermediate width. Comparing only the expansion ratio
+$W_g,W_u,W_o$ are gate, up, and output projections; $\odot$ is element-wise multiplication. It has roughly
+$3dd_{ff}$ weights, so gated models often choose a different intermediate width. Comparing only the expansion ratio
 without counting matrices is misleading.
 
 Layer normalization is [R18]
 
-\[ \operatorname{LN}(x)=\gamma\odot\frac{x-\mu}{\sqrt{\sigma^2+\epsilon}}+\beta, \]
+$$
+\operatorname{LN}(x)=\gamma\odot\frac{x-\mu}{\sqrt{\sigma^2+\epsilon}}+\beta,
+$$
 
-where \(\mu,\sigma^2\) are the vector mean and variance; \(\gamma,\beta\) are learned; and \(\epsilon\) prevents
+where $\mu,\sigma^2$ are the vector mean and variance; $\gamma,\beta$ are learned; and $\epsilon$ prevents
 division by zero. RMSNorm omits mean subtraction [R19]:
 
-\[ \operatorname{RMSNorm}(x)=\gamma\odot \frac{x}{\sqrt{\frac1d\sum_{j=1}^{d}x_j^2+\epsilon}}. \]
+$$
+\operatorname{RMSNorm}(x)=\gamma\odot \frac{x}{\sqrt{\frac1d\sum_{j=1}^{d}x_j^2+\epsilon}}.
+$$
 
 The RMSNorm paper reports simplification and competitive results in tested settings (`PAPER-REPORTED`), not universal
 superiority.
 
 In a pre-norm block,
 
-\[ h'=h+\operatorname{Attention}(\operatorname{Norm}(h)), \] \[
-h_{\text{next}}=h'+\operatorname{FFN}(\operatorname{Norm}(h')). \]
+$$
+h'=h+\operatorname{Attention}(\operatorname{Norm}(h)),
+$$
+
+$$
+
+h_{\text{next}}=h'+\operatorname{FFN}(\operatorname{Norm}(h')).
+$$
 
 Residual connections provide identity paths around nonlinear sublayers [R20]. Parallel-residual and post-norm variants
 exist; exact ordering is part of the checkpoint.
@@ -319,15 +363,19 @@ exist; exact ordering is part of the checkpoint.
 
 ## 2.7 Decoder stack, logits, and softmax
 
-After \(L\) blocks and usually a final normalization, last-position state \(h\in\mathbb{R}^{d}\) is projected:
+After $L$ blocks and usually a final normalization, last-position state $h\in\mathbb{R}^{d}$ is projected:
 
-\[ z=W_{\text{out}}h+b,\qquad z\in\mathbb{R}^{V}. \]
+$$
+z=W_{\text{out}}h+b,\qquad z\in\mathbb{R}^{V}.
+$$
 
-Each \(z_i\) is a **logit**, an unnormalized score. Softmax gives
+Each $z_i$ is a **logit**, an unnormalized score. Softmax gives
 
-\[ p_i=\frac{\exp(z_i)}{\sum_{j=1}^{V}\exp(z_j)}. \]
+$$
+p_i=\frac{\exp(z_i)}{\sum_{j=1}^{V}\exp(z_j)}.
+$$
 
-Implementations subtract \(\max_jz_j\) before exponentiation for numerical stability. Softmax creates a categorical
+Implementations subtract $\max_jz_j$ before exponentiation for numerical stability. Softmax creates a categorical
 distribution, not calibrated truth confidence. A factually wrong continuation can receive high probability.
 
 Training commonly uses teacher forcing and next-token cross-entropy. Generation consumes the model’s own selected
@@ -337,23 +385,25 @@ outputs. Once an unlikely token is selected, every later probability is conditio
 
 ## 2.8 Decoding and stopping
 
-**Greedy decoding** selects \(\arg\max_i z_i\). **Beam search** keeps several high-scoring partial sequences; it is
+**Greedy decoding** selects $\arg\max_i z_i$. **Beam search** keeps several high-scoring partial sequences; it is
 useful for some constrained tasks but is not automatically better for dialogue. **Sampling** draws from a modified
 distribution.
 
-Temperature \(T>0\) rescales logits:
+Temperature $T>0$ rescales logits:
 
-\[ p_i(T)=\frac{\exp(z_i/T)}{\sum_j\exp(z_j/T)}. \]
+$$
+p_i(T)=\frac{\exp(z_i/T)}{\sum_j\exp(z_j/T)}.
+$$
 
-\(T<1\) sharpens and \(T>1\) flattens. Implementations should treat zero as greedy rather than divide by zero. For
-logits \([2,1,0]\), probabilities at \(T=1\) are about \([0.665,0.245,0.090]\); at \(T=0.5\), about
-\([0.867,0.117,0.016]\) (`ILLUSTRATIVE`).
+$T<1$ sharpens and $T>1$ flattens. Implementations should treat zero as greedy rather than divide by zero. For
+logits $[2,1,0]$, probabilities at $T=1$ are about $[0.665,0.245,0.090]$; at $T=0.5$, about
+$[0.867,0.117,0.016]$ (`ILLUSTRATIVE`).
 
-**Top-\(k\)** keeps the \(k\) largest candidates and renormalizes. **Top-\(p\)** (nucleus) sampling sorts by probability
-and keeps the smallest prefix whose cumulative mass reaches \(p\) [R21]. Top-\(p\)'s candidate count adapts to
+**Top-$k$** keeps the $k$ largest candidates and renormalizes. **Top-$p$** (nucleus) sampling sorts by probability
+and keeps the smallest prefix whose cumulative mass reaches $p$ [R21]. Top-$p$'s candidate count adapts to
 distribution shape. Combined filters need a documented order and minimum-candidate rule.
 
-Repetition controls include multiplicative penalties, additive presence/frequency penalties, and repeated-\(n\)-gram
+Repetition controls include multiplicative penalties, additive presence/frequency penalties, and repeated-$n$-gram
 bans; they are not equivalent. Excessive penalties can corrupt technical terms, units, and lists. Record the exact
 formula and whether it covers prompt tokens, generated tokens, or both.
 
@@ -367,9 +417,11 @@ safety mechanism: unsafe content may precede the delimiter.
 ## 2.9 Context windows, KV caches, and long-context limits
 
 The context window counts tokens after templating: system messages, role delimiters, user text, history, and generated
-output. For capacity \(C\),
+output. For capacity $C$,
 
-\[ S_{\text{prompt}}+S_{\text{generated}}\le C \]
+$$
+S_{\text{prompt}}+S_{\text{generated}}\le C
+$$
 
 unless the runtime explicitly evicts, slides, or rejects content. Reserve output room before prefill.
 
@@ -418,24 +470,28 @@ query-key pair. A model may have dense FFNs with local attention, or global atte
 deployment, but weights, cache traffic, and global prefill remain costly.
 
 **Sparse/local attention.** Sparse attention evaluates selected pairs using fixed, learned, block, local, or routing
-patterns. Practical acceleration requires matching kernels. Sliding-window attention lets position \(i\) read only about
-the prior \(w\) positions, reducing interactions from \(O(S^2)\) to \(O(Sw)\) when \(w\ll S\). A runtime may bound cache
+patterns. Practical acceleration requires matching kernels. Sliding-window attention lets position $i$ read only about
+the prior $w$ positions, reducing interactions from $O(S^2)$ to $O(Sw)$ when $w\ll S$. A runtime may bound cache
 accordingly. Direct access to older information is lost; stacked propagation is not equivalent to global lookup.
 
 **Mixture of Experts.** MoE replaces a dense FFN with experts and a router:
 
-\[ y=\sum_{e\in\operatorname{TopK}(g(x),k)}\alpha_e(x)f_e(x), \]
+$$
+y=\sum_{e\in\operatorname{TopK}(g(x),k)}\alpha_e(x)f_e(x),
+$$
 
-where \(g\) is the router, \(f_e\) expert \(e\), and \(\alpha_e\) its normalized routing weight. Sparse activation can
+where $g$ is the router, $f_e$ expert $e$, and $\alpha_e$ its normalized routing weight. Sparse activation can
 increase total capacity without activating every expert per token [R22]. It does not make storage or RAM proportional to
 active parameters: all experts may remain resident, routing is irregular, and mobile runtimes may lack kernels. Report
 total parameters, active parameters, and resident bytes separately.
 
 **State-space and hybrid models.** A simplified discrete state-space model (SSM) is
 
-\[ h_t=Ah_{t-1}+Bx_t,\qquad y_t=Ch_t+Dx_t, \]
+$$
+h_t=Ah_{t-1}+Bx_t,\qquad y_t=Ch_t+Dx_t,
+$$
 
-where \(x_t\) is input, \(h_t\) state, and \(y_t\) output. Modern selective SSMs make operators input-dependent. Mamba
+where $x_t$ is input, $h_t$ state, and $y_t$ output. Modern selective SSMs make operators input-dependent. Mamba
 reports linear sequence scaling and selective state updates [R23] (`PAPER-REPORTED`). SSMs can use fixed recurrent state
 for streaming, but training scans, inference kernels, state precision, export support, and content retrieval differ from
 attention. Hybrids combine attention with SSM or convolutional blocks.
@@ -487,13 +543,13 @@ usable domain corpus.
 2. **Normalize and tokenize.** Produce IDs with the exact tokenizer artifact and special-token policy.
 3. **Enforce context policy.** Reserve output space; reject or explicitly truncate overflow. Never silently remove
    system/safety instructions.
-4. **Embed.** Gather one vector per ID, yielding \((B,S,d)\).
+4. **Embed.** Gather one vector per ID, yielding $(B,S,d)$.
 5. **Prefill each layer.** Normalize; project Q/K/V; apply the position method; causally attend; add residual;
    normalize; apply FFN; add residual.
 6. **Cache.** Store each layer’s prompt keys/values in the required layout and precision.
-7. **Project.** Final normalization and output projection create \(V\) logits for the final position.
+7. **Project.** Final normalization and output projection create $V$ logits for the final position.
 8. **Constrain and transform.** Apply any allowed-ID/grammar constraints, repetition policy, temperature, and
-   top-\(k\)/top-\(p\) in documented order. Valid format does not guarantee true content.
+   top-$k$/top-$p$ in documented order. Valid format does not guarantee true content.
 9. **Select.** Greedy choice or seeded sampling returns one ID.
 10. **Stop or stream.** Detect token/string stops, length, or cancellation; buffer possible stop suffixes and incomplete
     Unicode.
@@ -574,7 +630,7 @@ maximum-context behavior.
   fundamental.
 - GQA and MQA share KV heads and can reduce cache payload relative to MHA under controlled assumptions.
 - FFNs transform each position; SwiGLU adds a learned gate. Norm and residual ordering are checkpoint contracts.
-- Output projection produces logits. Temperature, top-\(k\), top-\(p\), penalties, and stopping select text but add no
+- Output projection produces logits. Temperature, top-$k$, top-$p$, penalties, and stopping select text but add no
   knowledge.
 - KV caching trades recomputation for linearly growing state. Advertised long context is not guaranteed effective
   reasoning.
@@ -587,14 +643,14 @@ maximum-context behavior.
 
 1. Why can byte-level BPE encode arbitrary UTF-8 without making every token one byte?
 2. How can a larger vocabulary reduce sequence cost while increasing model cost?
-3. Give the shape of \(QK^\top\) for \(B=2,H=8,S=512,d_h=64\).
+3. Give the shape of $QK^\top$ for $B=2,H=8,S=512,d_h=64$.
 4. Why is a causal mask needed during parallel training?
-5. Under what assumptions does GQA reduce cache by \(H_q/H_{kv}\)?
+5. Under what assumptions does GQA reduce cache by $H_q/H_{kv}$?
 6. Why is FlashAttention not sparse attention?
 7. Contrast learned absolute position, RoPE, and ALiBi.
-8. Why is RMSNorm not simply LayerNorm without \(\beta\)?
+8. Why is RMSNorm not simply LayerNorm without $\beta$?
 9. Distinguish logits, probabilities, calibration, and factual correctness.
-10. Compare top-\(k\) and top-\(p\) for peaked and flat distributions.
+10. Compare top-$k$ and top-$p$ for peaked and flat distributions.
 11. Why may a model accept but fail to use a long context?
 12. Why is active MoE parameter count insufficient for mobile RAM planning?
 13. When can sliding-window attention bound cache, and what does it risk?
@@ -613,7 +669,7 @@ maximum-context behavior.
    (`STATICALLY REVIEWED`) from measured process memory (`EXECUTED`).
 4. **Cached-logit equivalence.** Compare full-prefix and incremental logits for a pinned
    model/tokenizer/runtime/device/precision.
-5. **Decoding study.** Hold model and prompt fixed; vary temperature/top-\(p\) over recorded seeds. Report diversity and
+5. **Decoding study.** Hold model and prompt fixed; vary temperature/top-$p$ over recorded seeds. Report diversity and
    task correctness separately.
 6. **Long-context diagnostic.** Test retrieval by position and length with distractors. Do not equate successful
    allocation with successful use.

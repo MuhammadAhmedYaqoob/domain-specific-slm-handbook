@@ -15,7 +15,7 @@ joules/request, currency/request; unavailable measures are JSON `null`, never fa
 
 Input JSON requires shared `experiment_id`, `workload_sha256`, `quality_protocol_sha256`, `measured_utc`, and `currency`,
 plus `cloud` and `mobile`. Each side requires nonblank artifact/runtime/hardware IDs, positive finite `attempts`,
-`successes` in \([0,attempts]\), positive finite `ttft_ms` and `decode_tokens_per_second`; `energy_j_per_request` and
+`successes` in $[0,attempts]$, positive finite `ttft_ms` and `decode_tokens_per_second`; `energy_j_per_request` and
 `cost_per_request` are null or nonnegative finite. Output gives mobile-minus-cloud latency/throughput deltas and failure
 rates; energy/cost deltas are emitted only when both are measured. It makes no “faster,” “better,” or feasibility claim.
 

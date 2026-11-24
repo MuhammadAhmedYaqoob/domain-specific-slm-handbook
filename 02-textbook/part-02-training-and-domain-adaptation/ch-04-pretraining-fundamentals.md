@@ -21,13 +21,16 @@ conditions determine what it learns and what it forgets.
 
 ## 4.2 The pretraining problem
 
-For tokens \(x_{1:T}\), an autoregressive model factorizes:
+For tokens $x_{1:T}$, an autoregressive model factorizes:
 
-<a id="eq-ch04-01"></a> \[ \boxed{p_\theta(x_{1:T})=\prod_{t=1}^{T}p_\theta(x_t\mid x_{<t})} \tag{EQ-CH04-01} \]
+<a id="eq-ch04-01"></a>
+$$
+\boxed{p_\theta(x_{1:T})=\prod_{t=1}^{T}p_\theta(x_t\mid x_{<t})} \tag{EQ-CH04-01}
+$$
 
-\(\theta\) denotes trainable parameters, \(x_t\) the target token, and \(x_{<t}\) its prefix. Training samples text,
+$\theta$ denotes trainable parameters, $x_t$ the target token, and $x_{<t}$ its prefix. Training samples text,
 tokenizes and batches it, performs a causally masked forward pass, computes loss, backpropagates gradients, and updates
-\(\theta\).
+$\theta$.
 
 Labels are derived from the text itself. This is **self-supervised learning**: supervision comes from observed data
 rather than manual labels. It does not mean source-free, unbiased, lawful, private, or factually verified. Corpus
@@ -85,12 +88,15 @@ language coverage, domain quality, or deployment. Neither route guarantees factu
 ## 4.4 Initializing weights
 
 Initialization must break symmetry while keeping activations and gradients numerically useful through depth. Too-large
-weights can amplify signals; too-small weights can suppress them. For fan-in \(n_{\rm in}\) and fan-out \(n_{\rm out}\),
+weights can amplify signals; too-small weights can suppress them. For fan-in $n_{\rm in}$ and fan-out $n_{\rm out}$,
 Xavier initialization uses approximately:
 
-<a id="eq-ch04-02"></a> \[ \boxed{\operatorname{Var}(W)=\frac{2}{n_{\rm in}+n_{\rm out}}} \tag{EQ-CH04-02} \]
+<a id="eq-ch04-02"></a>
+$$
+\boxed{\operatorname{Var}(W)=\frac{2}{n_{\rm in}+n_{\rm out}}} \tag{EQ-CH04-02}
+$$
 
-For \(n_{\rm in}=n_{\rm out}=2048\), standard deviation is \(\sqrt{2/4096}\approx0.0221\) (`ILLUSTRATIVE`). Transformer
+For $n_{\rm in}=n_{\rm out}=2048$, standard deviation is $\sqrt{2/4096}\approx0.0221$ (`ILLUSTRATIVE`). Transformer
 recipes may instead use architecture-specific normal initialization and depth-scaled residual projections; copy the
 recipe only when normalization and residual topology match.
 
@@ -104,21 +110,26 @@ normalization bias zero. Tied input/output embeddings are initialized once. Befo
 5. unit-test causal masking and target shift; and
 6. overfit a tiny clean batch.
 
-With near-uniform logits and vocabulary \(V\), initial loss is roughly \(\ln V\). For \(V=32{,}000\), that is about
+With near-uniform logits and vocabulary $V$, initial loss is roughly $\ln V$. For $V=32{,}000$, that is about
 10.37 nats/token. It is a diagnostic, not a universal acceptance threshold.
 
 <a id="ch04-objective"></a>
 
 ## 4.5 Objectives and next-token prediction
 
-At position \(t\), logits \(z_{t,v}\) produce:
+At position $t$, logits $z_{t,v}$ produce:
 
-\[ p_\theta(v\mid x_{<t})=\frac{e^{z_{t,v}}}{\sum_{u=1}^{V}e^{z_{t,u}}}. \]
+$$
+p_\theta(v\mid x_{<t})=\frac{e^{z_{t,v}}}{\sum_{u=1}^{V}e^{z_{t,u}}}.
+$$
 
-With validity mask \(m_t\), causal cross-entropy is:
+With validity mask $m_t$, causal cross-entropy is:
 
-<a id="eq-ch04-03"></a> \[ \boxed{\mathcal L=-\frac{1}{\sum_t m_t}\sum_t m_t \log p_\theta(x_t\mid x_{<t})}
-\tag{EQ-CH04-03} \]
+<a id="eq-ch04-03"></a>
+$$
+\boxed{\mathcal L=-\frac{1}{\sum_t m_t}\sum_t m_t \log p_\theta(x_t\mid x_{<t})}
+\tag{EQ-CH04-03}
+$$
 
 `m_t=0` excludes padding or deliberately ignored positions. Inputs and targets shift by one:
 
@@ -127,7 +138,7 @@ input:  <bos> torque the bolts evenly
 target: torque the bolts evenly <eos>
 ```
 
-For target probabilities \([0.5,0.25,0.8,0.1]\), mean loss is about 1.151 nats and perplexity \(e^{1.151}\approx3.16\)
+For target probabilities $[0.5,0.25,0.8,0.1]$, mean loss is about 1.151 nats and perplexity $e^{1.151}\approx3.16$
 (`ILLUSTRATIVE`).
 
 Causal modeling suits decoder-only generation. Masked language modeling predicts hidden tokens using both sides;
@@ -140,12 +151,15 @@ or calibrated safety.
 
 ## 4.6 Tokens, epochs, batches, and sequence length
 
-Let microbatch sequences/device be \(b_\mu\), sequence length \(S\), data-parallel workers \(G\), accumulation steps
-\(A\), and valid target fraction \(q\). Effective loss tokens/update are:
+Let microbatch sequences/device be $b_\mu$, sequence length $S$, data-parallel workers $G$, accumulation steps
+$A$, and valid target fraction $q$. Effective loss tokens/update are:
 
-<a id="eq-ch04-04"></a> \[ \boxed{B_{\rm tok}=b_\mu SGAq} \tag{EQ-CH04-04} \]
+<a id="eq-ch04-04"></a>
+$$
+\boxed{B_{\rm tok}=b_\mu SGAq} \tag{EQ-CH04-04}
+$$
 
-With \(b_\mu=2,S=2048,G=8,A=16,q=1\), one update covers 524,288 tokens. Ten billion tokens require about 19,074
+With $b_\mu=2,S=2048,G=8,A=16,q=1$, one update covers 524,288 tokens. Ten billion tokens require about 19,074
 updates, excluding remainders and resume duplication (`ILLUSTRATIVE`). “Batch size 256” is incomplete without sequence
 length, workers, accumulation, packing, and valid-token policy.
 
@@ -154,7 +168,7 @@ optimizer steps are clearer. Repeating a one-billion-token corpus ten times is n
 tokens and can increase memorization.
 
 Longer sequences expose longer dependencies but increase activations, padding risk, and dense-attention interactions.
-Efficient kernels reduce memory traffic, not the dense \(S^2\) logical pattern. Train the context distribution the
+Efficient kernels reduce memory traffic, not the dense $S^2$ logical pattern. Train the context distribution the
 product needs; sequence-length warmup is a testable curriculum, not a universal rule [R5].
 
 <a id="ch04-optimization"></a>
@@ -163,21 +177,28 @@ product needs; sequence-length warmup is a testable curriculum, not a universal 
 
 Stochastic gradient descent updates:
 
-\[ \theta_{k+1}=\theta_k-\eta_k\nabla_\theta\mathcal L_k, \]
+$$
+\theta_{k+1}=\theta_k-\eta_k\nabla_\theta\mathcal L_k,
+$$
 
-where \(\eta_k\) is learning rate. A minibatch gradient is a noisy full-corpus estimate. Larger effective batches may
+where $\eta_k$ is learning rate. A minibatch gradient is a noisy full-corpus estimate. Larger effective batches may
 improve utilization but require schedule retuning.
 
 Adam tracks gradient moments:
 
-\[ m_k=\beta_1m_{k-1}+(1-\beta_1)g_k,\quad v_k=\beta_2v_{k-1}+(1-\beta_2)g_k^2. \]
+$$
+m_k=\beta_1m_{k-1}+(1-\beta_1)g_k,\quad v_k=\beta_2v_{k-1}+(1-\beta_2)g_k^2.
+$$
 
 AdamW decouples decay from the adaptive update [R7]:
 
-<a id="eq-ch04-05"></a> \[ \boxed{\theta_{k+1}=(1-\eta_k\lambda)\theta_k- \eta_k\frac{\hat m_k}{\sqrt{\hat
-v_k}+\epsilon}} \tag{EQ-CH04-05} \]
+<a id="eq-ch04-05"></a>
+$$
+\boxed{\theta_{k+1}=(1-\eta_k\lambda)\theta_k- \eta_k\frac{\hat m_k}{\sqrt{\hat
+v_k}+\epsilon}} \tag{EQ-CH04-05}
+$$
 
-\(\lambda\) is weight decay and hats denote bias-corrected moments. Biases and normalization parameters are often
+$\lambda$ is weight decay and hats denote bias-corrected moments. Biases and normalization parameters are often
 exempted from decay, but that remains a recipe choice. PyTorch documents this decoupling [D1].
 
 Relevant alternatives include momentum SGD (simpler state, often harder Transformer tuning), Adam (coupled
@@ -186,15 +207,19 @@ for large batches), and quantized optimizer states (less memory but additional c
 
 Warmup raises the learning rate gradually:
 
-\[ \eta_k=\eta_{\max}k/W,\qquad 0\le k\le W. \]
+$$
+\eta_k=\eta_{\max}k/W,\qquad 0\le k\le W.
+$$
 
 It reduces early update shock; it cannot repair bad masks, data, or initialization. After warmup, common schedules are
-constant, linear, inverse-square-root, cosine, and warmup-stable-decay. For post-warmup progress \(r\):
+constant, linear, inverse-square-root, cosine, and warmup-stable-decay. For post-warmup progress $r$:
 
-\[ \eta(r)=\eta_{\min}+\tfrac12[\eta_{\max}-\eta_{\min}](1+\cos(\pi r)). \]
+$$
+\eta(r)=\eta_{\min}+\tfrac12[\eta_{\max}-\eta_{\min}](1+\cos(\pi r)).
+$$
 
-With \(\eta_{\max}=3\!\times\!10^{-4}\) and \(\eta_{\min}=3\!\times\!10^{-5}\), midpoint rate is
-\(1.65\!\times\!10^{-4}\) (`ILLUSTRATIVE`). Save scheduler state: restarting or extending a decayed run without policy
+With $\eta_{\max}=3\!\times\!10^{-4}$ and $\eta_{\min}=3\!\times\!10^{-5}$, midpoint rate is
+$1.65\!\times\!10^{-4}$ (`ILLUSTRATIVE`). Save scheduler state: restarting or extending a decayed run without policy
 causes discontinuities.
 
 <a id="fig-ch04-02"></a> **FIG-CH04-02 — Optimizer-step control loop (`ILLUSTRATIVE`).**
@@ -226,8 +251,8 @@ flowchart LR
 Mixed precision runs expensive matrix work and selected activations in a lower precision while retaining sensitive
 reductions, master weights, or optimizer state in FP32. Exact behavior depends on framework and sharding.
 
-FP16 loss scaling computes \(s\mathcal L\), then unscales gradients before clipping and updating. Dynamic scaling
-adjusts \(s\) after overflows/stable periods. BF16 often avoids FP16's range problem, but support must be native and its
+FP16 loss scaling computes $s\mathcal L$, then unscales gradients before clipping and updating. Dynamic scaling
+adjusts $s$ after overflows/stable periods. BF16 often avoids FP16's range problem, but support must be native and its
 lower precision still requires validation.
 
 “Two bytes per parameter” is not training memory. A mixed-precision AdamW implementation may hold a 2-byte low-precision
@@ -241,7 +266,7 @@ activations, buffers, and fragmentation (`ESTIMATE`). One billion replicated par
 
 **Gradient accumulation** performs several microbatch forward/backward passes before one optimizer update. It increases
 effective batch without simultaneous residency. If valid-token counts vary, sum token losses and divide by total valid
-tokens; merely dividing every microbatch mean by \(A\) is exact only for equal valid counts. Accumulation adds
+tokens; merely dividing every microbatch mean by $A$ is exact only for equal valid counts. Accumulation adds
 passes/update and changes schedule accounting. Dropout randomness, clipping, and stateful behavior can prevent exact
 equivalence to one large batch.
 
@@ -258,7 +283,7 @@ parameters. A run that fits can still be too slow to justify.
 
 ## 4.10 Packing, curriculum, and data mixtures
 
-Packing concatenates examples into fuller blocks. Lengths \([700,500,300,200]\) padded separately to 1024 use
+Packing concatenates examples into fuller blocks. Lengths $[700,500,300,200]$ padded separately to 1024 use
 1,700/4,096 = 41.5% payload. A two-block packing can reach 1,700/2,048 = 83.0% (`ILLUSTRATIVE`). Define EOD tokens,
 cross-document attention, position reset, target masking, and source IDs. Block-diagonal attention prevents unrelated
 documents from attending across boundaries but needs compatible kernels.
@@ -267,12 +292,15 @@ A **curriculum** changes sampling over time: short to long, clean to noisy, gene
 reduce early cost or instability, but difficulty proxies can encode bias and simultaneous data/LR changes confound
 causality. Record consumed tokens by stratum.
 
-For source \(i\) with \(N_i\) tokens, temperature sampling uses:
+For source $i$ with $N_i$ tokens, temperature sampling uses:
 
-<a id="eq-ch04-06"></a> \[ \boxed{w_i=\frac{N_i^\alpha}{\sum_jN_j^\alpha}} \tag{EQ-CH04-06} \]
+<a id="eq-ch04-06"></a>
+$$
+\boxed{w_i=\frac{N_i^\alpha}{\sum_jN_j^\alpha}} \tag{EQ-CH04-06}
+$$
 
-For source sizes \([100,10,1]\) million and \(\alpha=0.5\), weights are approximately \([0.706,0.223,0.071]\), versus
-proportional \([0.901,0.090,0.009]\). Flattening increases small-source exposure and memorization risk.
+For source sizes $[100,10,1]$ million and $\alpha=0.5$, weights are approximately $[0.706,0.223,0.071]$, versus
+proportional $[0.901,0.090,0.009]$. Flattening increases small-source exposure and memorization risk.
 
 A specialist mixture may include lawful general language, domain manuals, procedures, terminology, structured records,
 and safety material. Select weights using quality, duplication, risk, coverage, and validation—not size alone. Split by
@@ -296,7 +324,7 @@ flowchart LR
 
 ## 4.11 Distributed training and parallelism
 
-**Data parallelism** replicates a model, assigns different data to ranks, and averages gradients \(g=G^{-1}\sum_rg_r\).
+**Data parallelism** replicates a model, assigns different data to ranks, and averages gradients $g=G^{-1}\sum_rg_r$.
 It is simple and throughput-oriented but replicates states and communicates gradients.
 
 **Tensor parallelism** partitions individual matrices, attention heads, or feed-forward dimensions. It fits layers too
@@ -410,24 +438,31 @@ DeepSpeed may orchestrate/shard them.
 
 A common dense-Transformer planning estimate is:
 
-<a id="eq-ch04-07"></a> \[ \boxed{C_{\rm train}\approx6N_pD} \tag{EQ-CH04-07} \]
+<a id="eq-ch04-07"></a>
+$$
+\boxed{C_{\rm train}\approx6N_pD} \tag{EQ-CH04-07}
+$$
 
-For 500M parameters and 10B tokens, this is \(3\times10^{19}\) FLOPs (`ESTIMATE`). It omits exact attention, embeddings,
+For 500M parameters and 10B tokens, this is $3\times10^{19}$ FLOPs (`ESTIMATE`). It omits exact attention, embeddings,
 recomputation, optimizer work, and utilization. Peak hardware FLOPs are not sustained throughput. Hoffmann et al.
 reported parameter/data balancing in their studied regime [R12], not a universal token ratio for every domain corpus.
 
 Peak memory is:
 
-\[ M_{\rm peak}\approx M_{\rm params}+M_{\rm grads}+M_{\rm optim} +M_{\rm activations}+M_{\rm comm}+M_{\rm
-temporary}+M_{\rm fragmentation}. \]
+$$
+M_{\rm peak}\approx M_{\rm params}+M_{\rm grads}+M_{\rm optim} +M_{\rm activations}+M_{\rm comm}+M_{\rm
+temporary}+M_{\rm fragmentation}.
+$$
 
 Economic feasibility includes compute, failed runs, idle bottlenecks, checkpoints, transfer, data rights, cleaning,
 expert review, evaluation, maintenance, and opportunity cost. With verified current rates:
 
-\[ C_\$ \approx n r_c h(1+p_f)+S_or_o+S_dr_d+S_nr_n+c_e, \]
+$$
+C_\$ \approx n r_c h(1+p_f)+S_or_o+S_dr_d+S_nr_n+c_e,
+$$
 
-where \(n\) is instances, \(r_c\) hourly compute rate, \(h\) hours, \(p_f\) failure reserve, \(S\) storage/transfer
-quantities, \(r\) their rates, and \(c_e\) engineering/review cost. No prices are supplied because region, provider,
+where $n$ is instances, $r_c$ hourly compute rate, $h$ hours, $p_f$ failure reserve, $S$ storage/transfer
+quantities, $r$ their rates, and $c_e$ engineering/review cost. No prices are supplied because region, provider,
 contract, and date must be checked.
 
 <a id="ch04-instability"></a>
@@ -538,7 +573,7 @@ This recommendation is not an executed finding.
 
 1. Why is self-supervision not ungoverned learning?
 2. Derive masked next-token cross-entropy.
-3. Why is \(\ln V\) only an initial-loss diagnostic?
+3. Why is $\ln V$ only an initial-loss diagnostic?
 4. Compute effective tokens/update for a declared distributed batch.
 5. Why are repeated tokens not independent data?
 6. Distinguish Adam and AdamW.
@@ -546,7 +581,7 @@ This recommendation is not an executed finding.
 8. When does accumulation equal a large batch?
 9. Contrast activation and training checkpoints.
 10. What semantics must packing define?
-11. How does \(\alpha<1\) affect mixture exposure?
+11. How does $\alpha<1$ affect mixture exposure?
 12. Compare data, tensor, and pipeline parallelism.
 13. What does each ZeRO stage shard?
 14. Why is ideal sharded memory a lower bound?

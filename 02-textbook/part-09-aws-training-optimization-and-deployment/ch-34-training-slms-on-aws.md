@@ -382,9 +382,11 @@ For restricted egress, import the model through a controlled scanner and publish
 CPT learns next-token prediction over accepted domain text. SFT learns from rendered instruction/chat sequences. LoRA
 learns low-rank updates to frozen weights:
 
-\[ W'=W+\frac{\alpha}{r}BA \]
+$$
+W'=W+\frac{\alpha}{r}BA
+$$
 
-where rank \(r\), scaling \(\alpha\), and target modules are experiment variables. QLoRA keeps a quantized frozen base
+where rank $r$, scaling $\alpha$, and target modules are experiment variables. QLoRA keeps a quantized frozen base
 while training adapters; this does not make the training representation a release artifact.
 
 ### Listing 34-5 — Configuration
@@ -514,7 +516,9 @@ terms may restrict output reuse.
 
 **Logit distillation:** only compare tokenwise distributions after proving tokenizer/vocabulary alignment:
 
-\[ \mathcal L=(1-\lambda)\mathcal L_{CE}+\lambda T^2 D_{KL}(\mathrm{softmax}(z_T/T)\parallel\mathrm{softmax}(z_S/T)). \]
+$$
+\mathcal L=(1-\lambda)\mathcal L_{CE}+\lambda T^2 D_{KL}(\mathrm{softmax}(z_T/T)\parallel\mathrm{softmax}(z_S/T)).
+$$
 
 ### Listing 34-7 — Distillation loss core
 
@@ -848,9 +852,11 @@ metrics on Linux with an NVIDIA driver. They are not universally automatic.
 Collect GPU/CPU/RAM/disk/network, data-loader wait, loss, learning rate, tokens, step time, checkpoint age/sync lag,
 OOM/NaN/restart/interruption, and bounded run/model/image identifiers. Do not log secrets or sensitive examples.
 
-\[ C=\sum_i q_i r_i \]
+$$
+C=\sum_i q_i r_i
+$$
 
-Here \(q_i\) is measured usage and \(r_i\) is a dated, Region-specific official unit rate. Include EC2/SageMaker
+Here $q_i$ is measured usage and $r_i$ is a dated, Region-specific official unit rate. Include EC2/SageMaker
 compute, EBS/snapshots, S3 storage/requests, transfer, public IPv4/NAT, ECR, CloudWatch, KMS, and failed/interrupted
 work. Capture timestamp, Region, SKU/rate or calculator export, billing unit, credits/taxes assumptions, and
 sensitivity. Use official EC2, Spot, SageMaker, and Cost Management sources at experiment time.

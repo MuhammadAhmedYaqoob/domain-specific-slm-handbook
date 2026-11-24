@@ -29,8 +29,8 @@ likewise needs quantization metadata, KV cache, activations, operator workspaces
 
 ## 3. Definitions and terminology
 
-- \(P\): number of parameters.
-- \(b\): stored bits per parameter in the idealized calculation.
+- $P$: number of parameters.
+- $b$: stored bits per parameter in the idealized calculation.
 - **Weight payload:** parameter-value bytes alone.
 - **Peak memory:** maximum observed memory within a declared workload boundary.
 
@@ -44,20 +44,22 @@ Reduced storage therefore does not automatically imply reduced peak memory or la
 
 The ideal payload in bytes is
 
-\[
-M_W=\frac{P b}{8}.
-\]
+$$
 
-Division by eight converts bits to bytes. Decimal GB uses \(10^9\) bytes; binary GiB uses \(2^{30}\) bytes. This formula
+M_W=\frac{P b}{8}.
+
+$$
+
+Division by eight converts bits to bytes. Decimal GB uses $10^9$ bytes; binary GiB uses $2^{30}$ bytes. This formula
 deliberately excludes all non-weight allocations.
 
 ## 6. Worked example
 
-`ILLUSTRATIVE`: with \(P=1.5\times10^9\):
+`ILLUSTRATIVE`: with $P=1.5\times10^9$:
 
-- FP16: \(1.5\times10^9\times16/8=3.0\times10^9\) bytes = 3.00 GB, about 2.79 GiB.
-- ideal INT4: \(1.5\times10^9\times4/8=0.75\times10^9\) bytes = 0.75 GB, about 0.70 GiB.
-- ideal payload reduction: \(3.0/0.75=4\) times.
+- FP16: $1.5\times10^9\times16/8=3.0\times10^9$ bytes = 3.00 GB, about 2.79 GiB.
+- ideal INT4: $1.5\times10^9\times4/8=0.75\times10^9$ bytes = 0.75 GB, about 0.70 GiB.
+- ideal payload reduction: $3.0/0.75=4$ times.
 
 The valid conclusion is “the ideal payload is four times smaller.” “The model uses 0.70 GiB on a phone” is not yet
 supported because no runtime measurement exists.
@@ -113,7 +115,7 @@ falls, test calibration data, grouping, sensitive layers, or a less aggressive f
 You can now estimate ideal weight payload and state its limits. Check yourself:
 
 1. Why is a 4× payload reduction not a 4× speed claim?
-2. Which allocations are absent from \(M_W\)?
+2. Which allocations are absent from $M_W$?
 3. For 800 million parameters at 8 bits, what is the ideal payload? Answer: 0.8 GB.
 4. What evidence proves the candidate fits a specific phone?
 

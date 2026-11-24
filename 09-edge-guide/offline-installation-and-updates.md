@@ -14,7 +14,7 @@ keys in controlled signing infrastructure, and embed an allow-list of public-key
 ## 2. Worked storage example
 
 Assume a 650 MB active package, 650 MB previous release, 300 MB partial download, 650 MB staged package, and 200 MB
-margin. Peak update storage is \(650+650+300+650+200=2,450\) MB. This illustrative calculation excludes unpacking; if
+margin. Peak update storage is $650+650+300+650+200=2,450$ MB. This illustrative calculation excludes unpacking; if
 the format expands, add the measured unpacked and temporary bytes before admission.
 
 ## 3. Signed manifest
@@ -68,8 +68,8 @@ reject training values and populate them from actual artifacts, qualification re
 ## 5. Resumable transfer algorithm
 
 Persist release ID, artifact path/hash/length, immutable remote object identity, strong validator, staging identity, and
-durable local length. On resume at byte \(n\), send `Range: bytes=n-` and `If-Range`. Append only when `206` begins at
-\(n\) and reports the signed total. If the server returns `200`, truncate and restart. Treat `416` as complete only
+durable local length. On resume at byte $n$, send `Range: bytes=n-` and `If-Range`. Append only when `206` begins at
+$n$ and reports the signed total. If the server returns `200`, truncate and restart. Treat `416` as complete only
 when local length equals signed length, then full-rehash. Never treat an ETag as SHA-256.
 
 ```text

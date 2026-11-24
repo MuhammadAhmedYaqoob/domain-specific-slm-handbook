@@ -36,13 +36,17 @@ quality, resource, and latency utilities of 0.250, 0.725, 0.271 and 0.667, 0.140
 
 With weights quality 0.55, resource 0.25, and latency 0.20:
 
-\[
-U(A)=0.55(0.250)+0.25(0.725)+0.20(0.271)=0.373,
-\]
+$$
 
-\[
+U(A)=0.55(0.250)+0.25(0.725)+0.20(0.271)=0.373,
+
+$$
+
+$$
+
 U(B)=0.55(0.667)+0.25(0.140)+0.20(0.457)=0.493.
-\]
+
+$$
 
 B receives the larger illustrative score and trades memory for quality. C cannot compensate for failing sustained thermal behavior.
 
@@ -54,7 +58,7 @@ acceptable-use restrictions, and downstream terms. Separately estimate maintenan
 kernels, conversion steps, security response, device or instance coverage, observability, and rollback drills.
 
 For example, if A requires 2 engineer-days per quarterly update and B requires 5, annual maintenance is illustratively
-\(2\times4=8\) versus \(5\times4=20\) engineer-days. This may influence preference only after both options pass rights
+$2\times4=8$ versus $5\times4=20$ engineer-days. This may influence preference only after both options pass rights
 and ownership gates.
 
 ## Interpretation and next decision

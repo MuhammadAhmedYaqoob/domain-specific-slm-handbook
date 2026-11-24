@@ -67,8 +67,10 @@ scope → source rights → immutable acquisition → normalization → objectiv
 
 The pharmaceutical version adds four cross-cutting control dimensions to every stage:
 
-\[ \boxed{\text{claim scope}= \text{entity}\times\text{formulation/route}\times\text{population/context}
-\times\text{jurisdiction}\times\text{effective time}} \]
+$$
+\boxed{\text{claim scope}= \text{entity}\times\text{formulation/route}\times\text{population/context}
+\times\text{jurisdiction}\times\text{effective time}}
+$$
 
 This is a scoping model, not a clinical formula. If any required dimension is unknown, the system must not silently
 substitute a nearby product, population, jurisdiction, or version.

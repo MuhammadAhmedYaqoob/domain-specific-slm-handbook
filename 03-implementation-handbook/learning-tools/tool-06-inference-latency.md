@@ -15,8 +15,8 @@ monotonic clock and boundaries follow CH-31.
 
 Inputs are request, prefill start/end, first model token, first visible fragment, last token, and finish timestamps plus
 actual input/generated token counts. Ordering must be nondecreasing; input tokens positive; generated tokens at least
-two for decode rate. \(TTFT=(t_v-t_0)/10^6\), prefill rate \(=N_p10^9/(t_{pe}-t_{ps})\), decode rate
-\(=(N_g-1)10^9/(t_{last}-t_1)\), E2E \(=(t_f-t_0)/10^6\). Zero-duration intervals fail.
+two for decode rate. $TTFT=(t_v-t_0)/10^6$, prefill rate $=N_p10^9/(t_{pe}-t_{ps})$, decode rate
+$=(N_g-1)10^9/(t_{last}-t_1)$, E2E $=(t_f-t_0)/10^6$. Zero-duration intervals fail.
 
 ## Complete CLI listing
 

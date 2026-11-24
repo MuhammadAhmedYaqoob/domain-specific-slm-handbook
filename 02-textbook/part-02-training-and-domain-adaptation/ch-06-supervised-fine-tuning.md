@@ -58,18 +58,20 @@ It cannot guarantee:
 
 ### 6.2.1 Technical definition
 
-Given a tokenized example \(x_{1:T}\), a causal model with parameters \(\theta\), and a binary supervision mask
-\(m_t\), SFT minimizes masked next-token cross-entropy:
+Given a tokenized example $x_{1:T}$, a causal model with parameters $\theta$, and a binary supervision mask
+$m_t$, SFT minimizes masked next-token cross-entropy:
 
-\[ \mathcal{L}_{\mathrm{SFT}}(\theta)= -\frac{1}{\sum_{t=1}^{T-1}m_{t+1}} \sum_{t=1}^{T-1}m_{t+1} \log <!-- markdownlint-disable-line MD013 MD049 -->
-p_\theta(x_{t+1}\mid x_{\le t}) \]
+$$
+\mathcal{L}_{\mathrm{SFT}}(\theta)= -\frac{1}{\sum_{t=1}^{T-1}m_{t+1}} \sum_{t=1}^{T-1}m_{t+1} \log <!-- markdownlint-disable-line MD013 MD049 -->
+p_\theta(x_{t+1}\mid x_{\le t})
+$$
 
 where:
 
-- \(T\) is sequence length;
-- \(p_\theta\) is the model's next-token distribution;
-- \(m_{t+1}=1\) means token \(x_{t+1}\) contributes to loss;
-- \(m_{t+1}=0\) means its label is ignored, conventionally represented as `-100` in PyTorch cross-entropy.
+- $T$ is sequence length;
+- $p_\theta$ is the model's next-token distribution;
+- $m_{t+1}=1$ means token $x_{t+1}$ contributes to loss;
+- $m_{t+1}=0$ means its label is ignored, conventionally represented as `-100` in PyTorch cross-entropy.
 
 The denominator normalizes by supervised tokens. Implementations may average differently across tokens, examples,
 devices, or accumulated microbatches; inspect the trainer rather than assuming mathematically identical weighting.
@@ -177,15 +179,21 @@ Assistant-only and completion-only are not synonyms:
 
 Suppose eight target positions have negative log-likelihoods:
 
-\[ [0.2,\ 0.3,\ 1.0,\ 0.4,\ 0.7,\ 0.2,\ 0.9,\ 0.3] \]
+$$
+[0.2,\ 0.3,\ 1.0,\ 0.4,\ 0.7,\ 0.2,\ 0.9,\ 0.3]
+$$
 
 and assistant-only masking selects positions 3, 4, 7, and 8:
 
-\[ m=[0,0,1,1,0,0,1,1]. \]
+$$
+m=[0,0,1,1,0,0,1,1].
+$$
 
 Then:
 
-\[ \mathcal{L}=(1.0+0.4+0.9+0.3)/4=0.65. \]
+$$
+\mathcal{L}=(1.0+0.4+0.9+0.3)/4=0.65.
+$$
 
 A batch with twice as many assistant tokens can exert more influence if the implementation averages all active tokens
 globally. This is why dataset row weights, token counts, sequence lengths, and loss normalization must all be audited.
@@ -576,25 +584,31 @@ A single multi-domain model can share general instruction behavior and terminolo
 finite parameter capacity and updates. Row concatenation implicitly weights by row count; token-level loss further
 weights long responses.
 
-Let dataset \(D_k\) represent domain or task \(k\). One explicit mixture objective is:
+Let dataset $D_k$ represent domain or task $k$. One explicit mixture objective is:
 
-\[ \mathcal{L}=\sum_{k=1}^{K}\alpha_k\, \mathbb{E}_{(x,y)\sim D_k}\left[\mathcal{L}_k(x,y)\right], \qquad
-\sum_k\alpha_k=1. \]
+$$
+\mathcal{L}=\sum_{k=1}^{K}\alpha_k\, \mathbb{E}_{(x,y)\sim D_k}\left[\mathcal{L}_k(x,y)\right], \qquad
+\sum_k\alpha_k=1.
+$$
 
-\(\alpha_k\) is a sampling or objective weight, not necessarily the raw dataset proportion.
+$\alpha_k$ is a sampling or objective weight, not necessarily the raw dataset proportion.
 
-For raw counts \(n_k\), temperature sampling can use:
+For raw counts $n_k$, temperature sampling can use:
 
-\[ q_k=\frac{n_k^\tau}{\sum_j n_j^\tau}. \]
+$$
+q_k=\frac{n_k^\tau}{\sum_j n_j^\tau}.
+$$
 
-- \(\tau=1\): proportional sampling;
-- \(\tau=0\): equal probability per domain;
-- \(0<\tau<1\): upweights smaller domains relative to proportional sampling.
+- $\tau=1$: proportional sampling;
+- $\tau=0$: equal probability per domain;
+- $0<\tau<1$: upweights smaller domains relative to proportional sampling.
 
-If automotive has 80,000 records and pharmacy has 5,000, proportional sampling gives pharmacy \(5.9\%\). With
-\(\tau=0.5\), the two-domain pharmacy share becomes:
+If automotive has 80,000 records and pharmacy has 5,000, proportional sampling gives pharmacy $5.9\%$. With
+$\tau=0.5$, the two-domain pharmacy share becomes:
 
-\[ \frac{\sqrt{5000}}{\sqrt{80000}+\sqrt{5000}}\approx20\%. \]
+$$
+\frac{\sqrt{5000}}{\sqrt{80000}+\sqrt{5000}}\approx20\%.
+$$
 
 This is an `ILLUSTRATIVE` calculation, not a recommended safety weighting. Risk, quality, difficulty, and token length
 matter in addition to count.
@@ -913,7 +927,6 @@ from pathlib import Path
 
 ALLOWED_ROLES = {"system", "user", "assistant", "tool"}
 
-
 def validate_record(record: dict, line_number: int) -> list[str]:
     errors: list[str] = []
     required = {"id", "domain", "task", "messages"}
@@ -947,7 +960,6 @@ def validate_record(record: dict, line_number: int) -> list[str]:
         errors.append(f"line {line_number}: no assistant target")
     return errors
 
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=Path)
@@ -976,7 +988,6 @@ def main() -> None:
     if errors:
         raise SystemExit("\n".join(errors))
     print(f"valid records: {len(ids)}")
-
 
 if __name__ == "__main__":
     main()
@@ -1008,7 +1019,6 @@ import argparse
 import json
 
 from transformers import AutoTokenizer
-
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -1046,7 +1056,6 @@ def main() -> None:
         piece = tokenizer.decode([token_id], skip_special_tokens=False)
         print(f"{int(bool(is_assistant))}\t{token_id}\t{piece!r}")
 
-
 if __name__ == "__main__":
     main()
 ```
@@ -1072,7 +1081,6 @@ import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer, set_seed
 from trl import SFTConfig, SFTTrainer
-
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -1147,7 +1155,6 @@ def main() -> None:
     (args.output_dir / "run_record.json").write_text(
         json.dumps(run_record, indent=2), encoding="utf-8"
     )
-
 
 if __name__ == "__main__":
     main()

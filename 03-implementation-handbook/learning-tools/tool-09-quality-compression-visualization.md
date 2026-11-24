@@ -18,8 +18,8 @@ share exact experiment, dataset, protocol, x-unit, y-unit, and `evidence="MEASUR
 Each JSONL row requires nonblank `candidate_id`, `experiment_id`, `dataset_sha256`, `protocol_sha256`, `measured_utc`,
 `x_name`, `x_unit`, `y_name`, `y_unit`; finite numeric `x`,`y`; and literal `evidence:"MEASURED"`. At least two rows and
 nonzero x/y ranges are required. Linear mapping is
-\(p_x=50+500(x-x_{min})/(x_{max}-x_{min})\),
-\(p_y=350-300(y-y_{min})/(y_{max}-y_{min})\). Output is an escaped SVG and JSON summary; no trend, Pareto, or superiority
+$p_x=50+500(x-x_{min})/(x_{max}-x_{min})$,
+$p_y=350-300(y-y_{min})/(y_{max}-y_{min})$. Output is an escaped SVG and JSON summary; no trend, Pareto, or superiority
 claim is inferred.
 
 ## Complete CLI listing
@@ -79,7 +79,7 @@ if __name__=="__main__": main()
 
 ## Fixtures, commands, interpretation, and limitations
 
-Hand fixture/unit test: two measured rows at \((1,2)\) and \((3,4)\) map to \((50,350)\) and \((550,50)\). Create a
+Hand fixture/unit test: two measured rows at $(1,2)$ and $(3,4)$ map to $(50,350)$ and $(550,50)$. Create a
 temporary JSONL with those values and identical nonblank provenance, then run
 `python tools/quality_compression_svg.py --input measured.jsonl --output plot.svg`; assert two `<circle` elements and
 the experiment ID in JSON. The plot reports supplied measurements only; audit metric direction, uncertainty, failures,

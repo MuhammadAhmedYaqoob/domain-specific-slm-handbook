@@ -36,13 +36,17 @@ quality, resource, and latency utilities of 0.286, 0.800, 0.192 and 0.786, 0.367
 
 With weights quality 0.45, resource 0.35, and latency 0.20:
 
-\[
-U(A)=0.45(0.286)+0.35(0.800)+0.20(0.192)=0.447,
-\]
+$$
 
-\[
+U(A)=0.45(0.286)+0.35(0.800)+0.20(0.192)=0.447,
+
+$$
+
+$$
+
 U(B)=0.45(0.786)+0.35(0.367)+0.20(0.754)=0.633.
-\]
+
+$$
 
 B leads the quality/latency preference despite greater fictional cost; A remains the lowest-cost qualified role. C cannot be selected until hosting rights are resolved.
 
@@ -54,7 +58,7 @@ acceptable-use restrictions, and downstream terms. Separately estimate maintenan
 kernels, conversion steps, security response, device or instance coverage, observability, and rollback drills.
 
 For example, if A requires 2 engineer-days per quarterly update and B requires 5, annual maintenance is illustratively
-\(2\times4=8\) versus \(5\times4=20\) engineer-days. This may influence preference only after both options pass rights
+$2\times4=8$ versus $5\times4=20$ engineer-days. This may influence preference only after both options pass rights
 and ownership gates.
 
 ## Interpretation and next decision

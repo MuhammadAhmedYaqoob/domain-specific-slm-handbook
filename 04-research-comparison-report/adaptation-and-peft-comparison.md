@@ -74,11 +74,11 @@ Full fine-tuning versus PEFT is then a separate capacity-and-resource choice app
 | P-Tuning / v2          | Learned prompt encoder / deep layer prompts        | Context/runtime overhead                           | v1 and v2 differ; implementation-specific         | Established research              |
 | IA3                    | Learned activation-rescaling vectors               | May merge into compatible weights                  | Exact target names and quantized merge            | Advanced practical                |
 | BitFit                 | Existing biases only                               | No new modules                                     | Many modern decoders have few relevant biases     | Cheap control                     |
-| LoRA                   | Additive low-rank \(sBA\) updates                  | Mergeable; dense model size unchanged              | Targets, rank, scale, fused modules               | Core practical                    |
+| LoRA                   | Additive low-rank $sBA$ updates                  | Mergeable; dense model size unchanged              | Targets, rank, scale, fused modules               | Core practical                    |
 | QLoRA                  | LoRA through frozen 4-bit training base            | Training-memory method; deployment format separate | bitsandbytes/hardware and merge path              | Core practical                    |
 | AdaLoRA                | Importance-driven dynamic rank allocation          | LoRA-like after finalization                       | Schedules/state add complexity                    | Advanced                          |
 | DoRA                   | Train magnitude plus low-rank direction            | Merge preferred; more unmerged overhead            | Quantization/distributed support varies           | Advanced                          |
-| rsLoRA                 | \(\alpha/\sqrt r\) scaling                         | Same adapter shape                                 | Scaling metadata must be preserved                | Advanced ablation                 |
+| rsLoRA                 | $\alpha/\sqrt r$ scaling                         | Same adapter shape                                 | Scaling metadata must be preserved                | Advanced ablation                 |
 | LoRA+                  | Different learning rates for A and B               | No inference change                                | Optimizer-group integration                       | Advanced ablation                 |
 | PiSSA                  | Principal weight-SVD initialization/residual       | Mergeable after correct conversion                 | SVD cost and residual provenance                  | Advanced                          |
 | OLoRA                  | QR/orthonormal initialization and base translation | Mergeable after conversion                         | Base mutation/provenance                          | Experimental                      |
@@ -150,7 +150,7 @@ preferable for causal attribution.
 ## Compute and artifact implications
 
 - Full fine-tuning stores gradients and optimizer state for all selected weights and produces a full domain checkpoint.
-- LoRA reduces trainable state to \(r(d_{in}+d_{out})\) per targeted matrix, but target count can dominate rank.
+- LoRA reduces trainable state to $r(d_{in}+d_{out})$ per targeted matrix, but target count can dominate rank.
 - QLoRA reduces frozen-base training storage; the final mobile/cloud artifact still requires merge/reconstruction and
   fresh target quantization.
 - Prompt/prefix methods make tiny domain artifacts but can consume context or add cache/runtime operations.

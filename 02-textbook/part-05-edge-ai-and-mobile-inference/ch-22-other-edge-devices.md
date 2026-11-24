@@ -36,11 +36,13 @@ After completing this chapter, the reader should be able to:
 “Edge computer” covers radically different systems: a passively cooled single-board computer (SBC), a CUDA-capable
 Jetson module, a sealed factory gateway, a battery laptop, or a browser tab. The useful deployment unit is:
 
-\[ \boxed{\mathcal{D}=(M,T,Q,R,B,H,O,X,P,S)} \tag{EQ-CH22-01} \]
+$$
+\boxed{\mathcal{D}=(M,T,Q,R,B,H,O,X,P,S)} \tag{EQ-CH22-01}
+$$
 
-where \(M\) is model architecture and weights, \(T\) tokenizer and chat template, \(Q\) numerical representation, \(R\)
-runtime/converter, \(B\) backend and actual operator placement, \(H\) hardware, \(O\) operating system/drivers/firmware,
-\(X\) workload, \(P\) power/thermal policy, and \(S\) security/update state.
+where $M$ is model architecture and weights, $T$ tokenizer and chat template, $Q$ numerical representation, $R$
+runtime/converter, $B$ backend and actual operator placement, $H$ hardware, $O$ operating system/drivers/firmware,
+$X$ workload, $P$ power/thermal policy, and $S$ security/update state.
 
 The same nominal “1B INT4 model” can have different loaded memory, cache growth, correctness, and speed in llama.cpp on
 an Arm CPU, a CUDA runtime on Jetson, OpenVINO on an Intel laptop, or WebLLM in a browser. A model-family name and bit
@@ -86,57 +88,73 @@ This distributes learned parameters. It does not retrieve domain documents per a
 
 ### Weight payload
 
-For \(N\) parameters, average code width \(b_w\) bits, group size \(g\), and \(b_m\) metadata bits per group:
+For $N$ parameters, average code width $b_w$ bits, group size $g$, and $b_m$ metadata bits per group:
 
-\[ \boxed{M_W^{ideal}=\frac{N}{8}\left(b_w+\frac{b_m}{g}\right)} \tag{EQ-CH22-02} \]
+$$
+\boxed{M_W^{ideal}=\frac{N}{8}\left(b_w+\frac{b_m}{g}\right)} \tag{EQ-CH22-02}
+$$
 
 This excludes tensor headers, alignment, unquantized tensors, runtime repacking, duplicate buffers, tokenizer files, and
 application memory.
 
-**Worked `ESTIMATE`:** \(N=1.0\) billion, 4-bit codes, one 16-bit scale per 32 weights:
+**Worked `ESTIMATE`:** $N=1.0$ billion, 4-bit codes, one 16-bit scale per 32 weights:
 
-\[ b_{\mathrm{eff}}=4+\frac{16}{32}=4.5\text{ bits},\qquad M_W^{ideal}=562.5\text{ MB}\approx536.4\text{ MiB}. \]
+$$
+b_{\mathrm{eff}}=4+\frac{16}{32}=4.5\text{ bits},\qquad M_W^{ideal}=562.5\text{ MB}\approx536.4\text{ MiB}.
+$$
 
 An actual file and resident set must be measured. “4-bit” does not establish 0.5 bytes per parameter when metadata and
 exceptions exist.
 
 ### KV-cache payload
 
-For \(L\) layers, batch \(B\), cached tokens \(T_c\), \(H_{kv}\) KV heads, head dimension \(d_h\), and \(b_{kv}\) bytes
+For $L$ layers, batch $B$, cached tokens $T_c$, $H_{kv}$ KV heads, head dimension $d_h$, and $b_{kv}$ bytes
 per element:
 
-\[ \boxed{M_{KV}^{ideal}\approx2LB T_cH_{kv}d_hb_{kv}} \tag{EQ-CH22-03} \]
+$$
+\boxed{M_{KV}^{ideal}\approx2LB T_cH_{kv}d_hb_{kv}} \tag{EQ-CH22-03}
+$$
 
 The factor 2 represents keys and values. Runtime reservation, alignment, paging, and quantization metadata add overhead.
 
-**Worked `ESTIMATE`:** \(L=24\), \(B=1\), \(T_c=4096\), \(H_{kv}=8\), \(d_h=64\), FP16 cache:
+**Worked `ESTIMATE`:** $L=24$, $B=1$, $T_c=4096$, $H_{kv}=8$, $d_h=64$, FP16 cache:
 
-\[ M_{KV}^{ideal}=192\text{ MiB}. \]
+$$
+M_{KV}^{ideal}=192\text{ MiB}.
+$$
 
 Doubling context doubles this cache term. Replacing 8 KV heads with 32 multiplies it by four. Weight quantization does
 not reduce KV memory unless the runtime separately supports a lower-precision cache.
 
 ### Peak memory, update storage, bandwidth, and energy
 
-\[ \boxed{ M_{\mathrm{peak}}=M_W+M_{KV}+M_A+M_{\mathrm{workspace}}+
-M_{\mathrm{runtime}}+M_{\mathrm{app}}+M_{\mathrm{copies}}+M_{\mathrm{margin}} } \tag{EQ-CH22-04} \]
+$$
+\boxed{ M_{\mathrm{peak}}=M_W+M_{KV}+M_A+M_{\mathrm{workspace}}+
+M_{\mathrm{runtime}}+M_{\mathrm{app}}+M_{\mathrm{copies}}+M_{\mathrm{margin}} } \tag{EQ-CH22-04}
+$$
 
-\[ \boxed{ S_{\mathrm{update}}=S_{\mathrm{old}}+S_{\mathrm{download}}+S_{\mathrm{new}}+
-S_{\mathrm{unpack}}+S_{\mathrm{rollback}} } \tag{EQ-CH22-05} \]
+$$
+\boxed{ S_{\mathrm{update}}=S_{\mathrm{old}}+S_{\mathrm{download}}+S_{\mathrm{new}}+
+S_{\mathrm{unpack}}+S_{\mathrm{rollback}} } \tag{EQ-CH22-05}
+$$
 
 Memory mapping can avoid an eager copy but does not make touched pages free. Atomic updates can need old, staged, and
 new artifacts concurrently.
 
-If decode moves at least \(Q_t\) bytes through a path sustaining \(BW\) bytes/s:
+If decode moves at least $Q_t$ bytes through a path sustaining $BW$ bytes/s:
 
-\[ t_{\mathrm{token}}\ge Q_t/BW. \tag{EQ-CH22-06} \]
+$$
+t_{\mathrm{token}}\ge Q_t/BW. \tag{EQ-CH22-06}
+$$
 
 This is a lower bound, not a latency prediction. Dequantization, arithmetic, synchronization, cache misses, and kernel
 launches add time.
 
 When measured at a declared boundary:
 
-\[ E_{\mathrm{token}}= \frac{\int_{t_0}^{t_1}(P(t)-P_{\mathrm{idle}})\,dt}{N_g}. \tag{EQ-CH22-07} \]
+$$
+E_{\mathrm{token}}= \frac{\int_{t_0}^{t_1}(P(t)-P_{\mathrm{idle}})\,dt}{N_g}. \tag{EQ-CH22-07}
+$$
 
 If calibrated energy measurement is unavailable, report it as unavailable rather than infer it from latency.
 
@@ -313,7 +331,9 @@ Microcontrollers commonly have kilobytes to a few megabytes of SRAM/flash, deter
 A general autoregressive SLM requires weights, tokenizer, repeated matrix operations, KV cache, sampling, and text
 buffers. Even a 100M-parameter 4-bit payload is:
 
-\[ \frac{100\times10^6\times4}{8}=50\text{ MB} \tag{EQ-CH22-08} \]
+$$
+\frac{100\times10^6\times4}{8}=50\text{ MB} \tag{EQ-CH22-08}
+$$
 
 before metadata, runtime memory, or cache. This is already beyond ordinary MCU SRAM and often impractical for flash
 bandwidth. A much smaller Transformer may generate narrow sequences, but that is not a useful domain conversational SLM.

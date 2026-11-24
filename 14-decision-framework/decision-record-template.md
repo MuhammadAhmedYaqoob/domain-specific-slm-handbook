@@ -59,13 +59,17 @@ Alder and Birch form the eligible frontier: Alder uses fewer resources, while Bi
 bounds quality 75–90, memory 1.5–2.5 GiB, and p95 latency 1–2 s, Alder’s utilities are 0.267, 0.680, and 0.280; Birch’s
 are 0.600, 0.070, and 0.090. Weights 0.50, 0.30, and 0.20 yield:
 
-\[
-U(\text{Alder})=0.50(0.267)+0.30(0.680)+0.20(0.280)=0.394,
-\]
+$$
 
-\[
+U(\text{Alder})=0.50(0.267)+0.30(0.680)+0.20(0.280)=0.394,
+
+$$
+
+$$
+
 U(\text{Birch})=0.50(0.600)+0.30(0.070)+0.20(0.090)=0.339.
-\]
+
+$$
 
 Alder is preferred for the balanced role. When quality weight is raised to 0.70, Birch becomes preferred, so the
 decision is preference-sensitive. The pilot owner explicitly values memory headroom and interaction stability over the

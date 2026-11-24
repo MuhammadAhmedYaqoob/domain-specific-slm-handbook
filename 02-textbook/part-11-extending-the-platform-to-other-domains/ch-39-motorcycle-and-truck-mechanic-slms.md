@@ -395,7 +395,9 @@ view because equal tokens do not imply equal accelerator time or equal trainable
 Branch the exact base into separate automotive, motorcycle, and heavy-truck models and optimize all selected parameters
 independently:
 
-\[ \theta_d^\_=\arg\min_{\theta_d} \mathbb{E}_{(x,y)\sim D_d}\mathcal{L}(y\mid x;\theta_d). \]
+$$
+\theta_d^\_=\arg\min_{\theta_d} \mathbb{E}_{(x,y)\sim D_d}\mathcal{L}(y\mid x;\theta_d).
+$$
 
 **Strengths:** maximum trainable flexibility per domain; clean operational rollback; domain-specific tokenizer/model
 choice is possible; no cross-domain gradient interference after branching; direct artifact-level license and access
@@ -409,12 +411,14 @@ This is the required isolation-first baseline, not the presumed accuracy upper b
 
 ### 39.5.2 One shared frozen base with independent adapters
 
-For a base matrix \(W_0\), each domain \(d\) learns
+For a base matrix $W_0$, each domain $d$ learns
 
-\[ W_d=W_0+\frac{\alpha_d}{r_d}B_dA_d, \]
+$$
+W_d=W_0+\frac{\alpha_d}{r_d}B_dA_d,
+$$
 
-where \(A_d\in\mathbb{R}^{r_d\times k}\), \(B_d\in\mathbb{R}^{m\times r_d}\), rank \(r_d\), and scale \(\alpha_d\). LoRA
-freezes \(W_0\) and trains the low-rank matrices [R1] (`PAPER-REPORTED`).
+where $A_d\in\mathbb{R}^{r_d\times k}$, $B_d\in\mathbb{R}^{m\times r_d}$, rank $r_d$, and scale $\alpha_d$. LoRA
+freezes $W_0$ and trains the low-rank matrices [R1] (`PAPER-REPORTED`).
 
 **Strengths:** one shared base plus small independently versioned deltas; lower trainable state; no adapter overwrites
 another; efficient domain update and rollback; a useful fit for mechanics if the base already represents the common
@@ -425,18 +429,20 @@ and base hashes must match; dynamic adapter support and quantized kernels differ
 duplicate artifacts. The exact base-plus-adapter pair is the release unit.
 
 **ILLUSTRATIVE capacity calculation.** Suppose an architecture has 24 layers, width 2,048, and query/value projections
-adapted at rank 16. One square projection adds \(16(2048+2048)=65{,}536\) parameters. Two projections over 24 layers add
+adapted at rank 16. One square projection adds $16(2048+2048)=65{,}536$ parameters. Two projections over 24 layers add
 3,145,728 parameters. At two bytes per adapter parameter, the ideal payload is about 6.0 MiB; three adapters are about
 18 MiB plus one base. This excludes metadata, alignment, tokenizer, scales, runtime buffers, KV cache, and any temporary
 or merged copies. It predicts neither quality nor peak RAM.
 
 ### 39.5.3 Shared mechanical CPT followed by domain adapters
 
-First continue pretraining a base on the rights-cleared shared mechanical corpus, producing \(\theta_\text{mech}\).
+First continue pretraining a base on the rights-cleared shared mechanical corpus, producing $\theta_\text{mech}$.
 Then freeze it and train separate adapters:
 
-\[ \theta_\text{mech}=\operatorname{CPT}(\theta_0,D_\text{shared}),\quad
-\phi_d^\_=\arg\min_{\phi_d}\mathcal{L}(D_d;\theta_\text{mech},\phi_d). \]
+$$
+\theta_\text{mech}=\operatorname{CPT}(\theta_0,D_\text{shared}),\quad
+\phi_d^\_=\arg\min_{\phi_d}\mathcal{L}(D_d;\theta_\text{mech},\phi_d).
+$$
 
 This is the strongest form of the “shared mechanic foundation” hypothesis. It may improve technical vocabulary and
 general mechanical concepts, or it may spend compute on knowledge already in the base, import automotive bias, and
@@ -446,10 +452,13 @@ reduce general retention. A no-CPT adapter arm is necessary to attribute any gai
 
 Train one dense model or one adapter on a weighted mixture:
 
-\[ \mathcal{L}_\text{joint}=\sum_{d\in \{a,m,t\}}\lambda_d\mathbb{E}_{D_d}\mathcal{L}_d. \] <!-- markdownlint-disable-line MD013 MD049 -->
+$$
+\mathcal{L}_\text{joint}=\sum_{d\in \{a,m,t\}}\lambda_d\mathbb{E}_{D_d}\mathcal{L}_d.
+$$
+<!-- markdownlint-disable-line MD013 MD049 -->
 
 It minimizes installed artifacts and removes domain switching, but it entangles updates and permits negative transfer.
-Dataset volume must not set \(\lambda_d\) accidentally. A high automotive score cannot compensate for a truck air-brake
+Dataset volume must not set $\lambda_d$ accidentally. A high automotive score cannot compensate for a truck air-brake
 safety regression.
 
 ### 39.5.5 Hybrid options
@@ -495,24 +504,31 @@ flowchart TD
 
 ### 39.6.1 Transfer and interference definitions
 
-For target domain \(d\), let \(Q_d(M)\) be a preregistered quality score for model \(M\), after hard safety items are
-reported separately. Define transfer from source-domain exposure \(s\) relative to a target-only control:
+For target domain $d$, let $Q_d(M)$ be a preregistered quality score for model $M$, after hard safety items are
+reported separately. Define transfer from source-domain exposure $s$ relative to a target-only control:
 
-\[ \Delta_{s\rightarrow d}=Q_d(M_{s+d})-Q_d(M_d). \]
+$$
+\Delta_{s\rightarrow d}=Q_d(M_{s+d})-Q_d(M_d).
+$$
 
-Positive \(\Delta\) under a confidence interval excluding a practically irrelevant region supports positive transfer for
-that setup. Negative \(\Delta\) supports negative transfer. It does not identify the mechanism.
+Positive $\Delta$ under a confidence interval excluding a practically irrelevant region supports positive transfer for
+that setup. Negative $\Delta$ supports negative transfer. It does not identify the mechanism.
 
 For shared and separate adapters:
 
-\[ \Delta^\text{adapter}_d = Q_d(M_{\text{shared base}+\phi_d})- Q_d(M_{\text{independent }d}). \] <!-- markdownlint-disable-line MD013 MD049 -->
+$$
+\Delta^\text{adapter}_d = Q_d(M_{\text{shared base}+\phi_d})- Q_d(M_{\text{independent }d}).
+$$
+<!-- markdownlint-disable-line MD013 MD049 -->
 
 This delta is meaningful only if base identity, accepted data, evaluation, decoding, export precision, and comparison
 budget are controlled. Report each domain, task, risk stratum, and worst-domain result—not only a macro average.
 
 Gradient cosine similarity can diagnose local conflict:
 
-\[ \cos(g_i,g_j)= \frac{g_i^\top g_j}{\|g_i\|_2\|g_j\|_2}. \]
+$$
+\cos(g_i,g_j)= \frac{g_i^\top g_j}{\|g_i\|_2\|g_j\|_2}.
+$$
 
 A negative value on a probe batch shows opposing update directions at that point. It does not prove held-out negative
 transfer. Multi-task learning can produce both transfer and interference; PCGrad is one reported mitigation [R4], not a
@@ -543,8 +559,8 @@ Everything in this section is a `PLANNED EXPERIMENT`.
 **RQ1:** Does shared mechanical continued pretraining improve both motorcycle and truck held-out knowledge over no-CPT
 adapters?
 
-- \(H_0\): no practically meaningful improvement.
-- \(H_1\): at least one domain improves without violating the other domain's safety, retention, or deployment gates.
+- $H_0$: no practically meaningful improvement.
+- $H_1$: at least one domain improves without violating the other domain's safety, retention, or deployment gates.
 
 **RQ2:** Do independent domain adapters match or exceed independently fine-tuned full models under a fixed
 accepted-token budget?
@@ -601,7 +617,7 @@ readers can interpret both quality-per-data and quality-per-resource.
 
 ### 39.7.4 Factorial transfer ablation
 
-For each target \(d\in\{M,T\}\), run:
+For each target $d\in\{M,T\}$, run:
 
 1. base → target SFT;
 2. base → shared-mechanics CPT → target SFT;

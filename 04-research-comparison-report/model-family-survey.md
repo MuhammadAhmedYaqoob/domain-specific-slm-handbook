@@ -403,7 +403,7 @@ Exact post-trained checkpoints include `LiquidAI/LFM2-350M`, `LiquidAI/LFM2-700M
 `LiquidAI/LFM2-2.6B`. The 350M–1.2B models use 16 layers comprising ten double-gated short-convolution blocks and six
 GQA blocks; the cards state 32,768 context. This hybrid architecture is highly relevant to edge efficiency but requires
 backend-specific kernels and export validation. The cards explicitly recommend narrow fine-tuning and advise against
-knowledge-intensive/programming tasks at these sizes. The LFM Open License v1.0 permits commercial use only below a $10M
+knowledge-intensive/programming tasks at these sizes. The LFM Open License v1.0 permits commercial use only below a \$10M
 annual-revenue threshold; larger entities need a separate license. `DOC-VERIFIED`
 
 Sources:

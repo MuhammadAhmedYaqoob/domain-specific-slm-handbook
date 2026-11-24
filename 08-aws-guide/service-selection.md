@@ -80,12 +80,14 @@ For training, include weights, quantized base if used, gradients, trainable para
 CUDA workspaces, and fragmentation. For serving, include weights, runtime allocation, KV cache, batching, and safety
 margin. A rough KV-cache estimate is:
 
-\[
-M_{KV}=B \times L \times T \times 2 \times H_{kv} \times D \times s
-\]
+$$
 
-where \(B\) is concurrent sequences, \(L\) layers, \(T\) cached tokens, \(H_{kv}\) key/value heads, \(D\) head
-dimension, and \(s\) bytes per cache element. Measure the actual runtime allocation.
+M_{KV}=B \times L \times T \times 2 \times H_{kv} \times D \times s
+
+$$
+
+where $B$ is concurrent sequences, $L$ layers, $T$ cached tokens, $H_{kv}$ key/value heads, $D$ head
+dimension, and $s$ bytes per cache element. Measure the actual runtime allocation.
 
 AWS currently documents G-family GPU instances for graphics/inference/general accelerated workloads and P-family
 instances for larger training. Candidate GPUs can include A10G, L4, and L40S depending on the family and Region.

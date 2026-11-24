@@ -77,7 +77,7 @@ Route both-bad cases to expert target authoring rather than forcing a pair.
 ### Distillation
 
 Response records retain raw and accepted teacher output, generator configuration, claim evidence, and review. Logit
-records retain exact input IDs, checkpoint/tokenizer/template hashes, temperature, mask, positions, precision, top-\(k\)
+records retain exact input IDs, checkpoint/tokenizer/template hashes, temperature, mask, positions, precision, top-$k$
 IDs/logits, and omitted-mass statistic. Feature records retain layer mapping, shapes, dtypes, positions, and storage
 hashes. Tokenizer mismatch requires an explicit alignment method.
 

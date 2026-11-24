@@ -57,10 +57,13 @@ The useful question is not “How small is the model?” It is:
 
 Let a deployment design be:
 
-<a id="eq-ch10-01"></a> \[ \boxed{D=(A,W,Q,R,K,H,X)} \tag{EQ-CH10-01} \]
+<a id="eq-ch10-01"></a>
+$$
+\boxed{D=(A,W,Q,R,K,H,X)} \tag{EQ-CH10-01}
+$$
 
-where \(A\) is architecture, \(W\) trained weights, \(Q\) precision/compression, \(R\) runtime, \(K\) kernels, \(H\)
-hardware, and \(X\) workload. Performance belongs to tuple \(D\), not to “the model” alone.
+where $A$ is architecture, $W$ trained weights, $Q$ precision/compression, $R$ runtime, $K$ kernels, $H$
+hardware, and $X$ workload. Performance belongs to tuple $D$, not to “the model” alone.
 
 An optimization can improve one metric while harming another:
 
@@ -105,11 +108,14 @@ flowchart LR
 The first engineering discipline is a **memory ledger**. Every tensor should have a lifecycle, precision, owner,
 location, and peak-overlap interval.
 
-<a id="eq-ch10-02"></a> \[ \boxed{ M_{\text{peak}}\approx M_W+M_G+M_O+M_A+M_{\text{KV}}
+<a id="eq-ch10-02"></a>
+$$
+\boxed{ M_{\text{peak}}\approx M_W+M_G+M_O+M_A+M_{\text{KV}}
 +M_{\text{workspace}}+M_{\text{temporary}}+M_{\text{runtime}} +M_{\text{application}}+M_{\text{fragmentation}} }
-\tag{EQ-CH10-02} \]
+\tag{EQ-CH10-02}
+$$
 
-\(W\) denotes weights, \(G\) gradients, \(O\) optimizer state, and \(A\) activations. Not every term is live in every
+$W$ denotes weights, $G$ gradients, $O$ optimizer state, and $A$ activations. Not every term is live in every
 stage. Actual peak is the largest sum whose lifetimes overlap.
 
 <a id="tbl-ch10-01"></a> <a id="tbl-12"></a> **TBL-12 — GPU memory requirements: components and lifetimes
@@ -131,29 +137,37 @@ stage. Actual peak is the largest sum whose lifetimes overlap.
 
 ### 10.4.1 Parameter storage
 
-For tensor \(i\) with \(n_i\) elements represented by \(b_i\) bits, ideal payload is:
+For tensor $i$ with $n_i$ elements represented by $b_i$ bits, ideal payload is:
 
-<a id="eq-ch10-03"></a> \[ \boxed{M_W^{\text{payload}}=\sum_i\frac{n_ib_i}{8}} \tag{EQ-CH10-03} \]
+<a id="eq-ch10-03"></a>
+$$
+\boxed{M_W^{\text{payload}}=\sum_i\frac{n_ib_i}{8}} \tag{EQ-CH10-03}
+$$
 
-For uniform \(N_p\) parameters at \(b\) bits, this is \(N_pb/8\). It is not necessarily file size or loaded memory.
+For uniform $N_p$ parameters at $b$ bits, this is $N_pb/8$. It is not necessarily file size or loaded memory.
 Artifacts may also contain tensor metadata, scales, zero points, codebooks, outlier tensors, alignment, duplicate tied
 tensors, tokenizer/template/configuration, and container/sharding overhead.
 
-If groups of \(g\) weights share an \(s\)-bit scale and \(z\)-bit zero point:
+If groups of $g$ weights share an $s$-bit scale and $z$-bit zero point:
 
-<a id="eq-ch10-04"></a> \[ \boxed{b_{\text{eff}}\approx b_w+\frac{s+z}{g}+b_{\text{other}}} \tag{EQ-CH10-04} \]
+<a id="eq-ch10-04"></a>
+$$
+\boxed{b_{\text{eff}}\approx b_w+\frac{s+z}{g}+b_{\text{other}}} \tag{EQ-CH10-04}
+$$
 
-With 4-bit weights, one 16-bit scale per 32 weights, no zero point, and no other overhead, \(b_{\text{eff}}=4.5\)
+With 4-bit weights, one 16-bit scale per 32 weights, no zero point, and no other overhead, $b_{\text{eff}}=4.5$
 bits/weight (`ILLUSTRATIVE`). This does not describe a specific quantizer.
 
 ### 10.4.2 Gradients
 
 Backpropagation produces a gradient for each trainable parameter:
 
-\[ M_G\approx N_tb_g/8, \]
+$$
+M_G\approx N_tb_g/8,
+$$
 
-where \(N_t\) is trainable parameters and \(b_g\) gradient bits. Full fine-tuning has \(N_t\approx N_p\). PEFT can make
-\(N_t\ll N_p\), reducing gradients and optimizer state, but frozen base weights remain available for forward/backward.
+where $N_t$ is trainable parameters and $b_g$ gradient bits. Full fine-tuning has $N_t\approx N_p$. PEFT can make
+$N_t\ll N_p$, reducing gradients and optimizer state, but frozen base weights remain available for forward/backward.
 Distributed gradient buckets and communication buffers create separate peaks.
 
 Gradient accumulation avoids increasing simultaneous microbatch activations, but gradients remain resident between
@@ -164,7 +178,9 @@ microbatches.
 SGD without momentum needs little persistent state beyond parameters and gradients. Momentum adds velocity. Adam/AdamW
 commonly stores first and second moments:
 
-\[ m_t=\beta_1m_{t-1}+(1-\beta_1)g_t,\quad v_t=\beta_2v_{t-1}+(1-\beta_2)g_t^2. \]
+$$
+m_t=\beta_1m_{t-1}+(1-\beta_1)g_t,\quad v_t=\beta_2v_{t-1}+(1-\beta_2)g_t^2.
+$$
 
 Some mixed-precision implementations retain FP32 master parameters. A planning ledger may contain:
 
@@ -182,7 +198,9 @@ and offloaded optimizers differ; inspect real state tensors.
 **Worked example (`ILLUSTRATIVE`).** For one billion trainable parameters with 2-byte compute weights, 2-byte gradients,
 4-byte master weights, and two 4-byte moments:
 
-\[ M_{\text{state}}=10^9(2+2+4+4+4)=16\times10^9\text{ bytes} \approx14.90\text{ GiB}. \]
+$$
+M_{\text{state}}=10^9(2+2+4+4+4)=16\times10^9\text{ bytes} \approx14.90\text{ GiB}.
+$$
 
 This excludes activations, temporaries, communication, allocator reserve, and framework overhead. LoRA with 10 million
 trainable parameters can greatly reduce adapter gradient/optimizer state, but the 1B base still resides in memory.
@@ -194,9 +212,11 @@ selected forward values, so frameworks save or recompute them.
 
 A hidden-state tensor occupies:
 
-\[ M_H=BSdb_a, \]
+$$
+M_H=BSdb_a,
+$$
 
-where \(B\) is batch, \(S\) sequence length, \(d\) hidden width, and \(b_a\) bytes/value. A block creates multiple such
+where $B$ is batch, $S$ sequence length, $d$ hidden width, and $b_a$ bytes/value. A block creates multiple such
 tensors: normalized states, Q/K/V, attention output, MLP intermediates/gates, and backward-saved values.
 
 Activation memory is implementation-dependent. It often scales linearly with layers and batch; hidden/MLP tensors scale
@@ -209,17 +229,22 @@ inference KV cache.
 
 ### 10.4.5 KV cache
 
-Autoregressive decode stores prior keys and values. For \(L\) layers, \(B\) sequences, cached length \(T\), \(H_{kv}\)
-KV heads, head width \(d_h\), and \(b_{kv}\) bytes/value:
+Autoregressive decode stores prior keys and values. For $L$ layers, $B$ sequences, cached length $T$, $H_{kv}$
+KV heads, head width $d_h$, and $b_{kv}$ bytes/value:
 
-<a id="eq-ch10-05"></a> \[ \boxed{M_{\text{KV,payload}}\approx2LBTH_{kv}d_hb_{kv}} \tag{EQ-CH10-05} \]
+<a id="eq-ch10-05"></a>
+$$
+\boxed{M_{\text{KV,payload}}\approx2LBTH_{kv}d_hb_{kv}} \tag{EQ-CH10-05}
+$$
 
 The factor 2 is keys plus values. Layout, alignment, block tables, reserved capacity, beam/speculative branches, and
 quantization metadata add overhead.
 
-**Worked example (`ILLUSTRATIVE`).** With \(L=24,B=1,T=4096,H_{kv}=8,d_h=64,b_{kv}=2\):
+**Worked example (`ILLUSTRATIVE`).** With $L=24,B=1,T=4096,H_{kv}=8,d_h=64,b_{kv}=2$:
 
-\[ 2(24)(1)(4096)(8)(64)(2)=201{,}326{,}592\text{ bytes}=192\text{ MiB}. \]
+$$
+2(24)(1)(4096)(8)(64)(2)=201{,}326{,}592\text{ bytes}=192\text{ MiB}.
+$$
 
 At 32 KV heads, all else equal, payload is 768 MiB. At batch 8, multiply again by eight. GQA/MQA can reduce KV payload,
 not every weight, activation, or output-projection cost.
@@ -243,7 +268,7 @@ state, module metadata, and allocator pools.
 - collective-communication staging; and
 - beam/speculative candidate state.
 
-A full training/prefill logit tensor has \(BSV\) elements if retained. Decode usually needs last-position logits only,
+A full training/prefill logit tensor has $BSV$ elements if retained. Decode usually needs last-position logits only,
 but a large vocabulary remains costly. Fused sampling may avoid host transfer and some probability buffers.
 
 **Fragmentation** is unusable space between allocations or within fixed blocks. **Reserved memory** is held by an
@@ -298,26 +323,29 @@ initialization, and warm-up.
 
 Define:
 
-- \(t_{\text{open}}\): request to artifact open;
-- \(t_{\text{weights-ready}}\): weights usable;
-- \(t_{\text{ready}}\): endpoint/app accepts work;
-- \(t_{\text{first-token}}\): first visible token for a declared prompt.
+- $t_{\text{open}}$: request to artifact open;
+- $t_{\text{weights-ready}}$: weights usable;
+- $t_{\text{ready}}$: endpoint/app accepts work;
+- $t_{\text{first-token}}$: first visible token for a declared prompt.
 
 Memory mapping can reduce eager copies and exploit page cache, but touched pages consume physical memory, page faults
 add latency, and compressed/encrypted containers may prevent direct mapping. Warm starts and cold starts are different
 experiments.
 
-If \(F\) bytes cross a path sustaining \(B_s\):
+If $F$ bytes cross a path sustaining $B_s$:
 
-<a id="eq-ch10-06"></a> \[ \boxed{t_{\text{transfer}}\ge F/B_s} \tag{EQ-CH10-06} \]
+<a id="eq-ch10-06"></a>
+$$
+\boxed{t_{\text{transfer}}\ge F/B_s} \tag{EQ-CH10-06}
+$$
 
 A 2 GiB artifact over a path sustaining 1 GiB/s has a 2-second transfer floor before parsing, verification, conversion,
 and warm-up (`ESTIMATE`, not a device claim).
 
 ### 10.5.3 Prefill
 
-Prefill processes \(S_p\) prompt tokens with greater parallelism than decode and creates KV cache. Dense attention has
-\(O(S_p^2)\) logical query-key interactions; projections/MLPs grow roughly linearly in tokens. IO-aware kernels reduce
+Prefill processes $S_p$ prompt tokens with greater parallelism than decode and creates KV cache. Dense attention has
+$O(S_p^2)$ logical query-key interactions; projections/MLPs grow roughly linearly in tokens. IO-aware kernels reduce
 traffic, not exact-attention semantics [R2].
 
 Long histories, verbose system prompts, and tokenizer fragmentation increase TTFT. Compression that speeds decode but
@@ -381,15 +409,21 @@ No row predicts a winner.
 
 ## 10.7 Bandwidth, compute, and roofline reasoning
 
-For \(F\) arithmetic operations and \(Q\) bytes transferred across the analyzed memory level:
+For $F$ arithmetic operations and $Q$ bytes transferred across the analyzed memory level:
 
-<a id="eq-ch10-07"></a> \[ \boxed{I=F/Q\quad\text{operations/byte}} \tag{EQ-CH10-07} \]
+<a id="eq-ch10-07"></a>
+$$
+\boxed{I=F/Q\quad\text{operations/byte}} \tag{EQ-CH10-07}
+$$
 
-The roofline model bounds attainable performance \(P\) by peak compute \(P_{\max}\) and bandwidth \(B_{\max}\) [R1]:
+The roofline model bounds attainable performance $P$ by peak compute $P_{\max}$ and bandwidth $B_{\max}$ [R1]:
 
-<a id="eq-ch10-08"></a> \[ \boxed{P\le\min(P_{\max},B_{\max}I)} \tag{EQ-CH10-08} \]
+<a id="eq-ch10-08"></a>
+$$
+\boxed{P\le\min(P_{\max},B_{\max}I)} \tag{EQ-CH10-08}
+$$
 
-The ridge point is \(I^\star=P_{\max}/B_{\max}\). Below it, the bound is bandwidth-limited; above it, compute-limited.
+The ridge point is $I^\star=P_{\max}/B_{\max}$. Below it, the bound is bandwidth-limited; above it, compute-limited.
 This is an upper-bound model, not a latency prediction. Real execution loses efficiency to launch overhead,
 dependencies, occupancy, cache misses, irregular shapes, synchronization, and conversion. The selected memory level also
 matters.
@@ -398,17 +432,23 @@ matters.
 
 An `ILLUSTRATIVE` operation performs 8 GFLOP while transferring 4 GB:
 
-\[ I=8/4=2\text{ FLOP/byte}. \]
+$$
+I=8/4=2\text{ FLOP/byte}.
+$$
 
 Assume a hypothetical device with 4 TFLOP/s and 200 GB/s. Its ridge point is 20 FLOP/byte. The bandwidth roof is:
 
-\[ (200\text{ GB/s})(2\text{ FLOP/byte})=400\text{ GFLOP/s}. \]
+$$
+(200\text{ GB/s})(2\text{ FLOP/byte})=400\text{ GFLOP/s}.
+$$
 
 The ideal lower bound for 8 GFLOP is 0.02 seconds. This ignores every other layer and overhead.
 
 Suppose a supported representation halves transferred bytes but adds 1 GFLOP unpack/dequantization:
 
-\[ I'=9/2=4.5\text{ FLOP/byte}. \]
+$$
+I'=9/2=4.5\text{ FLOP/byte}.
+$$
 
 It remains below the hypothetical ridge point, but its bandwidth ceiling rises. Speed can improve if kernels consume the
 packed form efficiently. If the runtime expands weights to 4 GB first, the intended traffic reduction disappears.
@@ -430,22 +470,32 @@ calculation is a hypothesis, not proof.
 
 ## 10.8 Latency and throughput
 
-For arrival \(t_0\), first emitted token \(t_1\), finish \(t_f\), and \(N_g\) generated tokens:
+For arrival $t_0$, first emitted token $t_1$, finish $t_f$, and $N_g$ generated tokens:
 
-<a id="eq-ch10-09"></a> \[ \boxed{\mathrm{TTFT}=t_1-t_0} \tag{EQ-CH10-09} \]
+<a id="eq-ch10-09"></a>
+$$
+\boxed{\mathrm{TTFT}=t_1-t_0} \tag{EQ-CH10-09}
+$$
 
-\[ \boxed{\mathrm{E2E}=t_f-t_0} \tag{EQ-CH10-10} \]
+$$
+\boxed{\mathrm{E2E}=t_f-t_0} \tag{EQ-CH10-10}
+$$
 
-\[ \boxed{\mathrm{ITL}_{mean}=(t_f-t_1)/(N_g-1)} \tag{EQ-CH10-11} \]
+$$
+\boxed{\mathrm{ITL}_{mean}=(t_f-t_1)/(N_g-1)} \tag{EQ-CH10-11}
+$$
 
 Decode rate is approximately the reciprocal of ITL when stable. Prefill tokens/s should count prompt tokens over the
 defined prefill interval. Do not silently mix prompt and generated tokens.
 
-For \(R\) completed requests and \(G\) generated tokens over \(\Delta t\), request throughput is \(R/\Delta t\) and
-generation throughput \(G/\Delta t\).
+For $R$ completed requests and $G$ generated tokens over $\Delta t$, request throughput is $R/\Delta t$ and
+generation throughput $G/\Delta t$.
 
-<a id="eq-ch10-12"></a> \[ \boxed{ T_{\text{request}}=T_{\text{queue}}+T_{\text{tokenize}}+T_{\text{transfer}}
-+T_{\text{prefill}}+T_{\text{decode}}+T_{\text{postprocess}} } \tag{EQ-CH10-12} \]
+<a id="eq-ch10-12"></a>
+$$
+\boxed{ T_{\text{request}}=T_{\text{queue}}+T_{\text{tokenize}}+T_{\text{transfer}}
++T_{\text{prefill}}+T_{\text{decode}}+T_{\text{postprocess}} } \tag{EQ-CH10-12}
+$$
 
 Startup may be paid per process, scale-out event, or app session. Server continuous batching can raise aggregate
 throughput by delaying work to combine requests, increasing queueing/tail latency. Report latency percentiles at
@@ -477,20 +527,28 @@ A file is a serialization; inference runs in-memory kernels.
 
 Practical speedup requires reducing a critical-path resource through a path that exploits the reduction:
 
-<a id="eq-ch10-13"></a> \[ \boxed{\text{speedup}\Rightarrow \text{less critical work/traffic}+\text{supported
-execution}-\text{added overhead}} \tag{EQ-CH10-13} \]
+<a id="eq-ch10-13"></a>
+$$
+\boxed{\text{speedup}\Rightarrow \text{less critical work/traffic}+\text{supported
+execution}-\text{added overhead}} \tag{EQ-CH10-13}
+$$
 
 ### 10.9.1 Amdahl bound
 
-If fraction \(f\) of time accelerates by \(s\):
+If fraction $f$ of time accelerates by $s$:
 
-<a id="eq-ch10-14"></a> \[ \boxed{S_{\text{total}}=\frac{1}{(1-f)+f/s}} \tag{EQ-CH10-14} \]
+<a id="eq-ch10-14"></a>
+$$
+\boxed{S_{\text{total}}=\frac{1}{(1-f)+f/s}} \tag{EQ-CH10-14}
+$$
 
 If matrix kernels are 70% of latency and become twice as fast:
 
-\[ S=1/(0.30+0.70/2)\approx1.54, \]
+$$
+S=1/(0.30+0.70/2)\approx1.54,
+$$
 
-not \(2\times\) (`ILLUSTRATIVE`).
+not $2\times$ (`ILLUSTRATIVE`).
 
 ### 10.9.2 Parameters, bits, and execution
 
@@ -518,8 +576,8 @@ Reducing the first does not logically reduce the last.
 Assume an `ILLUSTRATIVE` 1B-parameter model with 4-bit weight codes, one 16-bit scale per 32 weights, 24 layers, eight
 KV heads, head width 64, a 4,096-token context, and FP16 KV values.
 
-1. **Ideal codes:** \(10^9\times4/8=500\) MB.
-2. **Scale metadata:** \(10^9/32\times2=62.5\) MB. The weight payload is therefore at least 562.5 MB before tensor
+1. **Ideal codes:** $10^9\times4/8=500$ MB.
+2. **Scale metadata:** $10^9/32\times2=62.5$ MB. The weight payload is therefore at least 562.5 MB before tensor
    metadata, alignment, higher-precision tensors, tokenizer files, and packaging.
 3. **KV payload:** Section 10.4.5 gives 192 MiB at the declared context.
 4. **Active memory:** even before workspaces, temporaries, allocator reserve, and application memory, weights and KV are
@@ -542,14 +600,16 @@ the effects must be measured separately before interpreting their combination.
 
 “Quality retained” is not one scalar. Let:
 
-\[ \mathbf q=(q_{\text{domain}},q_{\text{safety}},q_{\text{general}},
-q_{\text{calibration}},q_{\text{format}},q_{\text{robustness}}). \]
+$$
+\mathbf q=(q_{\text{domain}},q_{\text{safety}},q_{\text{general}},
+q_{\text{calibration}},q_{\text{format}},q_{\text{robustness}}).
+$$
 
 Compression can affect likelihood, rare terminology, exact identifiers, arithmetic/reasoning, long-context use,
 calibration, refusal, structured output, multilingual behavior, and sampling near close logits. Generic benchmarks can
 stay stable while units, codes, drug names, or safety boundaries regress.
 
-For higher-is-better metric \(j\), \(\Delta q_j=q_{c,j}-q_{0,j}\). Preserve natural direction for unsafe-claim rate.
+For higher-is-better metric $j$, $\Delta q_j=q_{c,j}-q_{0,j}$. Preserve natural direction for unsafe-claim rate.
 Never average a severe contraindication regression with a formatting gain.
 
 A design is Pareto-dominated if another is no worse on all required objectives and better on at least one. Valid
@@ -558,8 +618,11 @@ and balanced variants. Hard safety gates must not be folded into a weighted scor
 
 Always name a compression denominator:
 
-\[ \mathrm{CR}_{artifact}=\frac{\text{baseline artifact bytes}}{\text{compressed bytes}}, \quad <!-- markdownlint-disable-line MD013 MD049 -->
-\mathrm{CR}_{RAM}=\frac{\text{baseline peak RAM}}{\text{compressed peak RAM}}. \] <!-- markdownlint-disable-line MD013 MD049 -->
+$$
+\mathrm{CR}_{artifact}=\frac{\text{baseline artifact bytes}}{\text{compressed bytes}}, \quad <!-- markdownlint-disable-line MD013 MD049 -->
+\mathrm{CR}_{RAM}=\frac{\text{baseline peak RAM}}{\text{compressed peak RAM}}.
+$$
+<!-- markdownlint-disable-line MD013 MD049 -->
 
 Parameter-count ratio, weight-payload ratio, artifact ratio, RAM ratio, and speedup are distinct.
 
@@ -646,7 +709,9 @@ failures. Report median/tails, trial count, and raw data. Preserve prompt pairin
 
 Where supported:
 
-\[ \text{energy/token}=E_{\text{interval}}/N_g. \]
+$$
+\text{energy/token}=E_{\text{interval}}/N_g.
+$$
 
 State whether energy is whole-device, accelerator, package, or estimate. Record charging, screen/radios, background
 activity, ambient/start/end temperatures, clocks, throttling, and duration.
@@ -757,7 +822,9 @@ distribution, autoscaling/queueing, multi-tenancy, utilization, and cost under l
 reduce scale-out transfer/load even if per-token kernels are unchanged. A mobile CPU format can underperform a
 GPU-native AWS format; target-specific artifacts are valid.
 
-\[ \text{cost/request}= \frac{\text{instance and allocated ancillary cost}}{\text{successful requests}}, \]
+$$
+\text{cost/request}= \frac{\text{instance and allocated ancillary cost}}{\text{successful requests}},
+$$
 
 using current verified rates and declared amortization. No dollar estimate is supplied.
 

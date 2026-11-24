@@ -16,8 +16,10 @@ after validity and safety gates pass.
 
 Each approved experiment receives a multidimensional cap:
 
-\[ B=(h_{accelerator},h_{CPU},n_{teacher\ tokens},h_{expert},h_{device}, S_{retained},h_{AWS\
-host},h_{engineering},n_{retries}). \]
+$$
+B=(h_{accelerator},h_{CPU},n_{teacher\ tokens},h_{expert},h_{device}, S_{retained},h_{AWS\
+host},h_{engineering},n_{retries}).
+$$
 
 Unused capacity in one dimension does not authorize overruns in another. Failed runs, conversion, review,
 instrumentation, temporary storage, observability, teardown, and rework count against the relevant cap.
@@ -81,9 +83,11 @@ contrast or report insufficient budget rather than silently exceed the cap.
 For expert review, suppose all 80 critical items need two reviews at 4 minutes
 each and adjudication is budgeted at 2 h:
 
-\[
+$$
+
 80 \times 2 \times 4/60 + 2 = 12.67\ \text{expert-hours}.
-\]
+
+$$
 
 Only 7.33 of the 20 expert-hours remain for ordinary-item sampling, rubric
 repair, or teacher-output audit. This arithmetic often makes expert capacity,
@@ -168,33 +172,39 @@ devices or future software versions.
 
 ## Converting ceilings into per-experiment budgets
 
-For experiment \(i\), define:
+For experiment $i$, define:
 
-\[
+$$
+
 B_i=(h_{accel}, h_{CPU}, n_{teacher}, h_{expert}, h_{device},
 S_{retained}, h_{host}, h_{engineering}, n_{retry}).
-\]
+
+$$
 
 The program is authorized only when the sum of approved experiment allocations
 plus protected reserves is no larger than the tier ceiling in every dimension.
 For accelerator time:
 
-\[
+$$
+
 \sum_i h_{accel,i} + h_{accel,reserve} \leq h_{accel,tier}.
-\]
+
+$$
 
 Apply the same check independently to expert hours, device hours, storage, and
 all other dimensions.
 
 ### Budgeting repeated trials
 
-If one training configuration takes \(h\) hours, there are \(a\) arms and \(s\)
-seeds, and the observed valid-run rate from a pilot is \(p\), a planning
+If one training configuration takes $h$ hours, there are $a$ arms and $s$
+seeds, and the observed valid-run rate from a pilot is $p$, a planning
 estimate for attempted accelerator-hours is:
 
-\[
+$$
+
 H_{attempt} = \frac{a s h}{p}.
-\]
+
+$$
 
 `ILLUSTRATIVE`: two arms, three valid seeds per arm, 12 h each, and pilot
 valid-run rate 0.80 require `2×3×12/0.80=90 h` of attempted capacity. This is a
@@ -237,8 +247,10 @@ No dollar budget is stated here. Before approval, the finance/cloud custodian mu
 
 The editable calculation is:
 
-\[ C_{total}=C_{compute}+C_{storage}+C_{network}+C_{API/LB} +C_{observability}+C_{data}+C_{expert}+C_{engineering}
-+C_{device/instrument}+C_{failure/rework}. \]
+$$
+C_{total}=C_{compute}+C_{storage}+C_{network}+C_{API/LB} +C_{observability}+C_{data}+C_{expert}+C_{engineering}
++C_{device/instrument}+C_{failure/rework}.
+$$
 
 Report cost per attempted run, successful run, successful request, and one million successful generated tokens only
 where the denominator is measured and appropriate. A stale quote, list-price screenshot without Region/date, paper cost,
@@ -251,9 +263,11 @@ If verified compute usage is 80 h at an effective `$2.40/h`, storage is
 `$36`, network is `$18`, observability is `$12`, expert review is 16 h at an
 approved `$90/h`, and engineering allocation is `$600`, then:
 
-\[
+$$
+
 C_{total}=80(2.40)+36+18+12+16(90)+600=\$2{,}298.
-\]
+
+$$
 
 If 9 of 12 attempted runs are valid, cost per attempted run is
 `2298/12=$191.50`, while cost per valid run is `2298/9=$255.33`. Both

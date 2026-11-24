@@ -35,9 +35,11 @@ The scalable alternative is **configuration-driven onboarding**:
 
 Let the onboarding decision be:
 
-\[ O_d=\bigwedge_{g\in G_d}\operatorname{pass}(g,E_g,P_g), \]
+$$
+O_d=\bigwedge_{g\in G_d}\operatorname{pass}(g,E_g,P_g),
+$$
 
-where \(O_d\) is approval for domain \(d\), \(G_d\) is its gate set, \(E_g\) is immutable evidence, and \(P_g\) is
+where $O_d$ is approval for domain $d$, $G_d$ is its gate set, $E_g$ is immutable evidence, and $P_g$ is
 versioned policy. The conjunction matters: aggregate quality cannot compensate for unknown rights, a critical unsafe
 output, an exposed final suite, or an unqualified reviewer.
 

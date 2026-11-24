@@ -9,12 +9,12 @@
 **Canonical listing:** `LST-TOOL-0003` · **Verification note:** validate with the commands below before operational use.  
 **Purpose:** total LoRA A/B parameters for an explicit module inventory. It does not discover modules or certify a PEFT
 configuration. **Units:** dimensions, rank, parameter counts, percent. **Assumptions:** each target uses matrices
-\(A\in\mathbb R^{r\times d_{in}}\), \(B\in\mathbb R^{d_{out}\times r}\), with no trainable bias.
+$A\in\mathbb R^{r\times d_{in}}$, $B\in\mathbb R^{d_{out}\times r}$, with no trainable bias.
 
 ## Contract, equation, and edge cases
 
 Repeat `--module NAME:DIN:DOUT:RANK`; optionally supply positive `--base-parameters`. Per target,
-\(N_i=r_i(d_{in,i}+d_{out,i})\). Output contains IDs, per-module rows, `lora_parameters`, optional
+$N_i=r_i(d_{in,i}+d_{out,i})$. Output contains IDs, per-module rows, `lora_parameters`, optional
 `percent_of_base`, and optional `trainable_percent_of_combined`. Duplicate names, nonpositive dimensions/ranks, or a
 nonpositive base fail. Fused QKV must use its actual input/output dimensions; shared adapters must be entered once.
 
@@ -61,7 +61,7 @@ if __name__=="__main__": main()
 
 ## Fixtures, commands, interpretation, and limitations
 
-Hand fixture: each \(r=2,d_{in}=4,d_{out}=6\) target has 20 parameters; two targets have 40, or 4% of a 1,000-parameter
+Hand fixture: each $r=2,d_{in}=4,d_{out}=6$ target has 20 parameters; two targets have 40, or 4% of a 1,000-parameter
 base. Run `python tools/lora_parameters.py --self-test` and then enumerate actual target shapes. Counts do not imply
 quality, optimizer memory, merge support, or latency; compare to framework-reported trainable names and counts.
 

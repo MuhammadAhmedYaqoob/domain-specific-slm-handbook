@@ -61,14 +61,16 @@ handling requires a warning. KD can expose this information as:
 - internal representations (**feature signal**);
 - attention or token-relation structures (**attention signal**).
 
-Let \(x\) be a prompt, \(y\) a human-validated target sequence, \(\theta_T\) frozen teacher parameters, and \(\theta_S\)
+Let $x$ be a prompt, $y$ a human-validated target sequence, $\theta_T$ frozen teacher parameters, and $\theta_S$
 trainable student parameters. A general objective is
 
-\[ \mathcal L = \lambda_{\mathrm{hard}}\mathcal L_{\mathrm{hard}}(y,x;\theta_S) +\lambda_{\mathrm{KD}}\mathcal
-L_{\mathrm{KD}}(\theta_T,\theta_S,x) +\sum_j\lambda_j\mathcal L_j . \]
+$$
+\mathcal L = \lambda_{\mathrm{hard}}\mathcal L_{\mathrm{hard}}(y,x;\theta_S) +\lambda_{\mathrm{KD}}\mathcal
+L_{\mathrm{KD}}(\theta_T,\theta_S,x) +\sum_j\lambda_j\mathcal L_j .
+$$
 
 Additional terms may match hidden states, relations, safety behavior, or general-capability replay. The weights
-\(\lambda\) are hyperparameters; they need not sum to one unless the implementation defines them that way.
+$\lambda$ are hyperparameters; they need not sum to one unless the implementation defines them that way.
 
 <a id="fig-10"></a> **FIG-10 — Teacher–student transfer paths (`ILLUSTRATIVE`).** Alt text: prompts and references feed
 a frozen teacher and trainable student; optional teacher responses, logits, features, and attention become losses; only
@@ -133,67 +135,79 @@ translation by Kim and Rush [R2], approximates a teacher sequence distribution w
 them. In modern instruction models, SFT on teacher completions is both response imitation and a practical form of
 sequence-level KD.
 
-Given a teacher-decoded sequence \(\hat y_T=(\hat y_1,\ldots,\hat y_m)\),
+Given a teacher-decoded sequence $\hat y_T=(\hat y_1,\ldots,\hat y_m)$,
 
-\[ \mathcal L_{\mathrm{seq}} =-\sum_{i=1}^{m}m_i\log p_S(\hat y_i\mid x,\hat y_{<i}), \]
+$$
+\mathcal L_{\mathrm{seq}} =-\sum_{i=1}^{m}m_i\log p_S(\hat y_i\mid x,\hat y_{<i}),
+$$
 
-where \(m_i\) masks prompt, padding, or unapproved tokens. The student tokenizes the text with its own tokenizer, so
+where $m_i$ masks prompt, padding, or unapproved tokens. The student tokenizes the text with its own tokenizer, so
 vocabularies may differ.
 
 Sequence KD is simple and storage-efficient, but one decoded answer reveals one narrow path. Greedy decoding suppresses
-diversity; high-temperature sampling may amplify hallucination. Beam width, temperature, top-\(p\), system prompt,
+diversity; high-temperature sampling may amplify hallucination. Beam width, temperature, top-$p$, system prompt,
 teacher revision, and stop conditions are dataset parameters, not incidental details. Kim and Rush report translation
 results in their setting (`PAPER-REPORTED`); that is not proof a domain chat student will improve.
 
 ### 13.3.2 Logits, soft targets, temperature, and KL
 
-For vocabulary logits \(z_T,z_S\in\mathbb R^V\) and temperature \(T>0\),
+For vocabulary logits $z_T,z_S\in\mathbb R^V$ and temperature $T>0$,
 
-\[ p_T^{(T)}(v)= \frac{\exp(z_{T,v}/T)}{\sum_{u=1}^{V}\exp(z_{T,u}/T)},\qquad p_S^{(T)}(v)=
-\frac{\exp(z_{S,v}/T)}{\sum_{u=1}^{V}\exp(z_{S,u}/T)}. \]
+$$
+p_T^{(T)}(v)= \frac{\exp(z_{T,v}/T)}{\sum_{u=1}^{V}\exp(z_{T,u}/T)},\qquad p_S^{(T)}(v)=
+\frac{\exp(z_{S,v}/T)}{\sum_{u=1}^{V}\exp(z_{S,u}/T)}.
+$$
 
-\(T=1\) gives ordinary probabilities. \(T>1\) flattens the distribution and exposes relative probabilities among
-non-argmax tokens—the “soft targets” popularized by Hinton, Vinyals, and Dean [R1]. \(T<1\) sharpens it. Distillation
+$T=1$ gives ordinary probabilities. $T>1$ flattens the distribution and exposes relative probabilities among
+non-argmax tokens—the “soft targets” popularized by Hinton, Vinyals, and Dean [R1]. $T<1$ sharpens it. Distillation
 temperature is distinct from synthetic-response sampling temperature.
 
 A common forward-KL loss is
 
-\[ \mathcal L_{\mathrm{FKL}} =T^2\sum_{i\in M} D_{\mathrm{KL}}\!\left( p_T^{(T)}(\cdot\mid c_i) \parallel
-p_S^{(T)}(\cdot\mid c_i)\right), \]
+$$
+\mathcal L_{\mathrm{FKL}} =T^2\sum_{i\in M} D_{\mathrm{KL}}\!\left( p_T^{(T)}(\cdot\mid c_i) \parallel
+p_S^{(T)}(\cdot\mid c_i)\right),
+$$
 
-\[ D_{\mathrm{KL}}(P\parallel Q) =\sum_v P(v)\log\frac{P(v)}{Q(v)} , \]
+$$
+D_{\mathrm{KL}}(P\parallel Q) =\sum_v P(v)\log\frac{P(v)}{Q(v)} ,
+$$
 
-where \(c_i=(x,y_{<i})\) is context and \(M\) contains supervised positions. Terms independent of the student may be
-omitted, making this soft-label cross-entropy up to a constant. The conventional \(T^2\) approximately restores gradient
+where $c_i=(x,y_{<i})$ is context and $M$ contains supervised positions. Terms independent of the student may be
+omitted, making this soft-label cross-entropy up to a constant. The conventional $T^2$ approximately restores gradient
 scale after softening; it is not universal and must match reduction.
 
-**Worked example (`ILLUSTRATIVE`).** For teacher logits \([4,2,0]\):
+**Worked example (`ILLUSTRATIVE`).** For teacher logits $[4,2,0]$:
 
-- at \(T=1\): approximately \([0.867,0.117,0.016]\);
-- at \(T=2\): approximately \([0.665,0.245,0.090]\).
+- at $T=1$: approximately $[0.867,0.117,0.016]$;
+- at $T=2$: approximately $[0.665,0.245,0.090]$.
 
 The hard target says only “token 1.” The soft target says token 2 is much more plausible than token 3. If the student at
-\(T=2\) predicts \([0.55,0.30,0.15]\),
+$T=2$ predicts $[0.55,0.30,0.15]$,
 
-\[ D_{\mathrm{KL}}(p_T\parallel p_S) \approx .665\ln(.665/.55)+.245\ln(.245/.30)+.09\ln(.09/.15) \approx 0.032. \]
+$$
+D_{\mathrm{KL}}(p_T\parallel p_S) \approx .665\ln(.665/.55)+.245\ln(.245/.30)+.09\ln(.09/.15) \approx 0.032.
+$$
 
 Closeness does not establish factual correctness.
 
-Forward \(D_{\mathrm{KL}}(p_T\|p_S)\) penalizes missing teacher modes. Reverse \(D_{\mathrm{KL}}(p_S\|p_T)\) penalizes
+Forward $D_{\mathrm{KL}}(p_T\|p_S)$ penalizes missing teacher modes. Reverse $D_{\mathrm{KL}}(p_S\|p_T)$ penalizes
 student mass in low-teacher-probability regions and is more mode-seeking. MiniLLM [R7] applies reverse-KL-oriented,
 on-policy methods to generative KD (`PAPER-REPORTED`). Direction, sampling distribution, and estimator must be stated;
 “KL distillation” is underspecified.
 
-Full-vocabulary logits cost about \(N_{\mathrm{tokens}}Vb\) bytes. One billion positions, vocabulary 50,000, and 2-byte
-values imply about 100 TB before metadata (`ESTIMATE`). Practical systems use top-\(k\), quantized caches, chunking, or
-recomputation. A top-\(k\) cache must retain or account for omitted probability mass; renormalizing retained entries
+Full-vocabulary logits cost about $N_{\mathrm{tokens}}Vb$ bytes. One billion positions, vocabulary 50,000, and 2-byte
+values imply about 100 TB before metadata (`ESTIMATE`). Practical systems use top-$k$, quantized caches, chunking, or
+recomputation. A top-$k$ cache must retain or account for omitted probability mass; renormalizing retained entries
 changes the target.
 
 ### 13.3.3 Features and intermediate layers
 
-If teacher layer \(\phi(l)\) corresponds to student layer \(l\), and widths differ, use a learned projection \(W_l\):
+If teacher layer $\phi(l)$ corresponds to student layer $l$, and widths differ, use a learned projection $W_l$:
 
-\[ \mathcal L_{\mathrm{hid}} =\frac{1}{|M|}\sum_l\sum_{i\in M} \left\|W_l h^S_{l,i}-h^T_{\phi(l),i}\right\|_2^2. \]
+$$
+\mathcal L_{\mathrm{hid}} =\frac{1}{|M|}\sum_l\sum_{i\in M} \left\|W_l h^S_{l,i}-h^T_{\phi(l),i}\right\|_2^2.
+$$
 
 Layer maps may be uniform, last-layer-only, or learned. Raw mean-squared error is sensitive to scale and representation
 rotations; cosine, normalized, relational, or contrastive losses may fit better. Projection modules can usually be
@@ -208,7 +222,9 @@ generation.
 Attention transfer may match post-softmax maps, query–key products, value–value relations, or aggregated token
 relations. For compatible maps:
 
-\[ \mathcal L_{\mathrm{attn}} =\frac{1}{LH}\sum_{l,h} \left\|A^T_{\phi(l),\psi(h)}-A^S_{l,h}\right\|_F^2 . \]
+$$
+\mathcal L_{\mathrm{attn}} =\frac{1}{LH}\sum_{l,h} \left\|A^T_{\phi(l),\psi(h)}-A^S_{l,h}\right\|_F^2 .
+$$
 
 Head counts, grouped-query attention (GQA), multi-query attention (MQA), causal masks, local windows, rotary positions,
 and dimensions may differ. Head-index matching can be meaningless. MiniLM [R5] distills attention distributions and
@@ -226,7 +242,7 @@ performance is intentionally not ranked.
 | Hard response       | text                        | text can be retokenized             | simple; API-compatible | one sampled path; fluent errors     |
 | Sequence-level      | decoded sequences/scores    | text can be retokenized             | generation-aligned     | decoding policy biases data         |
 | Full logits         | vocabulary logits           | normally identical tokens/positions | rich uncertainty       | huge compute/storage                |
-| Top-\(k\) logits    | token IDs, values, residual | normally aligned                    | cheaper                | approximate and cache-heavy         |
+| Top-$k$ logits    | token IDs, values, residual | normally aligned                    | cheaper                | approximate and cache-heavy         |
 | Hidden features     | internals                   | position alignment                  | internal structure     | projections and memory              |
 | Attention/relations | attention/QKV               | strong structural compatibility     | token relations        | head/mask mismatch                  |
 | Preference/ranking  | candidate scores/ranks      | text candidates                     | comparative behavior   | scorer bias; not classical KD alone |
@@ -254,8 +270,10 @@ untouched tests.
 **Multi-teacher KD** combines complementary domain, language, safety, or reasoning teachers through weighted mixtures,
 routing, gating, consensus, or separate losses:
 
-\[ \mathcal L_{\mathrm{multi}} =\sum_{k=1}^{K}w_k(x)D_{\mathrm{KL}}(p_{T_k}\|p_S),\quad w_k(x)\ge0,\quad\sum_k
-w_k(x)=1. \]
+$$
+\mathcal L_{\mathrm{multi}} =\sum_{k=1}^{K}w_k(x)D_{\mathrm{KL}}(p_{T_k}\|p_S),\quad w_k(x)\ge0,\quad\sum_k
+w_k(x)=1.
+$$
 
 Weights should reflect competence and calibration, not size alone. Average logits only with aligned vocabularies and
 positions. Probability averaging across disagreement may create a distribution no expert endorses. For safety-critical
@@ -417,20 +435,24 @@ correct final answer reached through unsafe steps is a failure.
 
 ## 13.11 Loss design
 
-\[ \mathcal L = \alpha\mathcal L_{\mathrm{expert}} +\beta\mathcal L_{\mathrm{teacher\ text}} +\gamma T^2\mathcal
-L_{\mathrm{KL}} +\delta\mathcal L_{\mathrm{feature}} +\eta\mathcal L_{\mathrm{replay}}. \]
+$$
+\mathcal L = \alpha\mathcal L_{\mathrm{expert}} +\beta\mathcal L_{\mathrm{teacher\ text}} +\gamma T^2\mathcal
+L_{\mathrm{KL}} +\delta\mathcal L_{\mathrm{feature}} +\eta\mathcal L_{\mathrm{replay}}.
+$$
 
-State KL direction and context source; temperature; full or top-\(k\); layer/head maps; prompt/assistant/EOS/padding
+State KL direction and context source; temperature; full or top-$k$; layer/head maps; prompt/assistant/EOS/padding
 masks; domain/risk/source sampling; sequence normalization; weights/schedule; teacher eval mode, precision, and gradient
 detachment.
 
 More losses are not automatically better. Gradients conflict, feature loss can dominate, and duplicate synthetic text
 can swamp expert examples. Ablate one factor at a time.
 
-**Worked mixed loss (`ILLUSTRATIVE`).** If hard, scaled-KL, and hidden losses are \(1.8,0.25,0.40\), with weights
-\(0.6,0.3,0.1\):
+**Worked mixed loss (`ILLUSTRATIVE`).** If hard, scaled-KL, and hidden losses are $1.8,0.25,0.40$, with weights
+$0.6,0.3,0.1$:
 
-\[ \mathcal L=0.6(1.8)+0.3(0.25)+0.1(0.40)=1.195. \]
+$$
+\mathcal L=0.6(1.8)+0.3(0.25)+0.1(0.40)=1.195.
+$$
 
 Inspect gradients and validation results; raw loss magnitudes are insufficient.
 
@@ -549,7 +571,7 @@ def causal_kd_loss(student, teacher, batch, cfg: KDConfig):
 Production code must add distributed placement, precision policy, accumulation, cache handling, checkpoints, logging,
 and exact tokenizer identity checks.
 
-### Listing CH13-L03 — auditable top-\(k\) cache schema
+### Listing CH13-L03 — auditable top-$k$ cache schema
 
 ```python
 # UNVERIFIED IMPLEMENTATION — intentionally not executed.
@@ -570,7 +592,7 @@ class KDCacheRecord(TypedDict):
     targets: list[TokenTarget]
 ```
 
-Manifest dataset index, teacher precision, \(k\), temperature policy, and code revision. Validate random cache entries
+Manifest dataset index, teacher precision, $k$, temperature policy, and code revision. Validate random cache entries
 against fresh teacher passes.
 
 ## 13.13 Five required experiments
@@ -585,8 +607,8 @@ These are not results.
 
 ### Variants
 
-Use one immutable student initialization \(S_0\), chat template, context length, and training-token budget where
-feasible. Add untouched \(S_0\) and a same-size native SLM as controls.
+Use one immutable student initialization $S_0$, chat template, context length, and training-token budget where
+feasible. Add untouched $S_0$ and a same-size native SLM as controls.
 
 <!-- markdownlint-disable MD013 -->
 | ID  | Required experiment   | Signal                                    | Isolation                                                  |
@@ -734,7 +756,7 @@ constraints whose cost and fragility must earn a measured benefit.
 | leakage                 | implausibly high benchmark           | paraphrase/source overlap           | grouped semantic audit          |
 | safety regression       | hazardous confidence                 | teacher/missing hazard cases        | risk gate and expert review     |
 | no speedup              | smaller but same/slower              | kernel/architecture bottleneck      | target-device operator profile  |
-| cost overrun            | teacher dominates                    | online/full-logit design            | offline/top-\(k\)/response KD   |
+| cost overrun            | teacher dominates                    | online/full-logit design            | offline/top-$k$/response KD   |
 <!-- markdownlint-restore -->
 
 Also test truncated safety warnings, EOS/template corruption, calibration loss, copyright memorization, API drift, and
@@ -742,17 +764,27 @@ quantization-amplified weaknesses.
 
 ## 13.15 Cost-effectiveness
 
-\[ C_{\mathrm{total}}= C_{\mathrm{teacher\ generation}}+ C_{\mathrm{teacher\ during\ training}}+ C_{\mathrm{student\
+$$
+C_{\mathrm{total}}= C_{\mathrm{teacher\ generation}}+ C_{\mathrm{teacher\ during\ training}}+ C_{\mathrm{student\
 training}}+ C_{\mathrm{expert\ review}}+ C_{\mathrm{storage}}+ C_{\mathrm{evaluation}}+ C_{\mathrm{conversion}}+
-C_{\mathrm{device\ testing}}+ C_{\mathrm{maintenance}}. \]
+C_{\mathrm{device\ testing}}+ C_{\mathrm{maintenance}}.
+$$
 
-For API synthesis, \[ C_{\mathrm{generation}}=N_{\mathrm{in}}r_{\mathrm{in}} +N_{\mathrm{out}}r_{\mathrm{out}}, \]
+For API synthesis,
+$$
+C_{\mathrm{generation}}=N_{\mathrm{in}}r_{\mathrm{in}} +N_{\mathrm{out}}r_{\mathrm{out}},
+$$
+
 using actual token counts and contemporaneous billing units. For local teachers, report accelerator-hours, utilization,
 energy where measurable, labor, and amortization assumptions.
 
 Teacher data are not “free”: ontology design, validation, rejection, and expert adjudication remain. Compare
-equal-quality safe systems: \[ \text{incremental cost effectiveness}=(C_A-C_B)/(Q_A-Q_B). \] If uncertainty in
-\(Q_A-Q_B\) spans zero, do not claim superiority.
+equal-quality safe systems:
+$$
+\text{incremental cost effectiveness}=(C_A-C_B)/(Q_A-Q_B).
+$$
+If uncertainty in
+$Q_A-Q_B$ spans zero, do not claim superiority.
 
 Use response KD for black-box access and simplicity; offline aligned logit KD when open models and storage permit;
 online/on-policy KD only after exposure mismatch is demonstrated and added cost justified.
@@ -792,7 +824,7 @@ information. Exact obligations vary; obtain legal/regulatory advice.
 8. Select a Pareto frontier; unsafe models are dominated regardless of speed.
 
 Priority: teacher–student, soft targets, temperature, and KL are **foundational**; validated response KD, mixed data,
-provenance, and student/mobile co-design are **core practical**; aligned top-\(k\) and selected intermediate losses are
+provenance, and student/mobile co-design are **core practical**; aligned top-$k$ and selected intermediate losses are
 **advanced practical**; on-policy reverse-KL, conflict-aware multi-teacher, and data-free KD are **experimental here**;
 DistilBERT, TinyBERT, and MiniLM are **historical but instructive**.
 
@@ -813,14 +845,14 @@ DistilBERT, TinyBERT, and MiniLM are **historical but instructive**.
 ## 13.19 Review questions and exercises
 
 1. Why can a soft target carry more information than a one-hot target?
-2. Derive forward KL's student-dependent term and explain \(T^2\).
+2. Derive forward KL's student-dependent term and explain $T^2$.
 3. Distinguish response, sequence, and token-logit KD.
 4. Why does response KD tolerate tokenizer mismatch?
 5. Compare teacher-forced and on-policy contexts.
 6. Why is attention similarity not proof of equivalent reasoning?
 7. Why cannot DistilBERT figures serve as mobile decoder benchmarks?
 8. Give two meanings and risks of self-distillation.
-9. Compute \(T=2\) probabilities for logits \([3,1,-1]\), then forward KL to \([0.60,0.30,0.10]\).
+9. Compute $T=2$ probabilities for logits $[3,1,-1]$, then forward KL to $[0.60,0.30,0.10]$.
 10. Estimate FP16 full-logit storage for 50 million positions and vocabulary 32,000; propose an explicit approximation.
 11. Design valid transfer from byte-BPE teacher to Unigram student.
 12. Construct assistant-only masks for multi-turn chat, including EOS.

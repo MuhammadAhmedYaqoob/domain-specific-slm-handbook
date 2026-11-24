@@ -25,24 +25,30 @@ evaluation.
 
 For a pretrained linear transformation,
 
-\[ y = W_0x+b, \]
+$$
+y = W_0x+b,
+$$
 
-\(W_0\in\mathbb{R}^{d_{\text{out}}\times d_{\text{in}}}\) can contain millions of parameters. Full fine-tuning learns
-an unconstrained \(\Delta W\) of the same shape. Adam-like training then needs memory for the model, gradients,
+$W_0\in\mathbb{R}^{d_{\text{out}}\times d_{\text{in}}}$ can contain millions of parameters. Full fine-tuning learns
+an unconstrained $\Delta W$ of the same shape. Adam-like training then needs memory for the model, gradients,
 optimizer moments, activations, and temporary buffers. Repeating that process for automotive, pharmacy, and beekeeping
 models also creates one full checkpoint per domain.
 
 LoRA starts from the empirical hypothesis that a useful task update can often be represented in a much lower-dimensional
-subspace. Rather than optimize \(W_0\), it freezes \(W_0\) and learns
+subspace. Rather than optimize $W_0$, it freezes $W_0$ and learns
 
-\[ \Delta W=sBA,\qquad A\in\mathbb{R}^{r\times d_{\text{in}}},\quad B\in\mathbb{R}^{d_{\text{out}}\times r}, \]
+$$
+\Delta W=sBA,\qquad A\in\mathbb{R}^{r\times d_{\text{in}}},\quad B\in\mathbb{R}^{d_{\text{out}}\times r},
+$$
 
-where \(r\ll\min(d_{\text{in}},d_{\text{out}})\), and
+where $r\ll\min(d_{\text{in}},d_{\text{out}})$, and
 
-\[ y=W_0x+sB(Ax)+b. \]
+$$
+y=W_0x+sB(Ax)+b.
+$$
 
-The matrix \(A\) is the down-projection from the input space to an \(r\)-dimensional latent space; \(B\) is the
-up-projection back to the output space. The product has rank at most \(r\). “Low rank” constrains the **update**, not
+The matrix $A$ is the down-projection from the input space to an $r$-dimensional latent space; $B$ is the
+up-projection back to the output space. The product has rank at most $r$. “Low rank” constrains the **update**, not
 the rank or size of the frozen pretrained matrix.
 
 <a id="fig-06"></a> **FIG-06 — How low-rank matrices modify a frozen weight (`ILLUSTRATIVE`).** Alt text: an input takes
@@ -60,30 +66,36 @@ flowchart LR
     ADD --> Y["output y<br/>d_out"]
 ```
 
-The construction is exact linear algebra, not a lossy decomposition performed after training: during training, \(A\) and
-\(B\) directly parameterize the allowed update. After training, an additive adapter can be folded into a dense weight:
+The construction is exact linear algebra, not a lossy decomposition performed after training: during training, $A$ and
+$B$ directly parameterize the allowed update. After training, an additive adapter can be folded into a dense weight:
 
-\[ W_{\text{merged}}=W_0+sBA. \]
+$$
+W_{\text{merged}}=W_0+sBA.
+$$
 
 The merged layer has the original shape and normally the original dense inference cost. The adapter saves training and
 artifact resources; a separate compression method is still needed to reduce the final dense model.
 
 ## 9.2 Shapes, parameter count, and a numerical example
 
-A dense \(d_{\text{out}}\times d_{\text{in}}\) update has \(d_{\text{out}}d_{\text{in}}\) trainable elements. LoRA has
+A dense $d_{\text{out}}\times d_{\text{in}}$ update has $d_{\text{out}}d_{\text{in}}$ trainable elements. LoRA has
 
-\[ N_{\text{LoRA}}=r(d_{\text{in}}+d_{\text{out}}) \]
+$$
+N_{\text{LoRA}}=r(d_{\text{in}}+d_{\text{out}})
+$$
 
 elements per targeted matrix, excluding optional trainable bias or magnitude terms. Its fraction of that matrix is
 
-\[ \rho=\frac{r(d_{\text{in}}+d_{\text{out}})} {d_{\text{in}}d_{\text{out}}}. \]
+$$
+\rho=\frac{r(d_{\text{in}}+d_{\text{out}})} {d_{\text{in}}d_{\text{out}}}.
+$$
 
-**Example (`ILLUSTRATIVE`).** For a \(4096\times4096\) projection and \(r=16\):
+**Example (`ILLUSTRATIVE`).** For a $4096\times4096$ projection and $r=16$:
 
-- dense matrix: \(16{,}777{,}216\) elements;
-- LoRA: \(16(4096+4096)=131{,}072\) elements;
-- fraction: \(0.78125\%\);
-- BF16 adapter values alone: \(262{,}144\) bytes, or 256 KiB.
+- dense matrix: $16{,}777{,}216$ elements;
+- LoRA: $16(4096+4096)=131{,}072$ elements;
+- fraction: $0.78125\%$;
+- BF16 adapter values alone: $262{,}144$ bytes, or 256 KiB.
 
 The 256 KiB figure is not training VRAM. If each trainable element has a 2-byte parameter, 2-byte gradient, and two
 4-byte optimizer moments, those states alone total about 1.5 MiB for this adapter; framework copies, activations,
@@ -92,7 +104,7 @@ alignment, and buffers add more.
 Consider an `ILLUSTRATIVE` 32-layer decoder with hidden size 4096 and MLP intermediate size 11008, using separate `q`,
 `k`, `v`, `o`, `gate`, `up`, and `down` projections and no adapter biases:
 
-- targeting only `q` and `v` at rank 16 adds \(32\times2\times131{,}072=8{,}388{,}608\) parameters;
+- targeting only `q` and `v` at rank 16 adds $32\times2\times131{,}072=8{,}388{,}608$ parameters;
 - targeting all seven projections adds approximately 39,976,960 parameters.
 
 This four-to-five-fold difference is why “rank 16” is not a complete configuration. Target coverage can matter more than
@@ -100,38 +112,46 @@ rank in isolation.
 
 ### 9.2.1 Follow one LoRA update numerically
 
-Let a frozen \(2\times3\) projection be
+Let a frozen $2\times3$ projection be
 
-\[
+$$
+
 W_0=\begin{bmatrix}1&0&-1\\0&2&1\end{bmatrix},\quad
 A=\begin{bmatrix}1&-1&0\end{bmatrix},\quad
 B=\begin{bmatrix}0.2\\-0.1\end{bmatrix},
-\]
 
-with rank \(r=1\), \(\alpha=1\), and therefore \(s=\alpha/r=1\). For input
-\(x=[2,1,-1]^\top\), the frozen path gives \(W_0x=[3,1]^\top\). The adapter first compresses the three input features to
+$$
+
+with rank $r=1$, $\alpha=1$, and therefore $s=\alpha/r=1$. For input
+$x=[2,1,-1]^\top$, the frozen path gives $W_0x=[3,1]^\top$. The adapter first compresses the three input features to
 one coordinate:
 
-\[
+$$
+
 Ax=1(2)-1(1)+0(-1)=1.
-\]
+
+$$
 
 It then expands that coordinate:
 
-\[
+$$
+
 B(Ax)=[0.2,-0.1]^\top.
-\]
 
-The final output is \([3.2,0.9]^\top\). Equivalently,
+$$
 
-\[
+The final output is $[3.2,0.9]^\top$. Equivalently,
+
+$$
+
 BA=\begin{bmatrix}0.2&-0.2&0\\-0.1&0.1&0\end{bmatrix},
 \quad (W_0+BA)x=[3.2,0.9]^\top.
-\]
 
-This small example exposes the entire mechanism: \(A\) chooses a direction in input-feature space, \(B\) decides how
-that direction changes each output, and merging precomputes the same rank-one update into \(W_0\). Rank one cannot
-represent every \(2\times3\) update, but it may represent the update the task actually needs.
+$$
+
+This small example exposes the entire mechanism: $A$ chooses a direction in input-feature space, $B$ decides how
+that direction changes each output, and merging precomputes the same rank-one update into $W_0$. Rank one cannot
+represent every $2\times3$ update, but it may represent the update the task actually needs.
 
 ### 9.2.2 End-to-end implementation workflow
 
@@ -139,7 +159,7 @@ represent every \(2\times3\) update, but it may represent the update the task ac
 2. Inspect real module names and shapes; calculate adapter counts for each proposed target set.
 3. Attach ordinary LoRA first and prove that only intended factors are trainable.
 4. Tiny-overfit a few examples, reload the adapter in a clean process, and compare disabled versus enabled behavior.
-5. Train the controlled run while logging separate \(A\), \(B\), and \(sBA\) norms.
+5. Train the controlled run while logging separate $A$, $B$, and $sBA$ norms.
 6. Compare the unmerged adapter with a supported high-precision merge.
 7. Quantize or export the merged child for each target runtime, then rerun domain, safety, memory, and performance gates.
 
@@ -150,9 +170,9 @@ quantization. None of these names, by itself, predicts a smaller or faster deplo
 
 ## 9.3 Rank, alpha, scaling, and dropout
 
-### Rank \(r\)
+### Rank $r$
 
-Rank controls the maximum dimensionality of each learned update. Increasing \(r\):
+Rank controls the maximum dimensionality of each learned update. Increasing $r$:
 
 - increases trainable parameters and adapter compute linearly;
 - can increase capacity;
@@ -161,7 +181,7 @@ Rank controls the maximum dimensionality of each learned update. Increasing \(r\
 - interacts with scaling, initialization, targets, and optimizer.
 
 Rank should be selected on a validation frontier, not copied from an unrelated paper. Begin with a logarithmic sweep
-such as \(r\in\{4,8,16,32,64\}\) only where the resource budget permits, then refine around non-dominated choices.
+such as $r\in\{4,8,16,32,64\}$ only where the resource budget permits, then refine around non-dominated choices.
 Compare equal target sets and scaling conventions. A higher-rank adapter with fewer targets is not directly comparable
 to a lower-rank all-linear adapter.
 
@@ -169,16 +189,20 @@ to a lower-rank all-linear adapter.
 
 In canonical LoRA the multiplier is
 
-\[ s=\frac{\alpha}{r}, \]
+$$
+s=\frac{\alpha}{r},
+$$
 
-where `lora_alpha` is \(\alpha\). Alpha does not add representational rank; it changes the magnitude of the adapter
-branch and therefore its optimization dynamics. Holding \(\alpha\) fixed while increasing rank reduces canonical scale.
-Holding \(\alpha/r\) fixed makes initial scale conventions comparable, but still does not equalize capacity or
+where `lora_alpha` is $\alpha$. Alpha does not add representational rank; it changes the magnitude of the adapter
+branch and therefore its optimization dynamics. Holding $\alpha$ fixed while increasing rank reduces canonical scale.
+Holding $\alpha/r$ fixed makes initial scale conventions comparable, but still does not equalize capacity or
 gradients.
 
 Rank-stabilized LoRA (rsLoRA) instead uses
 
-\[ s_{\text{rs}}=\frac{\alpha}{\sqrt r}. \]
+$$
+s_{\text{rs}}=\frac{\alpha}{\sqrt r}.
+$$
 
 Kalajdzievski derives this scaling to keep adapter activations and backpropagated gradients stable in rank-asymptotic
 conditions. Practical benefit remains an experiment, especially at small ranks (`PAPER-REPORTED`). Current PEFT exposes
@@ -188,23 +212,27 @@ conditions. Practical benefit remains an experiment, especially at small ranks (
 
 LoRA dropout masks the input to the adapter branch during training:
 
-\[ y=W_0x+sBA\,D_p(x), \]
+$$
+y=W_0x+sBA\,D_p(x),
+$$
 
-with inverted dropout \(D_p\). It is disabled for evaluation. It does not permanently zero adapter weights, and it is
+with inverted dropout $D_p$. It is disabled for evaluation. It does not permanently zero adapter weights, and it is
 absent from the merged dense weight. Dropout may regularize a small dataset but also injects gradient noise and can slow
-fitting. Treat \(p=0\) as a baseline and test nonzero values on validation data; do not assume `0.05` is universally
+fitting. Treat $p=0$ as a baseline and test nonzero values on validation data; do not assume `0.05` is universally
 optimal.
 
 ## 9.4 Initialization and gradient flow
 
-The common initialization samples \(A\) and sets \(B=0\). Consequently \(BA=0\), so attaching the adapter initially
-leaves the model output unchanged. For upstream gradient \(g=\partial\mathcal{L}/\partial y\), ignoring a batch
+The common initialization samples $A$ and sets $B=0$. Consequently $BA=0$, so attaching the adapter initially
+leaves the model output unchanged. For upstream gradient $g=\partial\mathcal{L}/\partial y$, ignoring a batch
 dimension and dropout for clarity,
 
-\[ \frac{\partial\mathcal{L}}{\partial B}=s\,g(Ax)^\top, \qquad \frac{\partial\mathcal{L}}{\partial A}=s\,B^\top
-gx^\top. \]
+$$
+\frac{\partial\mathcal{L}}{\partial B}=s\,g(Ax)^\top, \qquad \frac{\partial\mathcal{L}}{\partial A}=s\,B^\top
+gx^\top.
+$$
 
-At step zero, \(B=0\), so \(A\)'s gradient is zero while \(B\) receives a gradient if \(Ax\neq0\). Once \(B\) moves away
+At step zero, $B=0$, so $A$'s gradient is zero while $B$ receives a gradient if $Ax\neq0$. Once $B$ moves away
 from zero, both factors learn. This asymmetry motivates methods such as LoRA+, LoRA-FA, PiSSA, EVA, MiCA, and NoRA. It
 is also why gradient logging should separate `lora_A` from `lora_B` rather than report a single aggregate norm.
 
@@ -215,8 +243,8 @@ from the graph or consumes no activation memory.
 Training-instability checks should include:
 
 1. finite loss, logits, adapter weights, and gradients;
-2. norms of \(A\), \(B\), and \(sBA\) per layer;
-3. ratio \(\|sBA\|_F/\|W_0\|_F\);
+2. norms of $A$, $B$, and $sBA$ per layer;
+3. ratio $\|sBA\|_F/\|W_0\|_F$;
 4. clipping frequency and learning-rate schedule;
 5. BF16/FP16 overflow behavior;
 6. domain validation and general-capability retention;
@@ -276,10 +304,12 @@ implementation.
 
 ## 9.6 Merging, unmerging, and inference overhead
 
-An unmerged LoRA layer evaluates \(W_0x\), \(Ax\), and \(B(Ax)\). The extra multiply-add count per token, ignoring
+An unmerged LoRA layer evaluates $W_0x$, $Ax$, and $B(Ax)$. The extra multiply-add count per token, ignoring
 batching, is approximately
 
-\[ r(d_{\text{in}}+d_{\text{out}}), \]
+$$
+r(d_{\text{in}}+d_{\text{out}}),
+$$
 
 plus launches, reads, casts, and framework overhead. The percentage is small for a large dense matrix, but real latency
 can be launch- or memory-bound—especially at batch size one on an edge CPU. Measure the selected runtime; do not infer
@@ -326,7 +356,7 @@ runtime.
 
 ### 9.7.1 LoRA
 
-**Distinction.** Learn an additive rank-\(r\) update on selected modules while freezing the base. Default zero-output
+**Distinction.** Learn an additive rank-$r$ update on selected modules while freezing the base. Default zero-output
 initialization starts as a no-op.
 
 **Claimed target.** Reduce trainable parameters, optimizer memory, and task-specific artifact size while retaining
@@ -386,7 +416,9 @@ fixed-rank LoRA is the stronger reproducibility baseline.
 **Distinction.** Weight-Decomposed Low-Rank Adaptation separates each weight's column-wise magnitude from direction. A
 magnitude vector is trainable, while a LoRA update adapts direction. Conceptually,
 
-\[ W' = m\odot\frac{W_0+sBA}{\|W_0+sBA\|_{\text{column}}}, \]
+$$
+W' = m\odot\frac{W_0+sBA}{\|W_0+sBA\|_{\text{column}}},
+$$
 
 with broadcasting over columns (implementation conventions must be checked).
 
@@ -405,7 +437,7 @@ smaller dense edge model.
 
 ### 9.7.5 rsLoRA
 
-**Distinction.** Use \(\alpha/\sqrt r\), not \(\alpha/r\).
+**Distinction.** Use $\alpha/\sqrt r$, not $\alpha/r$.
 
 **Claimed target.** Prevent activation and gradient collapse as rank grows and make larger ranks useful.
 
@@ -418,7 +450,7 @@ function.
 
 ### 9.7.6 LoRA+
 
-**Distinction.** LoRA+ uses separate learning rates for \(A\) and \(B\), often expressed as \(\eta_B=\lambda\eta_A\).
+**Distinction.** LoRA+ uses separate learning rates for $A$ and $B$, often expressed as $\eta_B=\lambda\eta_A$.
 
 **Claimed target.** Correct width-dependent optimization imbalance and improve convergence without changing adapter
 shape.
@@ -433,7 +465,7 @@ shape are unchanged.
 ### 9.7.7 PiSSA
 
 **Distinction.** Principal Singular Values and Singular Vectors Adaptation initializes the trainable low-rank factors
-from principal singular components of \(W_0\), with the residual held frozen. Unlike default LoRA, the factors are
+from principal singular components of $W_0$, with the residual held frozen. Unlike default LoRA, the factors are
 meaningful and nonzero at initialization while base/residual bookkeeping keeps the initial function aligned.
 
 **Claimed target.** Faster convergence, better task quality, and lower initial quantization error than default
@@ -470,7 +502,7 @@ inference compression.
 ### 9.7.9 EVA
 
 **Distinction.** Explained Variance Adaptation performs incremental SVD on input activations from representative data,
-initializes \(A\) with high-explained-variance right singular directions, and can redistribute rank across layers.
+initializes $A$ with high-explained-variance right singular directions, and can redistribute rank across layers.
 
 **Claimed target.** Maximize expected gradient signal at initialization, accelerate adaptation, and allocate a fixed
 rank budget according to observed activation variance.
@@ -487,10 +519,12 @@ training initialization/allocation, not runtime.
 
 ### 9.7.10 LoftQ
 
-**Distinction.** LoRA-Fine-Tuning-aware Quantization jointly/alternately seeks a quantized backbone \(Q\) and low-rank
+**Distinction.** LoRA-Fine-Tuning-aware Quantization jointly/alternately seeks a quantized backbone $Q$ and low-rank
 factors that approximate a high-precision weight:
 
-\[ \min_{Q,A,B}\|W_0-Q-BA\|_F. \]
+$$
+\min_{Q,A,B}\|W_0-Q-BA\|_F.
+$$
 
 **Claimed target.** Reduce the quantization discrepancy present before QLoRA fine-tuning, especially at difficult
 low-bit settings.
@@ -522,17 +556,19 @@ retained.
 
 ### LoRA-FA
 
-LoRA with Frozen-A keeps the random down-projection \(A\) fixed and trains only \(B\). This removes the need to retain
-the full input activation solely for \(A\)'s gradient and roughly halves adapter trainable parameters at equal rank. The
+LoRA with Frozen-A keeps the random down-projection $A$ fixed and trains only $B$. This removes the need to retain
+the full input activation solely for $A$'s gradient and roughly halves adapter trainable parameters at equal rank. The
 arXiv paper's memory and quality findings are `PAPER-REPORTED`. PEFT documents `create_lorafa_optimizer`
 (`DOC-VERIFIED`). Because the subspace is fixed, capacity differs from ordinary LoRA; it cannot be fairly compared only
 by rank. The final additive update remains mergeable.
 
 ### Riemannian-preconditioned LoRA
 
-This ICML 2024 method preconditions factor gradients using small \(r\times r\) Gram matrices, schematically
+This ICML 2024 method preconditions factor gradients using small $r\times r$ Gram matrices, schematically
 
-\[ g_A\leftarrow(B^\top B+\delta I)^{-1}g_A,\qquad g_B\leftarrow g_B(AA^\top+\delta I)^{-1}. \]
+$$
+g_A\leftarrow(B^\top B+\delta I)^{-1}g_A,\qquad g_B\leftarrow g_B(AA^\top+\delta I)^{-1}.
+$$
 
 Its target is better conditioning and learning-rate robustness. PEFT documents a Riemannian optimizer path
 (`DOC-VERIFIED`); quality and overhead claims are `PAPER-REPORTED`. It changes training only, so successful standard
@@ -566,12 +602,12 @@ lineage and conversion metadata are mandatory.
 
 ### MiCA and NoRA-init
 
-Minor Component Adaptation (MiCA) initializes \(B\) from the left singular vectors associated with the smallest singular
-values of \(W_0\), initializes \(A=0\), freezes \(B\), and trains \(A\). Current PEFT documents
+Minor Component Adaptation (MiCA) initializes $B$ from the left singular vectors associated with the smallest singular
+values of $W_0$, initializes $A=0$, freezes $B$, and trains $A$. Current PEFT documents
 `init_lora_weights="mica"` for supported linear/embedding paths (`DOC-VERIFIED`). Its 2026 source is recent; reported
 knowledge-acquisition gains are preliminary for this project.
 
-Normalized LoRA's initialization-only PEFT form normalizes columns of random \(A\), sets \(B=0\), and then trains
+Normalized LoRA's initialization-only PEFT form normalizes columns of random $A$, sets $B=0$, and then trains
 standard LoRA. Current PEFT documents `init_lora_weights="nora"` (`DOC-VERIFIED`). The August 2026 paper is very recent;
 treat stability and forgetting claims as `PAPER-REPORTED`. Both MiCA and NoRA require controlled ablation before
 production use.
@@ -584,11 +620,11 @@ ranking.
 <!-- markdownlint-disable MD013 -->
 | Method    | Exact change from LoRA                       | Primary claimed target         | Additional training dependency    | Deployment effect             | Project maturity  |
 | --------- | -------------------------------------------- | ------------------------------ | --------------------------------- | ----------------------------- | ----------------- |
-| LoRA      | Additive \(sBA\)                             | Cheap adaptation               | Targets, rank, scale              | Mergeable; no model shrink    | Core practical    |
+| LoRA      | Additive $sBA$                             | Cheap adaptation               | Targets, rank, scale              | Mergeable; no model shrink    | Core practical    |
 | QLoRA     | Frozen 4-bit base during training            | Lower training memory          | Quantized kernels/backend         | Release format still separate | Core practical    |
 | AdaLoRA   | Dynamic per-module rank budget               | Budget efficiency              | Importance schedule               | LoRA-like after finalization  | Advanced          |
 | DoRA      | Train magnitude plus low-rank direction      | Capacity/stability             | Magnitude state, normalization    | Merge preferred               | Advanced          |
-| rsLoRA    | \(\alpha/\sqrt r\) scaling                   | High-rank stability            | Scaling metadata                  | Same as LoRA                  | Advanced          |
+| rsLoRA    | $\alpha/\sqrt r$ scaling                   | High-rank stability            | Scaling metadata                  | Same as LoRA                  | Advanced          |
 | LoRA+     | Different A/B learning rates                 | Optimization speed             | Optimizer groups                  | No change                     | Advanced          |
 | PiSSA     | Principal weight-SVD initialization/residual | Convergence/quantization error | SVD and conversion metadata       | Mergeable after conversion    | Advanced          |
 | OLoRA     | QR initialization/base translation           | Conditioning                   | QR and residual provenance        | Mergeable after conversion    | Experimental      |
@@ -688,7 +724,6 @@ import math
 import torch
 from torch import nn
 from torch.nn import functional as F
-
 
 class LoRALinear(nn.Module):
     def __init__(self, base: nn.Linear, rank: int, alpha: float, dropout: float = 0.0):
@@ -945,9 +980,9 @@ integration; it does not shrink a standalone offline model.
 
 ## 9.15 Summary
 
-LoRA expresses a selected weight update as \(sBA\), freezes the pretrained matrix, and trains small factors. Rank
+LoRA expresses a selected weight update as $sBA$, freezes the pretrained matrix, and trains small factors. Rank
 controls update dimension; alpha and the scaling rule control branch magnitude; dropout regularizes only the training
-branch; targets determine where adaptation is possible. Zero-\(B\) initialization creates asymmetric early gradients.
+branch; targets determine where adaptation is possible. Zero-$B$ initialization creates asymmetric early gradients.
 Merging removes ordinary adapter execution overhead but does not compress the dense model.
 
 QLoRA reduces frozen-base training memory, not automatically deployment memory. AdaLoRA reallocates rank; DoRA separates
@@ -961,11 +996,11 @@ targeted ablations and end-to-end artifact validation.
 
 ## 9.16 Review questions and exercises
 
-1. Derive the LoRA parameter count for a \(d_{\text{out}}\times d_{\text{in}}\) matrix and state when it ceases to be
+1. Derive the LoRA parameter count for a $d_{\text{out}}\times d_{\text{in}}$ matrix and state when it ceases to be
    parameter-efficient.
-2. Explain why \(A\) receives zero gradient at the first step under zero-\(B\) initialization, and why the whole adapter
+2. Explain why $A$ receives zero gradient at the first step under zero-$B$ initialization, and why the whole adapter
    can still begin learning.
-3. For \(r=64,\alpha=32\), compute canonical and rsLoRA scaling. Explain why this arithmetic alone cannot predict which
+3. For $r=64,\alpha=32$, compute canonical and rsLoRA scaling. Explain why this arithmetic alone cannot predict which
    trains better.
 4. Compare QLoRA, LoftQ, and QA-LoRA without using “all are 4-bit LoRA” as a description.
 5. Design attention-only and all-linear target ablations for a selected SLM. Include exact module names, parameter

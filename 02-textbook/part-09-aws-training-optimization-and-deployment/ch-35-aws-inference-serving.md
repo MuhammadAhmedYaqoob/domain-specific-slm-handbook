@@ -55,27 +55,35 @@ prompt-length distribution; do not optimize only a synthetic steady-state token 
 
 A first-order planning model is:
 
-\[ M_{\text{required}} \approx M_{\text{weights}} + M_{\text{KV}} + M_{\text{workspace}} + M_{\text{runtime}} +
-M_{\text{margin}} \]
+$$
+M_{\text{required}} \approx M_{\text{weights}} + M_{\text{KV}} + M_{\text{workspace}} + M_{\text{runtime}} +
+M_{\text{margin}}
+$$
 
 where all terms use the same unit. Approximate dense weight storage is:
 
-\[ M_{\text{weights}} \approx P \times b / 8 \]
+$$
+M_{\text{weights}} \approx P \times b / 8
+$$
 
-where \(P\) is parameter count and \(b\) is stored bits per parameter. This excludes quantization metadata and runtime
+where $P$ is parameter count and $b$ is stored bits per parameter. This excludes quantization metadata and runtime
 copies. A simplified decoder-only KV-cache estimate is:
 
-\[ M_{\text{KV}} \approx B \times L \times T \times 2 \times H_{\text{kv}} \times D \times s \]
+$$
+M_{\text{KV}} \approx B \times L \times T \times 2 \times H_{\text{kv}} \times D \times s
+$$
 
-where \(B\) is concurrent sequences, \(L\) layers, \(T\) cached tokens per sequence, the factor 2 represents keys and
-values, \(H_{\text{kv}}\) is the number of KV heads, \(D\) is head dimension, and \(s\) is bytes per cache element.
+where $B$ is concurrent sequences, $L$ layers, $T$ cached tokens per sequence, the factor 2 represents keys and
+values, $H_{\text{kv}}$ is the number of KV heads, $D$ is head dimension, and $s$ is bytes per cache element.
 Architectures and runtimes can change this layout, so use the runtime's measured allocation as the release value.
 
-**Illustrative calculation (`ESTIMATE`, not a fit claim).** For \(B=8\), \(L=24\), \(T=4096\), \(H_{\text{kv}}=8\),
-\(D=128\), and a 2-byte cache:
+**Illustrative calculation (`ESTIMATE`, not a fit claim).** For $B=8$, $L=24$, $T=4096$, $H_{\text{kv}}=8$,
+$D=128$, and a 2-byte cache:
 
-\[ 8 \times 24 \times 4096 \times 2 \times 8 \times 128 \times 2 = 3{,}221{,}225{,}472\text{ bytes} \approx 3.0\text{
-GiB} \]
+$$
+8 \times 24 \times 4096 \times 2 \times 8 \times 128 \times 2 = 3{,}221{,}225{,}472\text{ bytes} \approx 3.0\text{
+GiB}
+$$
 
 Doubling context or concurrency approximately doubles this term. This is why an apparently small model can still exhaust
 a GPU.
@@ -84,8 +92,10 @@ a GPU.
 
 For a continuously provisioned host:
 
-\[ C_{\text{request}} = \frac{C_{\text{compute}} + C_{\text{storage}} + C_{\text{network}} + C_{\text{control}} +
-C_{\text{observability}}}{N_{\text{successful requests}}} \]
+$$
+C_{\text{request}} = \frac{C_{\text{compute}} + C_{\text{storage}} + C_{\text{network}} + C_{\text{control}} +
+C_{\text{observability}}}{N_{\text{successful requests}}}
+$$
 
 For token-normalized reporting, divide by successful output tokens or total processed tokens and state which denominator
 is used. Idle GPU time, failed requests, blue-green overlap, model-download traffic, public IPv4, load balancers,
@@ -335,12 +345,10 @@ LATENCY = Histogram(
     "slm_request_seconds", "End-to-end request time", ["route", "stream"]
 )
 
-
 class Message(BaseModel):
     model_config = ConfigDict(extra="forbid")
     role: Literal["system", "user", "assistant"]
     content: str = Field(min_length=1, max_length=MAX_CHARS)
-
 
 class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -365,7 +373,6 @@ class ChatRequest(BaseModel):
             raise ValueError("combined message content is too large")
         return value
 
-
 @lru_cache
 def oidc_configuration() -> dict:
     response = httpx.get(
@@ -374,11 +381,9 @@ def oidc_configuration() -> dict:
     response.raise_for_status()
     return response.json()
 
-
 @lru_cache
 def jwk_client() -> PyJWKClient:
     return PyJWKClient(oidc_configuration()["jwks_uri"], cache_keys=True)
-
 
 def authenticate(authorization: str = Header(...)) -> dict:
     scheme, _, token = authorization.partition(" ")
@@ -397,7 +402,6 @@ def authenticate(authorization: str = Header(...)) -> dict:
     except Exception as exc:
         raise HTTPException(status_code=401, detail="invalid token") from exc
     return claims
-
 
 @app.middleware("http")
 async def request_envelope(request: Request, call_next):
@@ -433,11 +437,9 @@ async def request_envelope(request: Request, call_next):
     )
     return response
 
-
 @app.get("/livez")
 async def livez():
     return {"status": "live"}
-
 
 @app.get("/readyz")
 async def readyz():
@@ -452,7 +454,6 @@ async def readyz():
     except Exception as exc:
         raise HTTPException(status_code=503, detail="runtime not ready") from exc
 
-
 @app.get("/version")
 async def version(_: dict = Depends(authenticate)):
     return {
@@ -462,7 +463,6 @@ async def version(_: dict = Depends(authenticate)):
         "model_revision": MODEL_REVISION,
         "model_sha256": MODEL_SHA256,
     }
-
 
 @app.post("/v1/chat/completions")
 async def chat(body: ChatRequest, claims: dict = Depends(authenticate)):
@@ -1075,7 +1075,6 @@ payload = {
     "stream": False,
 }
 
-
 async def one(client: httpx.AsyncClient, index: int) -> dict:
     start = time.perf_counter_ns()
     response = await client.post(
@@ -1096,7 +1095,6 @@ async def one(client: httpx.AsyncClient, index: int) -> dict:
         "request_id": response.headers.get("x-request-id"),
     }
 
-
 async def main():
     semaphore = asyncio.Semaphore(CONCURRENCY)
     async with httpx.AsyncClient(timeout=300) as client:
@@ -1111,7 +1109,6 @@ async def main():
         print(json.dumps(
             {"error": repr(item)} if isinstance(item, Exception) else item
         ))
-
 
 asyncio.run(main())
 ```

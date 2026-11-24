@@ -78,14 +78,12 @@ from pathlib import Path, PurePosixPath
 
 EXCLUDED = {"manifest.json", "manifest.sig.json"}
 
-
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for block in iter(lambda: stream.read(8 * 1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
-
 
 def build_manifest(root: Path, metadata: dict) -> bytes:
     records = []
@@ -247,8 +245,8 @@ Protocol:
 
 1. allocate app-private staging only after checking signed size and free storage;
 2. request a new file and require `200` plus expected total length;
-3. to resume at byte \(n\), send `Range: bytes=n-` and `If-Range`;
-4. append only when a `206` response begins at \(n\) and names the signed total size;
+3. to resume at byte $n$, send `Range: bytes=n-` and `If-Range`;
+4. append only when a `206` response begins at $n$ and names the signed total size;
 5. if the server returns `200`, truncate and restart—never append;
 6. accept `416` only when local length already equals signed size, then hash;
 7. refresh expired authorization only for the same signed artifact identity;
@@ -268,9 +266,11 @@ Failure diagnosis:
 
 ## 9. Budget storage and activate atomically
 
-\[
+$$
+
 S_{peak}=S_{active}+S_{previous}+S_{partial}+S_{staged}+S_{unpacked}+S_{temporary}+S_{margin}
-\]
+
+$$
 
 Use measured bytes. Keep immutable version directories and a small activation record. Journal updates so process death
 is recoverable. Rename within one filesystem; cross-volume rename is not guaranteed atomic.

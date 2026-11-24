@@ -67,10 +67,12 @@ authorization, resistance, and movement/reporting rules. Zookeeping is even more
 state, social grouping, facility, climate, enclosure, behavioral baseline, and veterinary context can all matter.
 
 A large generic animal corpus can therefore increase linguistic fluency while reducing the visibility of rare, scoped
-evidence. Corpus size \(N\) should be reported together with:
+evidence. Corpus size $N$ should be reported together with:
 
-\[ N_{\text{roots}},\quad N_{\text{taxa}},\quad N_{\text{regions}},\quad N_{\text{seasons}},\quad
-N_{\text{reviewed-high-risk}}, \]
+$$
+N_{\text{roots}},\quad N_{\text{taxa}},\quad N_{\text{regions}},\quad N_{\text{seasons}},\quad
+N_{\text{reviewed-high-risk}},
+$$
 
 where each quantity counts independent source or case roots, not paraphrases. Ten thousand synthetic variants of one
 manual remain one evidence root.
@@ -184,21 +186,23 @@ support a consequential claim.
 
 Every record should expose a context vector rather than burying applicability inside prose:
 
-\[ c=(\tau, l, a, s, r, e, t, j, v), \]
+$$
+c=(\tau, l, a, s, r, e, t, j, v),
+$$
 
 where:
 
-- \(\tau\): taxon and population;
-- \(l\): life stage/individual state;
-- \(a\): activity or management objective;
-- \(s\): season, hemisphere, phenological state, and date;
-- \(r\): region and climate;
-- \(e\): environment, enclosure, forage, or operation context;
-- \(t\): observation/evidence state;
-- \(j\): jurisdiction and authority; and
-- \(v\): source or protocol version.
+- $\tau$: taxon and population;
+- $l$: life stage/individual state;
+- $a$: activity or management objective;
+- $s$: season, hemisphere, phenological state, and date;
+- $r$: region and climate;
+- $e$: environment, enclosure, forage, or operation context;
+- $t$: observation/evidence state;
+- $j$: jurisdiction and authority; and
+- $v$: source or protocol version.
 
-A model response is in scope only if enough of \(c\) is known for the requested claim. Missing decisive fields should
+A model response is in scope only if enough of $c$ is known for the requested claim. Missing decisive fields should
 trigger clarification, qualified general explanation, or escalation—not completion from model memory.
 
 ### 40.4.2 Season is not a month
@@ -331,22 +335,26 @@ domain × taxon × life stage × task × region × season × evidence level
 × risk × language × source family × review status
 ```
 
-For cell \(k\), let \(n_k\) be accepted independent roots and \(m_k\) the minimum planned roots. A descriptive coverage
+For cell $k$, let $n_k$ be accepted independent roots and $m_k$ the minimum planned roots. A descriptive coverage
 statistic is:
 
-\[ C=\frac{\sum_k w_k\mathbf 1[n_k\ge m_k]}{\sum_k w_k}, \]
+$$
+C=\frac{\sum_k w_k\mathbf 1[n_k\ge m_k]}{\sum_k w_k},
+$$
 
-where \(w_k\) is a predeclared importance weight. This is not a quality score. A cell with ten wrong roots is not
+where $w_k$ is a predeclared importance weight. This is not a quality score. A cell with ten wrong roots is not
 covered, and common low-risk cells cannot compensate for a missing reportable-disease or welfare-escalation cell.
 
 ### 40.5.4 Sampling without erasing the small domain
 
-If one shared training run has \(n_k\) records in domain \(k\), temperature sampling may use:
+If one shared training run has $n_k$ records in domain $k$, temperature sampling may use:
 
-\[ q_k=\frac{n_k^\alpha}{\sum_j n_j^\alpha},\qquad 0\le\alpha\le1. \]
+$$
+q_k=\frac{n_k^\alpha}{\sum_j n_j^\alpha},\qquad 0\le\alpha\le1.
+$$
 
-With 90,000 generic animal records and 1,000 reviewed beekeeping records, proportional sampling gives about \(1.1\%\)
-beekeeping exposure; square-root sampling gives about \(9.5\%\) (`ILLUSTRATIVE`). Neither setting is a recommendation.
+With 90,000 generic animal records and 1,000 reviewed beekeeping records, proportional sampling gives about $1.1\%$
+beekeeping exposure; square-root sampling gives about $9.5\%$ (`ILLUSTRATIVE`). Neither setting is a recommendation.
 Audit realized tokens, unique roots, and repetitions. Upsampling cannot create taxonomic or evidentiary diversity and
 can induce memorization.
 

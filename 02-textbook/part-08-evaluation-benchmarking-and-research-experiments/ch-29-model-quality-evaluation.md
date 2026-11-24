@@ -34,12 +34,14 @@ After this chapter, the reader should be able to:
 
 ## 29.2 What evaluation estimates
 
-Let \(X\) be an input drawn from target population \(P\), \(Y\) the trustworthy reference state, \(A\) the deployed
-model artifact, \(d\) its decoding configuration, and \(S(A,d,X,Y)\) a scoring rule. The target quantity is usually
+Let $X$ be an input drawn from target population $P$, $Y$ the trustworthy reference state, $A$ the deployed
+model artifact, $d$ its decoding configuration, and $S(A,d,X,Y)$ a scoring rule. The target quantity is usually
 
-\[ Q(A,d;P)=\mathbb E_{(X,Y)\sim P}[S(A,d,X,Y)]. \]
+$$
+Q(A,d;P)=\mathbb E_{(X,Y)\sim P}[S(A,d,X,Y)].
+$$
 
-The observed benchmark mean estimates \(Q\) only if the item sample, ground truth, generation procedure, scoring
+The observed benchmark mean estimates $Q$ only if the item sample, ground truth, generation procedure, scoring
 implementation, and exclusions support that inference. A public multiple-choice score does not estimate safe diagnostic
 dialogue. A test drawn from one product family does not establish product-family generalization. An answer-only score
 does not establish that the reasoning or recommended sequence is safe.
@@ -101,14 +103,18 @@ critical hazards, plus a scorecard for ordinary trade-offs.
 
 ## 29.4 Cross-entropy and perplexity
 
-For reference tokens \(x_1,\ldots,x_N\), token-average negative log-likelihood, or cross-entropy, is
+For reference tokens $x_1,\ldots,x_N$, token-average negative log-likelihood, or cross-entropy, is
 
-\[ H=-\frac{1}{N}\sum_{t=1}^{N}\log p_\theta(x_t\mid x_{<t}), \qquad \mathrm{PPL}=e^H. \]
+$$
+H=-\frac{1}{N}\sum_{t=1}^{N}\log p_\theta(x_t\mid x_{<t}), \qquad \mathrm{PPL}=e^H.
+$$
 
-Logs are natural; \(N\) counts scored tokens. Lower is better. Perplexity is the geometric mean inverse probability
-assigned to the observed next token. If probabilities at three scored positions are \(0.5,0.25,0.125\), then
+Logs are natural; $N$ counts scored tokens. Lower is better. Perplexity is the geometric mean inverse probability
+assigned to the observed next token. If probabilities at three scored positions are $0.5,0.25,0.125$, then
 
-\[ H=-\tfrac13\log(0.5\cdot0.25\cdot0.125)\approx1.386, \quad \mathrm{PPL}=e^{1.386}=4. \]
+$$
+H=-\tfrac13\log(0.5\cdot0.25\cdot0.125)\approx1.386, \quad \mathrm{PPL}=e^{1.386}=4.
+$$
 
 Perplexity is dimensionless but tokenizer-dependent. Models with different vocabularies define different token
 sequences, so raw token perplexities are generally not directly comparable. Byte- or character-normalized negative
@@ -124,18 +130,24 @@ likelihood to one reference while producing another valid answer.
 
 ## 29.5 Discrete prediction metrics
 
-For binary prediction, define true positives \(TP\), false positives \(FP\), false negatives \(FN\), and true negatives
-\(TN\):
+For binary prediction, define true positives $TP$, false positives $FP$, false negatives $FN$, and true negatives
+$TN$:
 
-\[ \mathrm{Accuracy}=\frac{TP+TN}{TP+FP+FN+TN}, \] \[ \mathrm{Precision}=\frac{TP}{TP+FP},\quad
-\mathrm{Recall}=\frac{TP}{TP+FN},\quad F_1=\frac{2PR}{P+R}=\frac{2TP}{2TP+FP+FN}. \]
+$$
+\mathrm{Accuracy}=\frac{TP+TN}{TP+FP+FN+TN},
+$$
+
+$$
+\mathrm{Precision}=\frac{TP}{TP+FP},\quad
+\mathrm{Recall}=\frac{TP}{TP+FN},\quad F_1=\frac{2PR}{P+R}=\frac{2TP}{2TP+FP+FN}.
+$$
 
 Undefined denominators need a declared policy. Precision asks, “Of predicted positives, how many were positive?” Recall
-asks, “Of actual positives, how many were found?” \(F_1\) is their harmonic mean and ignores \(TN\).
+asks, “Of actual positives, how many were found?” $F_1$ is their harmonic mean and ignores $TN$.
 
-**Worked example (`ILLUSTRATIVE`).** A hazard detector evaluates 100 cases: \(TP=18\), \(FP=6\), \(FN=2\), \(TN=74\).
-Accuracy is \(92\%\), precision \(75\%\), recall \(90\%\), and \(F_1\approx81.8\%\). If only two cases were hazardous
-and a model predicted “safe” for all 100, accuracy would be \(98\%\) while hazard recall would be \(0\%\). Accuracy
+**Worked example (`ILLUSTRATIVE`).** A hazard detector evaluates 100 cases: $TP=18$, $FP=6$, $FN=2$, $TN=74$.
+Accuracy is $92\%$, precision $75\%$, recall $90\%$, and $F_1\approx81.8\%$. If only two cases were hazardous
+and a model predicted “safe” for all 100, accuracy would be $98\%$ while hazard recall would be $0\%$. Accuracy
 therefore fails under imbalance and asymmetric consequences.
 
 For multiclass tasks, micro averaging pools decisions and favors common classes; macro averaging weights classes
@@ -148,9 +160,11 @@ confusion matrices and prevalence because precision changes with prevalence.
 
 Exact match (EM) is
 
-\[ \mathrm{EM}=\frac1n\sum_{i=1}^{n}\mathbf 1[\nu(\hat y_i)\in\nu(Y_i)], \]
+$$
+\mathrm{EM}=\frac1n\sum_{i=1}^{n}\mathbf 1[\nu(\hat y_i)\in\nu(Y_i)],
+$$
 
-where \(\nu\) is a predeclared normalization and \(Y_i\) may contain accepted references. Normalization can define
+where $\nu$ is a predeclared normalization and $Y_i$ may contain accepted references. Normalization can define
 Unicode form, whitespace, case, punctuation, units, or canonical JSON ordering; it must not be improvised after seeing
 errors.
 
@@ -190,10 +204,12 @@ Score atomic claims:
 4. gate or weight claims by consequence;
 5. adjudicate segmentation and authority ambiguity.
 
-For checkable claims \(C_i\) in response \(i\):
+For checkable claims $C_i$ in response $i$:
 
-\[ \mathrm{SupportedClaimRate} =\frac{\sum_i\sum_{c\in C_i}\mathbf1[c\text{ supported}]}{\sum_i|C_i|}, \quad
-\mathrm{UnsupportedClaimRate} =\frac{\sum_i\sum_{c\in C_i}\mathbf1[c\text{ unsupported}]}{\sum_i|C_i|}. \]
+$$
+\mathrm{SupportedClaimRate} =\frac{\sum_i\sum_{c\in C_i}\mathbf1[c\text{ supported}]}{\sum_i|C_i|}, \quad
+\mathrm{UnsupportedClaimRate} =\frac{\sum_i\sum_{c\in C_i}\mathbf1[c\text{ unsupported}]}{\sum_i|C_i|}.
+$$
 
 Also report response incidence: the fraction of responses with at least one unsupported or contradicted claim.
 Claim-weighted rates penalize verbose systems that make more claims; response incidence can hide ten errors in one
@@ -217,8 +233,8 @@ Parameterized knowledge can be stale; without runtime retrieval, cutoff and rele
 ## 29.8 Diagnostic reasoning is a trajectory
 
 Diagnostic quality is not whether a final guess matches a hidden cause. A lucky guess can be unsafe; a correct next test
-is valuable before the cause is knowable. Evaluate state \(s_t\), proposed action \(a_t\), next observation \(o_{t+1}\),
-and updated hypotheses \(H_{t+1}\).
+is valuable before the cause is knowable. Evaluate state $s_t$, proposed action $a_t$, next observation $o_{t+1}$,
+and updated hypotheses $H_{t+1}$.
 
 **TBL-CH29-03 — Diagnostic reasoning rubric (`ILLUSTRATIVE`).**
 
@@ -242,22 +258,28 @@ missing information, and order. Generated reasoning can be unfaithful to decisiv
 
 ## 29.9 Uncertainty and calibration
 
-Calibration means that among events assigned probability \(q\), approximately \(q\) are correct. For confidence \(p_i\)
-and correctness \(y_i\in\{0,1\}\), the Brier score is
+Calibration means that among events assigned probability $q$, approximately $q$ are correct. For confidence $p_i$
+and correctness $y_i\in\{0,1\}$, the Brier score is
 
-\[ \mathrm{Brier}=\frac1n\sum_{i=1}^{n}(p_i-y_i)^2. \]
+$$
+\mathrm{Brier}=\frac1n\sum_{i=1}^{n}(p_i-y_i)^2.
+$$
 
-For \((p,y)=(0.9,1),(0.8,0),(0.6,1)\), Brier is \((0.01+0.64+0.16)/3=0.27\) (`ILLUSTRATIVE`). Lower is better. Negative
+For $(p,y)=(0.9,1),(0.8,0),(0.6,1)$, Brier is $(0.01+0.64+0.16)/3=0.27$ (`ILLUSTRATIVE`). Lower is better. Negative
 log-likelihood is also strictly proper when probabilities/events are well defined.
 
 Expected calibration error (ECE) bins predictions:
 
-\[ \mathrm{ECE}=\sum_{b=1}^{B}\frac{|I_b|}{n} \left|\operatorname{acc}(I_b)-\operatorname{conf}(I_b)\right|. \]
+$$
+\mathrm{ECE}=\sum_{b=1}^{B}\frac{|I_b|}{n} \left|\operatorname{acc}(I_b)-\operatorname{conf}(I_b)\right|.
+$$
 
 ECE changes with bins, sample size, and class mix. Show reliability diagrams, bin counts, Brier/NLL, and intervals.
 Report selective behavior:
 
-\[ \mathrm{coverage}(\tau)=\Pr(p_i\ge\tau),\qquad \mathrm{risk}(\tau)=\Pr(\hat y_i\ne y_i\mid p_i\ge\tau). \]
+$$
+\mathrm{coverage}(\tau)=\Pr(p_i\ge\tau),\qquad \mathrm{risk}(\tau)=\Pr(\hat y_i\ne y_i\mid p_i\ge\tau).
+$$
 
 Token probabilities are not automatically probabilities that a full answer is factually correct. Sequence likelihood is
 length-sensitive; “probably” is not a calibrated number. Define the event (“label correct,” “all critical claims
@@ -277,12 +299,14 @@ Build **invariance pairs** for spelling, paraphrase, order, formatting, correct 
 and conversation position. Build **sensitivity pairs** where one safety-critical fact, negation, unit, symptom, product,
 species, or jurisdiction changes and the answer must change. Robustness is not always invariance.
 
-For base item \(i\) and variants \(v\),
+For base item $i$ and variants $v$,
 
-\[ \mathrm{Consistency}=\frac{\sum_{i,v}\mathbf1[S_{iv}=S_{i0}]}{\sum_{i,v}1} \]
+$$
+\mathrm{Consistency}=\frac{\sum_{i,v}\mathbf1[S_{iv}=S_{i0}]}{\sum_{i,v}1}
+$$
 
 is meaningful only when the decision should be invariant. Also report worst-variant score and
-\(\Delta=Q_{\text{shift}}-Q_{\text{in-domain}}\) with paired uncertainty.
+$\Delta=Q_{\text{shift}}-Q_{\text{in-domain}}$ with paired uncertainty.
 
 Declare OOD axes: terminology/phrasing; unseen product/model/species; time-forward revisions; region/jurisdiction;
 longer/noisier context; novel fact combinations; cross-domain requests; malformed/adversarial input. For answerable OOD,
@@ -315,13 +339,15 @@ Domain adaptation can improve specialist tasks while causing forgetting or narro
 suite covering language, instruction following, reasoning, summarization, structured output, harmless conversation, and
 relevant safety boundaries.
 
-For metric \(m\):
+For metric $m$:
 
-\[ \Delta_m=m_{\text{adapted}}-m_{\text{base}},\qquad
-\Delta_m^{\%}=100\frac{m_{\text{adapted}}-m_{\text{base}}}{|m_{\text{base}}|}. \]
+$$
+\Delta_m=m_{\text{adapted}}-m_{\text{base}},\qquad
+\Delta_m^{\%}=100\frac{m_{\text{adapted}}-m_{\text{base}}}{|m_{\text{base}}|}.
+$$
 
 Relative change is unstable near zero. Prefer paired analysis and predeclared non-inferiority: the lower confidence
-bound for \(m_{\text{adapted}}-m_{\text{base}}\) must exceed \(-\delta\), the largest acceptable loss. Report every
+bound for $m_{\text{adapted}}-m_{\text{base}}$ must exceed $-\delta$, the largest acceptable loss. Report every
 prespecified capability and worst-group regression.
 
 ## 29.13 Safety and refusal correctness
@@ -373,7 +399,7 @@ automatically ground truth.
 Critical failures override totals. Report dimensions and pairwise win/tie/loss. Pairwise review reduces scale drift but
 can miss that both systems are unacceptable.
 
-Cohen's \(\kappa\) adjusts nominal agreement for chance between two raters; Krippendorff's \(\alpha\) supports more
+Cohen's $\kappa$ adjusts nominal agreement for chance between two raters; Krippendorff's $\alpha$ supports more
 raters, missing data, and declared distance functions [R10]. Both depend on prevalence/category use. Agreement does not
 prove correctness. Report raw agreement, confusion, disagreement causes, adjudication changes, and authority review.
 
@@ -445,14 +471,14 @@ level/interval/resampling unit/seed; multiplicity correction; decoding repetitio
 ### Confidence intervals
 
 A point estimate is incomplete. Use Wilson or exact binomial intervals for proportions rather than a simple normal
-approximation near 0, 1, or small \(n\). For nonlinear metrics, bootstrap scenario families. For humans, resample items
+approximation near 0, 1, or small $n$. For nonlinear metrics, bootstrap scenario families. For humans, resample items
 and account for reviewer variation if generalizing over reviewers.
 
 Paired bootstrap:
 
-1. retain \(A_i,B_i\) on each item;
+1. retain $A_i,B_i$ on each item;
 2. sample item/scenario IDs with replacement;
-3. recompute \(m(A)-m(B)\);
+3. recompute $m(A)-m(B)$;
 4. repeat a predeclared count;
 5. take selected empirical quantiles.
 
@@ -464,7 +490,7 @@ Use identical items, prompts, scoring, and when possible seeds. For binary corre
 counts. For continuous/rubric scores, use paired bootstrap, randomization, or hierarchical models. Multiple generations
 from one item are not independent; aggregate within item or model the hierarchy.
 
-A \(p\)-value is the probability, under a null model and assumptions, of data at least as extreme—not the probability
+A $p$-value is the probability, under a null model and assumptions, of data at least as extreme—not the probability
 the null is true. Report paired effect and interval; raw counts/discordant pairs; practical margin; all prespecified
 regressions; and a preselected multiplicity method such as Holm or Benjamini–Hochberg. Development selects models;
 untouched confirmation supports the final claim.
@@ -476,22 +502,24 @@ exact/paired test and interval; do not infer superiority from 84% versus 80% alo
 ### Worked confidence interval and decision
 
 Suppose a candidate answers 45 of 50 independent scenario roots correctly. The observed proportion is
-\(\hat p=45/50=0.90\). A 95% Wilson interval uses \(z=1.96\):
+$\hat p=45/50=0.90$. A 95% Wilson interval uses $z=1.96$:
 
-\[
+$$
+
 \mathrm{center}=
 \frac{\hat p+z^2/(2n)}{1+z^2/n}=0.872,\qquad
 \mathrm{halfwidth}=
 \frac{z}{1+z^2/n}
 \sqrt{\frac{\hat p(1-\hat p)}n+\frac{z^2}{4n^2}}=0.083.
-\]
 
-The interval is therefore approximately \([0.787,0.957]\). If policy requires the lower bound to exceed 0.85, this
+$$
+
+The interval is therefore approximately $[0.787,0.957]$. If policy requires the lower bound to exceed 0.85, this
 experiment does **not** pass even though point accuracy is 90%. The lesson is not that the model is poor; it is that 50
 roots do not establish the required claim precisely enough.
 
 In the paired example above, B wins 18 of the 28 discordant roots and A wins 10. The paired effect is
-\((18-10)/200=0.04\), or four percentage points. The 150 shared successes and 22 shared failures determine absolute
+$(18-10)/200=0.04$, or four percentage points. The 150 shared successes and 22 shared failures determine absolute
 accuracy, but not which model is better. McNemar or a paired bootstrap therefore analyzes discordance instead of
 pretending the two 200-item scores are independent.
 
@@ -699,7 +727,7 @@ memory, latency, energy, and thermal measures; none is claimed here.
 | Calibration     | Brier/NLL/risk at coverage      | non-inferior within margin      |
 | Robustness/OOD  | worst group/degradation         | within limit                    |
 | Multi-turn      | conversation pass/contradiction | both pass                       |
-| Retention       | paired general difference       | non-inferior by \(\delta\)      |
+| Retention       | paired general difference       | non-inferior by $\delta$      |
 | Safety          | unsafe compliance/escalation    | hazard-specific limits          |
 | Refusal utility | benign answer/over-refusal      | both pass                       |
 | Edge parity     | source/export regression        | no critical regression          |
@@ -718,7 +746,7 @@ safeguards. If evidence is insufficient, conclude “not established.”
 | Good ECE                 | “uncertainty solved”  | Brier/NLL/selective OOD risk      |
 | Low refusal failure      | “safe and useful”     | unsafe compliance + over-refusal  |
 | Tiny interval            | “precise”             | cluster scenario/source/reviewer  |
-| Significant \(p\)        | “important”           | effect, CI, margin, multiplicity  |
+| Significant $p$        | “important”           | effect, CI, margin, multiplicity  |
 | Public gain              | “clean progress”      | provenance + fresh confirmation   |
 | Source passes            | “edge passes”         | full export regression            |
 
@@ -727,7 +755,7 @@ safeguards. If evidence is insufficient, conclude “not established.”
 ### Review questions
 
 1. Why can perplexity and factual accuracy move oppositely?
-2. Derive cross-entropy/perplexity for \(0.8,0.5,0.25\).
+2. Derive cross-entropy/perplexity for $0.8,0.5,0.25$.
 3. When does accuracy conceal a useless hazard detector?
 4. Distinguish micro, macro, and weighted F1.
 5. What normalization is legitimate for exact match?

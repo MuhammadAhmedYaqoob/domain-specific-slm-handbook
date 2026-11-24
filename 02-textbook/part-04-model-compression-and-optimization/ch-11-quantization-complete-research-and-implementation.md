@@ -22,9 +22,11 @@ this chapter. Every listing is `UNVERIFIED IMPLEMENTATION`; every proposed measu
 
 ## 11.2 The problem quantization solves
 
-A dense model with \(N\) parameters stored at \(b\) bits per parameter has an idealized weight payload
+A dense model with $N$ parameters stored at $b$ bits per parameter has an idealized weight payload
 
-\[ M_\text{weights}=\frac{Nb}{8}\ \text{bytes}. \]
+$$
+M_\text{weights}=\frac{Nb}{8}\ \text{bytes}.
+$$
 
 For an illustrative 1.5-billion-parameter model, payloads are 6.0 GB at FP32, 3.0 GB at FP16/BF16, 1.5 GB at INT8, and
 0.75 GB at a nominal 4 bits. These are decimal, idealized values—not file sizes or resident memory. Scales, zero points,
@@ -47,39 +49,45 @@ width does not predict speed by itself.
 
 ### 11.3.1 Uniform affine quantization
 
-Uniform quantization places reconstruction levels at equal intervals. For a real value \(x\), scale \(s>0\), integer
-zero point \(z\), and integer range \([q_{\min},q_{\max}]\),
+Uniform quantization places reconstruction levels at equal intervals. For a real value $x$, scale $s>0$, integer
+zero point $z$, and integer range $[q_{\min},q_{\max}]$,
 
-\[ q=\operatorname{clamp}\left(\operatorname{round}\left(\frac{x}{s}\right)+z,\ q_{\min},q_{\max}\right), \qquad
-\hat{x}=s(q-z). \]
+$$
+q=\operatorname{clamp}\left(\operatorname{round}\left(\frac{x}{s}\right)+z,\ q_{\min},q_{\max}\right), \qquad
+\hat{x}=s(q-z).
+$$
 
-Here \(q\) is the stored code and \(\hat{x}\) is the reconstructed approximation. Quantization error is \(e=x-\hat{x}\).
-For a non-clipped value rounded to its nearest level, \(|e|\le s/2\). Assuming error is uniformly distributed within a
-bin—an approximation that often fails for correlated weights—the mean squared error (MSE) is \(s^2/12\).
+Here $q$ is the stored code and $\hat{x}$ is the reconstructed approximation. Quantization error is $e=x-\hat{x}$.
+For a non-clipped value rounded to its nearest level, $|e|\le s/2$. Assuming error is uniformly distributed within a
+bin—an approximation that often fails for correlated weights—the mean squared error (MSE) is $s^2/12$.
 
-For asymmetric unsigned \(b\)-bit min–max quantization:
+For asymmetric unsigned $b$-bit min–max quantization:
 
-\[ s=\frac{x_{\max}-x_{\min}}{2^b-1},\qquad
-z=\operatorname{clamp}\left(\operatorname{round}\left(q_{\min}-\frac{x_{\min}}{s}\right),q_{\min},q_{\max}\right). \]
+$$
+s=\frac{x_{\max}-x_{\min}}{2^b-1},\qquad
+z=\operatorname{clamp}\left(\operatorname{round}\left(q_{\min}-\frac{x_{\min}}{s}\right),q_{\min},q_{\max}\right).
+$$
 
-**Numerical example.** Quantize \([-1.0,-0.2,0.3,1.4]\) to unsigned 3-bit codes \(0\ldots7\). Then
-\(s=(1.4-(-1.0))/7=0.342857\), and \(z=\operatorname{round}(2.9167)=3\). The codes are approximately \([0,2,4,7]\),
-reconstructing \([-1.0286,-0.3429,0.3429,1.3714]\). The nonzero zero point uses the code space efficiently for the
-offset range, but \(-0.2\) incurs a visible error.
+**Numerical example.** Quantize $[-1.0,-0.2,0.3,1.4]$ to unsigned 3-bit codes $0\ldots7$. Then
+$s=(1.4-(-1.0))/7=0.342857$, and $z=\operatorname{round}(2.9167)=3$. The codes are approximately $[0,2,4,7]$,
+reconstructing $[-1.0286,-0.3429,0.3429,1.3714]$. The nonzero zero point uses the code space efficiently for the
+offset range, but $-0.2$ incurs a visible error.
 
 ### 11.3.2 Symmetric versus asymmetric
 
-Symmetric quantization uses a range centered on zero, normally \(z=0\), such as signed INT8 \([-127,127]\):
+Symmetric quantization uses a range centered on zero, normally $z=0$, such as signed INT8 $[-127,127]$:
 
-\[ s=\frac{\max(|x_{\min}|,|x_{\max}|)}{127}. \]
+$$
+s=\frac{\max(|x_{\min}|,|x_{\max}|)}{127}.
+$$
 
 It simplifies kernels and exactly represents zero. It can waste codes when the distribution is strongly shifted.
 Asymmetric quantization fits both endpoints and is often useful for nonnegative or skewed activations, but requires
 zero-point correction and metadata. “Symmetric” does not by itself imply signed storage, nor does “asymmetric” imply
 higher accuracy on every tensor.
 
-**Numerical example.** For \([-1,3]\), symmetric signed 3-bit quantization using \([-3,3]\) has \(s=1\), while an
-asymmetric 3-bit range has \(s=4/7\). Asymmetric quantization offers finer spacing over this skewed interval. If the
+**Numerical example.** For $[-1,3]$, symmetric signed 3-bit quantization using $[-3,3]$ has $s=1$, while an
+asymmetric 3-bit range has $s=4/7$. Asymmetric quantization offers finer spacing over this skewed interval. If the
 target kernel only accelerates symmetric operands, however, the numerically attractive representation may lose system
 performance.
 
@@ -88,7 +96,9 @@ performance.
 Non-uniform quantization allocates levels unevenly. A codebook maps each low-bit index to a learned or fixed
 reconstruction value:
 
-\[ q=\arg\min_{k\in\{0,\ldots,K-1\}} |x-c_k|,\qquad \hat{x}=c_q. \]
+$$
+q=\arg\min_{k\in\{0,\ldots,K-1\}} |x-c_k|,\qquad \hat{x}=c_q.
+$$
 
 NormalFloat 4 (NF4) uses levels designed for approximately normal pretrained-weight distributions. Additive quantization
 reconstructs a vector from a sum of codewords from multiple codebooks. Low-bit floating formats allocate bits among
@@ -97,7 +107,7 @@ distribution but need specialized packing, lookup, scaling, and kernels.
 
 ### 11.3.4 Clipping and range selection
 
-Min–max scaling can devote most levels to rare outliers. Clipping to \([a,b]\) introduces saturation error outside the
+Min–max scaling can devote most levels to rare outliers. Clipping to $[a,b]$ introduces saturation error outside the
 interval but reduces rounding error inside it. Calibration searches or estimates a range using MSE, percentile,
 entropy/Kullback–Leibler divergence, or task-aware reconstruction objectives. The best local tensor MSE is not
 guaranteed to maximize end-task quality.
@@ -138,8 +148,8 @@ depend on the tensor.
 | Per-row/vector  | matrix row or vector                           | Balances adaptation and kernel structure                                        | LLM.int8 vector-wise operations             |
 <!-- markdownlint-restore -->
 
-If group size is \(G\), a 4-bit group with one FP16 scale has effective storage near \(4+16/G\) bits per weight before
-alignment and other metadata. At \(G=32\), that is at least 4.5 bits; at \(G=128\), 4.125 bits. Adding a zero point or
+If group size is $G$, a 4-bit group with one FP16 scale has effective storage near $4+16/G$ bits per weight before
+alignment and other metadata. At $G=32$, that is at least 4.5 bits; at $G=128$, 4.125 bits. Adding a zero point or
 double-quantized scale changes the result. Always report **effective bits per weight**, not only nominal data bits.
 
 Granularity is semantic as well as numeric. A scale axis incompatible with the packed kernel may require repacking,
@@ -168,7 +178,9 @@ memory and hours of wall time at larger scales.
 QAT exposes the model to quantization during training. A fake-quantizer commonly computes quantized/dequantized values
 in the forward pass while the straight-through estimator approximates gradients through non-differentiable rounding:
 
-\[ \frac{\partial\,\operatorname{round}(x)}{\partial x}\approx 1 \quad\text{inside the unclipped range.} \]
+$$
+\frac{\partial\,\operatorname{round}(x)}{\partial x}\approx 1 \quad\text{inside the unclipped range.}
+$$
 
 QAT can recover quality at INT8 and difficult low-bit settings and can learn clipping/scales. It requires training data,
 optimizer state, careful schedules, and an exact target format. Training with a simulated format that the deployment
@@ -198,13 +210,15 @@ Dynamic per-token INT8/FP8 activation quantization is a current server strategy.
 
 ### KV-cache quantization
 
-For \(L\) layers, batch \(B\), sequence length \(T\), \(H_{kv}\) KV heads, head dimension \(D\), and \(b\) bits per
+For $L$ layers, batch $B$, sequence length $T$, $H_{kv}$ KV heads, head dimension $D$, and $b$ bits per
 cache scalar, the ideal cache payload is
 
-\[ M_{KV}=2LBTH_{kv}D\frac{b}{8}. \]
+$$
+M_{KV}=2LBTH_{kv}D\frac{b}{8}.
+$$
 
-The factor 2 is for keys and values. With \(L=24\), \(B=1\), \(T=4096\), \(H_{kv}=8\), \(D=128\), an FP16 cache is
-\(2\times24\times4096\times8\times128\times2=402{,}653{,}184\) bytes (384 MiB). INT8 ideally halves it; 4-bit ideally
+The factor 2 is for keys and values. With $L=24$, $B=1$, $T=4096$, $H_{kv}=8$, $D=128$, an FP16 cache is
+$2\times24\times4096\times8\times128\times2=402{,}653{,}184$ bytes (384 MiB). INT8 ideally halves it; 4-bit ideally
 quarters it. Metadata, alignment, cache pages, and temporary dequantization add overhead.
 
 Keys and values need not tolerate the same precision. Cache quantization can change long-context quality and add decode
@@ -220,9 +234,11 @@ boundaries. The artifact manifest must list every exclusion.
 
 ## 11.7 Error propagation, outliers, and model quality
 
-For a linear layer \(y=Wx\), quantized \(\hat W=W+\Delta W\), and \(\hat x=x+\Delta x\),
+For a linear layer $y=Wx$, quantized $\hat W=W+\Delta W$, and $\hat x=x+\Delta x$,
 
-\[ \hat y-y=\Delta W x+W\Delta x+\Delta W\Delta x. \]
+$$
+\hat y-y=\Delta W x+W\Delta x+\Delta W\Delta x.
+$$
 
 The first term is weight error amplified by the input, the second activation error amplified by the original weight, and
 the third their interaction. Residual additions can preserve or compound errors; attention softmax can magnify changes
@@ -328,7 +344,7 @@ not a guaranteed result. `Measure` means no portable result exists.
 | bitsandbytes NF4/FP4 | Strong QLoRA storage use; quality depends on model and compute dtype                | 4-bit frozen weights, adapters and dequant buffers                | No task calibration; load/convert time                             | Inference can be limited by dequant kernels; not evidence of mobile speed          | GPU/host backend-specific library kernels                                              | Established PEFT, not mobile serving         |
 | GPTQ                 | Often strong 4-bit reconstruction; 3/2-bit more sensitive; group metadata           | Low packed-weight memory plus workspace/KV                        | Calibration required; second-order pass can be costly              | Fast only with compatible Marlin/ExLlama/Triton-style kernels/layouts              | Primarily CUDA; weak general-phone portability                                         | Established cloud, fragmented formats        |
 | AWQ                  | Protects activation-salient weights; 4-bit target common                            | Similar groupwise INT4 overhead                                   | Calibration and scale search; usually lighter than full retraining | Strong with AWQ-aware GEMM/TinyChat/vLLM-style kernels; measure                    | CUDA and selected edge GPU paths; not universal CPU/NPU                                | Established practical                        |
-| SmoothQuant          | Targets W8A8 while retaining model behavior through exact rescaling before rounding | Reduces weights and activations where graph remains INT8          | Calibration for \(\alpha\)/ranges; moderate transform cost         | Can improve batched server throughput with INT8 Tensor Core/CUTLASS/TensorRT paths | Server GPU/CPU; mobile NPU only after supported export                                 | Mature server INT8                           |
+| SmoothQuant          | Targets W8A8 while retaining model behavior through exact rescaling before rounding | Reduces weights and activations where graph remains INT8          | Calibration for $\alpha$/ranges; moderate transform cost         | Can improve batched server throughput with INT8 Tensor Core/CUTLASS/TensorRT paths | Server GPU/CPU; mobile NPU only after supported export                                 | Mature server INT8                           |
 | GGUF Q\*/K/IQ        | Quality varies materially by exact tensor mix, block type, and importance matrix    | mmap may lower load copies; KV/runtime separate                   | Conversion usually practical; importance matrix adds calibration   | Mature CPU/Metal/Vulkan kernels; speed is type/device-specific                     | Strong ARM CPU/mobile baseline; GPU offload varies                                     | High practical maturity in llama.cpp         |
 | HQQ                  | Low-bit quality through optimized scales/zeros; no universal retention claim        | Packed weights plus dequant workspace                             | No calibration; fast-quantization objective, measure wall time     | ATen/Triton/custom kernel dependent                                                | GPU/CPU integrations; limited phone-native path                                        | Advanced practical                           |
 | AQLM                 | Designed for high quality at extreme effective bit rates                            | Very low weights; codebooks and decode workspace                  | Calibration and expensive codebook optimization                    | Specialized CUDA/CPU kernels; throughput not portable                              | Narrower hardware and no mature general mobile path                                    | Advanced/experimental                        |
@@ -513,7 +529,7 @@ Interpretation proceeds in this order:
 5. The table still cannot select a production artifact without artifact size, TTFT, prefill, energy, thermal,
    long-context, failure, and operator-placement evidence.
 
-This is how every method table in the chapter should be read: the mechanism predicts which resource *might* improve;
+This is how every method table in the chapter should be read: the mechanism predicts which resource _might_ improve;
 the measured model–format–runtime–hardware tuple determines whether it did.
 
 ### Result schema
@@ -782,7 +798,7 @@ quantization change.
 
 ## 11.18 Review questions and engineering exercises
 
-1. Derive scale and zero point for asymmetric unsigned INT8 over \([-0.7,2.1]\), quantize \(-0.7,0,0.9,2.1\), and
+1. Derive scale and zero point for asymmetric unsigned INT8 over $[-0.7,2.1]$, quantize $-0.7,0,0.9,2.1$, and
    calculate reconstruction error.
 2. Explain why per-channel INT8 can outperform per-tensor INT8 numerically yet fail to improve latency.
 3. For a 2B-parameter model with group size 64, 4-bit codes, FP16 scales, and FP16 zero points, compute the minimum

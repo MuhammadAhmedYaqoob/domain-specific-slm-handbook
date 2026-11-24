@@ -227,19 +227,23 @@ Compilation behavior, dynamic shapes, adapters, quantization, and serving featur
 
 Do not select a GPU from parameter count alone. Training memory includes:
 
-\[ M_{\text{train}} \approx M_w + M_g + M_o + M_a + M_t + M_f \]
+$$
+M_{\text{train}} \approx M_w + M_g + M_o + M_a + M_t + M_f
+$$
 
-where \(M_w\) is weights, \(M_g\) gradients, \(M_o\) optimizer state, \(M_a\) activations, \(M_t\) temporary workspaces,
-and \(M_f\) framework fragmentation/overhead. Inference replaces most gradient and optimizer state with runtime buffers
+where $M_w$ is weights, $M_g$ gradients, $M_o$ optimizer state, $M_a$ activations, $M_t$ temporary workspaces,
+and $M_f$ framework fragmentation/overhead. Inference replaces most gradient and optimizer state with runtime buffers
 and a key-value (KV) cache:
 
-\[ M_{\text{serve}} \approx M_w + M_{KV}(B,L) + M_t + M_f \]
+$$
+M_{\text{serve}} \approx M_w + M_{KV}(B,L) + M_t + M_f
+$$
 
-Here \(B\) is concurrent sequence count and \(L\) is active context length. These are planning decompositions, not exact
+Here $B$ is concurrent sequence count and $L$ is active context length. These are planning decompositions, not exact
 estimators.
 
 **`ILLUSTRATIVE` example:** a nominal 3-billion-parameter model stored at 2 bytes per weight has roughly
-\(3\times10^9\times2=6\times10^9\) bytes of weight payload before allocator, quantization metadata, activations,
+$3\times10^9\times2=6\times10^9$ bytes of weight payload before allocator, quantization metadata, activations,
 optimizer states, gradients, or KV cache. “The weight file fits” therefore does not establish that training or serving
 fits.
 
@@ -790,14 +794,18 @@ quickly.
 
 For one experiment, compute:
 
-\[ C_{\text{run}} = t_c r_c + \sum_i q_i r_i + C_{\text{storage}} + C_{\text{requests}} + C_{\text{network}} +
-C_{\text{observability}} + C_{\text{orchestration}} \]
+$$
+C_{\text{run}} = t_c r_c + \sum_i q_i r_i + C_{\text{storage}} + C_{\text{requests}} + C_{\text{network}} +
+C_{\text{observability}} + C_{\text{orchestration}}
+$$
 
-where \(t_c\) is measured compute duration, \(r_c\) is the dated exact compute unit rate, and each \(q_i r_i\)
+where $t_c$ is measured compute duration, $r_c$ is the dated exact compute unit rate, and each $q_i r_i$
 represents another metered resource. For interrupted work, include all billable productive intervals and repeated work.
 For persistent inference:
 
-\[ C_{\text{request}} = \frac{C_{\text{fixed period}} + C_{\text{variable period}}} {N_{\text{successful requests}}} \]
+$$
+C_{\text{request}} = \frac{C_{\text{fixed period}} + C_{\text{variable period}}} {N_{\text{successful requests}}}
+$$
 
 State the request/token distribution, latency objective, utilization, and period; otherwise the ratio is not comparable.
 
