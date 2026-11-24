@@ -1,0 +1,72 @@
+# Small AWS inference deployment: a worked decision lesson
+
+This profile teaches a target-specific comparison for a fictional low-concurrency service in one named Region and dated price snapshot. Every model name and number below is hypothetical and
+illustrative; no row is a benchmark result or real recommendation.
+
+## Frame the decision
+
+Freeze the exact device or service cohort, OS/runtime, workload, context, output length, intended use, risk tier,
+network and power mode, evidence date, and owners. The illustrative hard constraints are: p95 first token ≤ 1.8 s; successful-request rate ≥ 99%; quality ≥ 80; monthly allocated cost ≤ 900 fictional units; zero critical safety failures. Commercial
+rights, complete lineage, no runtime RAG, signed updates, and rollback readiness are also mandatory.
+
+## Compare complete configurations
+
+| Illustrative configuration | Quality | Monthly cost units | p95 first-token s | Sustained token/s | Peak GiB | Rights | Gate result |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | --- |
+| A: 2B Q4 CPU service | 82 | 420.00 | 1.55 | 12.0 | 4.00 | approved | pass |
+| B: 4B Q4 single GPU | 89 | 680.00 | 0.82 | 38.0 | 9.00 | approved | pass |
+| C: 3B INT8 managed endpoint | 87 | 810.00 | 0.74 | 42.0 | 7.00 | hosting terms unresolved | reject: license |
+
+Quality is a fictional 0–100 domain score. Resource and secondary columns use the units named in their headings; a real
+record must also preserve measurement conditions and dated price evidence.
+
+## Apply gates before preferences
+
+C: 3B INT8 managed endpoint receives the gate result “reject: license.” Its quality, speed, or cost advantages cannot compensate for that outcome.
+
+The rejected or incomplete option does not enter a Pareto front or weighted score. Missing required placement,
+licensing, safety, or reliability data is not estimated. If the missing field were optional, the analysis would be run
+once without it and again with a conservative adverse case.
+
+## Find the Pareto trade-off
+
+The first two configurations are non-dominated: one offers a different quality/resource trade-off from the other.
+Neither is called universally best. Use policy bounds quality 78–92, monthly cost 300–900 units, p95 latency 0.5–1.8 s. The first and second rows have normalized
+quality, resource, and latency utilities of 0.286, 0.800, 0.192 and 0.786, 0.367, 0.754, respectively.
+
+With weights quality 0.45, resource 0.35, and latency 0.20:
+
+\[
+U(A)=0.45(0.286)+0.35(0.800)+0.20(0.192)=0.447,
+\]
+
+\[
+U(B)=0.45(0.786)+0.35(0.367)+0.20(0.754)=0.633.
+\]
+
+B leads the quality/latency preference despite greater fictional cost; A remains the lowest-cost qualified role. C cannot be selected until hosting rights are resolved.
+
+## Evidence, licensing, and maintenance lesson
+
+Target execution with raw results and adequate uncertainty is required for release. External documentation can only
+prioritize experiments. Review the exact artifact's use, modification, redistribution or hosting, notices, patents,
+acceptable-use restrictions, and downstream terms. Separately estimate maintenance from supported releases, custom
+kernels, conversion steps, security response, device or instance coverage, observability, and rollback drills.
+
+For example, if A requires 2 engineer-days per quarterly update and B requires 5, annual maintenance is illustratively
+\(2\times4=8\) versus \(5\times4=20\) engineer-days. This may influence preference only after both options pass rights
+and ownership gates.
+
+## Interpretation and next decision
+
+B leads the quality/latency preference despite greater fictional cost; A remains the lowest-cost qualified role. C cannot be selected until hosting rights are resolved. A real team would now test weight and threshold sensitivity, confidence intervals, optional energy or cost
+data, and exact maintenance assumptions. If the preferred option changes under plausible values, record the decision
+as preference-sensitive. If neither passes all gates, choose no deployment rather than relaxing constraints after
+seeing results.
+
+## Related material
+
+- [Criteria and measurement](../criteria-and-measurement.md)
+- [Pareto selection](../pareto-selection-process.md)
+- [Filled decision record](../decision-record-template.md)
+- [Compression and edge benchmarking](../../02-textbook/part-08-evaluation-benchmarking-and-research-experiments/ch-31-compression-and-edge-benchmarking.md)
